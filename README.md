@@ -11,6 +11,10 @@
 
 This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. 
 
+### Disclaimer
+
+The code and resources in this repository are in no way guaranteed. The author(s) of the library are not responsible for any incorrect, corrupt, damaging, or otherwise undesired results. You take full responsibility to ensure this library suits your requirements. You also take full responsibility to abide by the chosen service(s) guidelines in their corresponding documentation. This includes limited number of requests, limited availability of information, presentation of weather data, and presentation of trademark information and logos. Be sure to thoroughly read the documentation for the chosen service(s) to gain knowledge of these requirements.
+
 ### Supported Weather Services
 
 1. Weather Underground
