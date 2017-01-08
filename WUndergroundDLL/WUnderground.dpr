@@ -6,9 +6,9 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  SuperObject,
   StrUtils,
-  JD.Weather.Intf in '..\JD.Weather.Intf.pas';
+  JD.Weather.Intf in '..\JD.Weather.Intf.pas',
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 

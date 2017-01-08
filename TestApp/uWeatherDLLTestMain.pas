@@ -11,24 +11,22 @@ uses
 
 type
   TfrmMain = class(TForm)
-    SB: TScrollBox;
-    pOne: TPanel;
+    Panel4: TPanel;
+    lstServices: TListView;
+    lstURLs: TListView;
+    GP: TGridPanel;
     Panel1: TPanel;
     Label1: TLabel;
     lstSupportedInfo: TListBox;
     Panel2: TPanel;
     Label2: TLabel;
     lstSupportedLocationTypes: TListBox;
-    Panel4: TPanel;
-    lstServices: TListView;
-    lstURLs: TListView;
-    Splitter1: TSplitter;
-    imgLogo: TImage;
-    Splitter2: TSplitter;
     Panel5: TPanel;
     Label3: TLabel;
     lstSupportedConditionProps: TListBox;
-    pTwo: TPanel;
+    Panel3: TPanel;
+    Label7: TLabel;
+    lstSupportedAlertTypes: TListBox;
     Panel6: TPanel;
     Label4: TLabel;
     lstSupportedForecastSummaryProps: TListBox;
@@ -38,19 +36,21 @@ type
     Panel8: TPanel;
     Label6: TLabel;
     lstSupportedForecastDailyProps: TListBox;
-    Panel3: TPanel;
-    Label7: TLabel;
-    lstSupportedAlertProps: TListBox;
     Panel9: TPanel;
     Label8: TLabel;
     lstSupportedMaps: TListBox;
-    Splitter3: TSplitter;
+    Panel10: TPanel;
+    imgLogo: TImage;
+    Panel11: TPanel;
+    Label9: TLabel;
+    lstSupportedUnits: TListBox;
+    Panel12: TPanel;
+    Label10: TLabel;
+    lstSupportedAlertProps: TListBox;
     procedure FormCreate(Sender: TObject);
     procedure lstServicesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure lstURLsClick(Sender: TObject);
-    procedure pOneResize(Sender: TObject);
-    procedure pTwoResize(Sender: TObject);
   private
     FLib: HMODULE;
     FCreateLib: TCreateJDWeather;
@@ -72,11 +72,20 @@ implementation
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   ReportMemoryLeaksOnShutdown:= True;
-  SB.Align:= alClient;
+  GP.Align:= alClient;
+  imgLogo.Align:= alClient;
   lstURLs.Align:= alClient;
-  pOne.Height:= 300;
-  pTwo.Height:= 300;
   lstServices.Width:= lstServices.Width + 1;
+  lstSupportedInfo.Align:= alClient;
+  lstSupportedLocationTypes.Align:= alClient;
+  lstSupportedConditionProps.Align:= alClient;
+  lstSupportedAlertTypes.Align:= alClient;
+  lstSupportedAlertProps.Align:= alClient;
+  lstSupportedForecastSummaryProps.Align:= alClient;
+  lstSupportedForecastHourlyProps.Align:= alClient;
+  lstSupportedForecastDailyProps.Align:= alClient;
+  lstSupportedMaps.Align:= alClient;
+  lstSupportedUnits.Align:= alClient;
 
   FLib:= LoadLibrary('JDWeather.dll');
   if FLib <> 0 then begin
@@ -135,11 +144,13 @@ begin
   lstSupportedInfo.Items.Clear;
   lstSupportedLocationTypes.Items.Clear;
   lstSupportedConditionProps.Items.Clear;
+  lstSupportedAlertTypes.Items.Clear;
   lstSupportedAlertProps.Items.Clear;
   lstSupportedForecastSummaryProps.Items.Clear;
   lstSupportedForecastHourlyProps.Items.Clear;
   lstSupportedForecastDailyProps.Items.Clear;
   lstSupportedMaps.Items.Clear;
+  lstSupportedUnits.Items.Clear;
   imgLogo.Picture.Assign(nil);
 end;
 
@@ -193,13 +204,25 @@ var
       lstSupportedForecastDailyProps.Items.Add(Str);
     end;
   end;
+  procedure ChkAltTyp(const P: TWeatherAlertType; const Str: String);
+  begin
+    if P in S.Support.SupportedAlerts then begin
+      lstSupportedAlertTypes.Items.Add(Str);
+    end;
+  end;
+  procedure ChkAltPro(const P: TWeatherAlertProp; const Str: String);
+  begin
+    if P in S.Support.SupportedAlertProps then begin
+      lstSupportedAlertProps.Items.Add(Str);
+    end;
+  end;
 begin
   ClearInfo;
   if Selected then begin
     S:= IWeatherService(Item.Data);
 
-    ChkUrl('Main Website', S.URLs.MainURL);
-    ChkUrl('API Page', S.URLs.ApiURL);
+    ChkUrl('Website', S.URLs.MainURL);
+    ChkUrl('API Docs', S.URLs.ApiURL);
     ChkUrl('Register', S.URLs.RegisterURL);
     ChkUrl('Login', S.URLs.LoginURL);
     ChkUrl('Legal', S.URLs.LegalURL);
@@ -343,7 +366,35 @@ begin
     ChkForDay(TWeatherForecastProp.fpClouds, 'Cloud Cover');
     ChkForDay(TWeatherForecastProp.fpRain, 'Rain Amount');
 
+    ChkAltTyp(TWeatherAlertType.waHurricaneStat, 'Hurricane Status');
+    ChkAltTyp(TWeatherAlertType.waTornadoWarn, 'Tornado Warning');
+    ChkAltTyp(TWeatherAlertType.waTornadoWatch, 'Tornado Watch');
+    ChkAltTyp(TWeatherAlertType.waSevThundWarn, 'Severe Thunderstorm Warning');
+    ChkAltTyp(TWeatherAlertType.waSevThundWatch, 'Severe Thunderstorm Watch');
+    ChkAltTyp(TWeatherAlertType.waWinterAdv, 'Winter Weather Advisory');
+    ChkAltTyp(TWeatherAlertType.waFloodWarn, 'Flood Warning');
+    ChkAltTyp(TWeatherAlertType.waFloodWatch, 'Flood Watch');
+    ChkAltTyp(TWeatherAlertType.waHighWind, 'High Wind Advisory');
+    ChkAltTyp(TWeatherAlertType.waSevStat, 'Severe Weather Status');
+    ChkAltTyp(TWeatherAlertType.waHeatAdv, 'Heat Advisory');
+    ChkAltTyp(TWeatherAlertType.waFogAdv, 'Fog Advisory');
+    ChkAltTyp(TWeatherAlertType.waSpecialStat, 'Special Weather Statement');
+    ChkAltTyp(TWeatherAlertType.waFireAdv, 'Fire Advisory');
+    ChkAltTyp(TWeatherAlertType.waVolcanicStat, 'Volcanic Status');
+    ChkAltTyp(TWeatherAlertType.waHurricaneWarn, 'Hurricane Warning');
+    ChkAltTyp(TWeatherAlertType.waRecordSet, 'Record Set');
+    ChkAltTyp(TWeatherAlertType.waPublicRec, 'Public Record');
+    ChkAltTyp(TWeatherAlertType.waPublicStat, 'Public Status');
 
+    ChkAltPro(TWeatherAlertProp.apZones, 'Alerted Zones');
+    ChkAltPro(TWeatherAlertProp.apVerticies, 'Storm Verticies');
+    ChkAltPro(TWeatherAlertProp.apStorm, 'Storm Information');
+    ChkAltPro(TWeatherAlertProp.apType, 'Alert Type');
+    ChkAltPro(TWeatherAlertProp.apDescription, 'Description');
+    ChkAltPro(TWeatherAlertProp.apExpires, 'Expiration Time');
+    ChkAltPro(TWeatherAlertProp.apMessage, 'Alert Message');
+    ChkAltPro(TWeatherAlertProp.apPhenomena, 'Phenomena');
+    ChkAltPro(TWeatherAlertProp.apSignificance, 'Significance');
 
 
     WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
@@ -358,28 +409,6 @@ begin
   if lstURLs.ItemIndex >= 0 then begin
     U:= lstURLs.Selected.SubItems[0];
     ShellExecute(0, 'open', PChar(U), nil, nil, SW_SHOWNORMAL);
-  end;
-end;
-
-procedure TfrmMain.pOneResize(Sender: TObject);
-var
-  W: Integer;
-  X: Integer;
-begin
-  W:= Trunc(pOne.ClientWidth div 4);
-  for X := 0 to pOne.ControlCount-1 do begin
-    pOne.Controls[X].Width:= W;
-  end;
-end;
-
-procedure TfrmMain.pTwoResize(Sender: TObject);
-var
-  W: Integer;
-  X: Integer;
-begin
-  W:= Trunc(pTwo.ClientWidth div 4);
-  for X := 0 to pTwo.ControlCount-1 do begin
-    pTwo.Controls[X].Width:= W;
   end;
 end;
 

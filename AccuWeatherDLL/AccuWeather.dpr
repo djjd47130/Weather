@@ -7,7 +7,8 @@ uses
   System.Classes,
   System.Generics.Collections,
   Vcl.Imaging.PngImage,
-  JD.Weather.Intf in '..\JD.Weather.Intf.pas';
+  JD.Weather.Intf in '..\JD.Weather.Intf.pas',
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 
