@@ -10,3 +10,12 @@
 ### IMPORTANT NOTE
 
 This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. 
+
+### Supported Weather Services
+
+1. Weather Underground
+2. AccuWeather
+3. OpenWeatherMap
+4. Foreca
+5. Weather Source OnPOINT®
+
