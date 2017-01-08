@@ -2,9 +2,9 @@ object frmMain: TfrmMain
   Left = 0
   Top = 0
   Caption = 'JD Weather DLL Test'
-  ClientHeight = 531
+  ClientHeight = 567
   ClientWidth = 845
-  Color = clBtnFace
+  Color = clWhite
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,26 +13,26 @@ object frmMain: TfrmMain
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Panel4: TPanel
     Left = 0
     Top = 0
     Width = 845
-    Height = 121
+    Height = 145
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 762
     object lstServices: TListView
       Left = 0
       Top = 0
       Width = 211
-      Height = 121
+      Height = 145
       Align = alLeft
       BevelOuter = bvNone
-      BevelKind = bkTile
       BorderStyle = bsNone
       Columns = <
         item
@@ -51,18 +51,18 @@ object frmMain: TfrmMain
       TabOrder = 0
       ViewStyle = vsReport
       OnSelectItem = lstServicesSelectItem
+      ExplicitHeight = 129
     end
     object lstURLs: TListView
       Left = 211
       Top = 0
       Width = 239
-      Height = 121
+      Height = 145
       Margins.Top = 0
       Margins.Right = 0
       Margins.Bottom = 0
       Align = alLeft
       BevelOuter = bvNone
-      BevelKind = bkTile
       BorderStyle = bsNone
       Columns = <
         item
@@ -80,22 +80,27 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnClick = lstURLsClick
-      ExplicitLeft = 174
+      ExplicitHeight = 129
     end
     object Panel10: TPanel
-      Left = 652
+      Left = 624
       Top = 0
-      Width = 193
-      Height = 121
+      Width = 221
+      Height = 145
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 624
+      ExplicitHeight = 137
       object imgLogo: TImage
-        Left = 113
-        Top = 0
+        AlignWithMargins = True
+        Left = 131
+        Top = 10
         Width = 80
-        Height = 121
+        Height = 125
+        Margins.Left = 10
+        Margins.Top = 10
+        Margins.Right = 10
+        Margins.Bottom = 10
         Align = alRight
         Center = True
         Proportional = True
@@ -109,7 +114,7 @@ object frmMain: TfrmMain
   end
   object GP: TGridPanel
     Left = 0
-    Top = 263
+    Top = 299
     Width = 845
     Height = 268
     Align = alBottom
@@ -196,14 +201,15 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 0
       ExplicitWidth = 224
       ExplicitHeight = 169
       object Label1: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -220,14 +226,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedInfo: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 35
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -237,15 +245,16 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 1
       ExplicitLeft = 225
       ExplicitWidth = 224
       ExplicitHeight = 169
       object Label2: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -262,14 +271,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedLocationTypes: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -279,15 +290,16 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 2
       ExplicitLeft = 449
       ExplicitWidth = 224
       ExplicitHeight = 169
       object Label3: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -304,14 +316,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedConditionProps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -321,15 +335,16 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 3
       ExplicitLeft = 673
       ExplicitWidth = 225
       ExplicitHeight = 169
       object Label7: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -346,14 +361,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedAlertTypes: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 217
       end
     end
@@ -363,15 +380,16 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 4
       ExplicitTop = 170
       ExplicitWidth = 224
       ExplicitHeight = 169
       object Label4: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -388,14 +406,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedForecastSummaryProps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -405,6 +425,7 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 5
       ExplicitLeft = 225
       ExplicitTop = 170
@@ -412,9 +433,9 @@ object frmMain: TfrmMain
       ExplicitHeight = 169
       object Label5: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -431,14 +452,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedForecastHourlyProps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -448,6 +471,7 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 6
       ExplicitLeft = 449
       ExplicitTop = 170
@@ -455,9 +479,9 @@ object frmMain: TfrmMain
       ExplicitHeight = 169
       object Label6: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -474,14 +498,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedForecastDailyProps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 216
       end
     end
@@ -491,14 +517,15 @@ object frmMain: TfrmMain
       Width = 168
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 7
       ExplicitLeft = 507
       ExplicitTop = 140
       object Label8: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 160
+        Left = 3
+        Top = 3
+        Width = 162
         Height = 13
         Align = alTop
         AutoSize = False
@@ -515,14 +542,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedMaps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 160
+        Left = 3
+        Top = 22
+        Width = 162
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 217
       end
     end
@@ -532,6 +561,7 @@ object frmMain: TfrmMain
       Width = 171
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 8
       ExplicitLeft = 449
       ExplicitTop = 170
@@ -539,9 +569,9 @@ object frmMain: TfrmMain
       ExplicitHeight = 169
       object Label9: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 163
+        Left = 3
+        Top = 3
+        Width = 165
         Height = 13
         Align = alTop
         AutoSize = False
@@ -558,14 +588,16 @@ object frmMain: TfrmMain
       end
       object lstSupportedUnits: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 163
+        Left = 3
+        Top = 22
+        Width = 165
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
         ExplicitWidth = 160
       end
     end
@@ -575,15 +607,16 @@ object frmMain: TfrmMain
       Width = 171
       Height = 133
       Align = alClient
+      BevelOuter = bvNone
       TabOrder = 9
       ExplicitTop = 47
       ExplicitWidth = 225
       ExplicitHeight = 169
       object Label10: TLabel
         AlignWithMargins = True
-        Left = 4
-        Top = 4
-        Width = 163
+        Left = 3
+        Top = 3
+        Width = 165
         Height = 13
         Align = alTop
         AutoSize = False
@@ -600,15 +633,28 @@ object frmMain: TfrmMain
       end
       object lstSupportedAlertProps: TListBox
         AlignWithMargins = True
-        Left = 4
-        Top = 23
-        Width = 163
+        Left = 3
+        Top = 22
+        Width = 165
         Height = 39
         Align = alTop
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 23
+        ExplicitWidth = 163
       end
     end
+  end
+  object Svr: TIdHTTPServer
+    Bindings = <>
+    DefaultPort = 8664
+    OnContextCreated = SvrContextCreated
+    OnConnect = SvrConnect
+    OnDisconnect = SvrDisconnect
+    OnCommandGet = SvrCommandGet
+    Left = 128
+    Top = 168
   end
 end

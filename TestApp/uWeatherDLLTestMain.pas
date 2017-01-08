@@ -3,13 +3,37 @@ unit uWeatherDLLTestMain;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes,
+  TypInfo,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Vcl.ComCtrls,
   JD.Weather.Intf,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
-  ShellAPI;
+  JD.Weather.SuperObject,
+  ShellAPI,
+  IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
+  IdHTTPServer, IdContext, IdTCPConnection, IdYarn;
 
 type
+
+  TWeatherContext = class(TIdServerContext)
+  private
+    FCreateLib: TCreateJDWeather;
+    FWeather: IJDWeather;
+    FKey: WideString;
+    FServiceUID: WideString;
+    FLocType: WideString;
+    FLoc1: WideString;
+    FLoc2: WideString;
+    FUnits: WideString;
+    FDet: WideString;
+    FDoc: TStringList;
+  public
+    constructor Create(AConnection: TIdTCPConnection; AYarn: TIdYarn;
+      AList: TIdContextThreadList = nil); override;
+    destructor Destroy; override;
+  end;
+
   TfrmMain = class(TForm)
     Panel4: TPanel;
     lstServices: TListView;
@@ -47,17 +71,33 @@ type
     Panel12: TPanel;
     Label10: TLabel;
     lstSupportedAlertProps: TListBox;
+    Svr: TIdHTTPServer;
     procedure FormCreate(Sender: TObject);
     procedure lstServicesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure lstURLsClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure SvrCommandGet(AContext: TIdContext;
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure SvrConnect(AContext: TIdContext);
+    procedure SvrDisconnect(AContext: TIdContext);
+    procedure SvrContextCreated(AContext: TIdContext);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
-    FLib: HMODULE;
     FCreateLib: TCreateJDWeather;
+    FLib: HMODULE;
     FWeather: IJDWeather;
     procedure ClearInfo;
     procedure WeatherImageToPicture(const G: IWeatherGraphic;
       const P: TPicture);
+    procedure HandleServiceGet(AContext: TWeatherContext;
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+      const Svc: IWeatherService);
+    procedure HandleServiceList(AContext: TWeatherContext;
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleServiceSupport(AContext: TWeatherContext;
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+      const Svc: IWeatherService);
   public
     procedure LoadServices;
   end;
@@ -69,9 +109,33 @@ implementation
 
 {$R *.dfm}
 
+{ TWeatherContext }
+
+constructor TWeatherContext.Create(AConnection: TIdTCPConnection;
+  AYarn: TIdYarn; AList: TIdContextThreadList);
+begin
+  inherited;
+  FDoc:= TStringList.Create;
+end;
+
+destructor TWeatherContext.Destroy;
+begin
+  if Assigned(FWeather) then begin
+    FWeather._Release;
+    FWeather:= nil;
+  end;
+  FDoc.Free;
+  inherited;
+end;
+
+{ TfrmMain }
+
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  {$IFDEF DEBUG}
   ReportMemoryLeaksOnShutdown:= True;
+  {$ENDIF}
+  Svr.ContextClass:= TWeatherContext;
   GP.Align:= alClient;
   imgLogo.Align:= alClient;
   lstURLs.Align:= alClient;
@@ -99,6 +163,18 @@ begin
   end else begin
     //TODO
   end;
+
+  Svr.Active:= True;
+end;
+
+procedure TfrmMain.FormDestroy(Sender: TObject);
+begin
+  //
+end;
+
+procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Svr.Active:= False;
 end;
 
 procedure TfrmMain.LoadServices;
@@ -214,6 +290,24 @@ var
   begin
     if P in S.Support.SupportedAlertProps then begin
       lstSupportedAlertProps.Items.Add(Str);
+    end;
+  end;
+  procedure ChkMap(const M: TWeatherMapType; const Str: String);
+  begin
+    if M in S.Support.SupportedMaps then begin
+      lstSupportedMaps.Items.Add(Str);
+    end;
+  end;
+  procedure ChkMapFor(const F: TWeatherMapFormat; const Str: String);
+  begin
+    if F in S.Support.SupportedMapFormats then begin
+      lstSupportedMaps.Items.Add(Str);
+    end;
+  end;
+  procedure ChkUni(const U: TWeatherUnits; const Str: String);
+  begin
+    if U in S.Support.SupportedUnits then begin
+      lstSupportedUnits.Items.Add(Str);
     end;
   end;
 begin
@@ -396,6 +490,24 @@ begin
     ChkAltPro(TWeatherAlertProp.apPhenomena, 'Phenomena');
     ChkAltPro(TWeatherAlertProp.apSignificance, 'Significance');
 
+    ChkMap(TWeatherMapType.mpSatellite, 'Satellite');
+    ChkMap(TWeatherMapType.mpRadar, 'Radar');
+    ChkMap(TWeatherMapType.mpSatelliteRadar, 'Satellite and Radar');
+    ChkMap(TWeatherMapType.mpAniSatellite, 'Animated Satellite');
+    ChkMap(TWeatherMapType.mpAniRadar, 'Animated Radar');
+    ChkMap(TWeatherMapType.mpAniSatelliteRadar, 'Animated Satellite and Radar');
+
+    ChkMapFor(TWeatherMapFormat.wfJpg, 'Jpg Format');
+    ChkMapFor(TWeatherMapFormat.wfPng, 'Png Format');
+    ChkMapFor(TWeatherMapFormat.wfGif, 'Gif Format');
+    ChkMapFor(TWeatherMapFormat.wfTiff, 'Tiff Format');
+    ChkMapFor(TWeatherMapFormat.wfBmp, 'Bmp Format');
+    ChkMapFor(TWeatherMapFormat.wfFlash, 'Flash Format');
+    ChkMapFor(TWeatherMapFormat.wfHtml, 'Html Format');
+
+    ChkUni(TWeatherUnits.wuKelvin, 'Kelvin');
+    ChkUni(TWeatherUnits.wuImperial, 'Imperial');
+    ChkUni(TWeatherUnits.wuMetric, 'Metric');
 
     WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
 
@@ -409,6 +521,199 @@ begin
   if lstURLs.ItemIndex >= 0 then begin
     U:= lstURLs.Selected.SubItems[0];
     ShellExecute(0, 'open', PChar(U), nil, nil, SW_SHOWNORMAL);
+  end;
+end;
+
+procedure TfrmMain.SvrConnect(AContext: TIdContext);
+var
+  C: TWeatherContext;
+begin
+  C:= TWeatherContext(AContext);
+
+end;
+
+procedure TfrmMain.SvrContextCreated(AContext: TIdContext);
+var
+  C: TWeatherContext;
+  Dir: String;
+begin
+  C:= TWeatherContext(AContext);
+  C.FCreateLib:= Self.FCreateLib;
+  Dir:= ExtractFilePath(ParamStr(0));
+  C.FWeather:= C.FCreateLib(Dir);
+end;
+
+procedure TfrmMain.SvrDisconnect(AContext: TIdContext);
+var
+  C: TWeatherContext;
+begin
+  C:= TWeatherContext(AContext);
+
+end;
+
+procedure TfrmMain.HandleServiceSupport(AContext: TWeatherContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+  const Svc: IWeatherService);
+var
+  O, O2: ISuperObject;
+  S: IWeatherService;
+  Inf: TWeatherInfoType;
+  Uni: TWeatherUnits;
+  Alt: TWeatherAlertType;
+  Alp: TWeatherAlertProp;
+begin
+  O:= SO;
+  try
+    O.S['caption']:= Svc.Caption;
+    O.S['serviceuid']:= Svc.UID;
+
+    O2:= SA([]);
+    try
+      for Inf := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
+        if Inf in Svc.Support.SupportedInfo then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherInfoType), Ord(Inf))));
+      end;
+    finally
+      O.O['supported_info']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Uni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
+        if Uni in Svc.Support.SupportedUnits then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherUnits), Ord(Uni))));
+      end;
+    finally
+      O.O['supported_units']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Alt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
+        if Alt in Svc.Support.SupportedAlerts then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertType), Ord(Alt))));
+      end;
+    finally
+      O.O['supported_alerts']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Alp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
+        if Alp in Svc.Support.SupportedAlertProps then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertProp), Ord(Alp))));
+      end;
+    finally
+      O.O['supported_alert_props']:= O2;
+    end;
+
+
+
+
+
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TfrmMain.HandleServiceList(AContext: TWeatherContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  O, O2: ISuperObject;
+  X: Integer;
+  S: IWeatherService;
+begin
+  O:= SO;
+  try
+    O.O['services']:= SA([]);
+    for X := 0 to FWeather.Services.Count-1 do begin
+      S:= FWeather.Services[X];
+      O2:= SO;
+      try
+        O2.S['caption']:= S.Caption;
+        O2.S['uid']:= S.UID;
+        O2.S['url_main']:= S.URLs.MainURL;
+        O2.S['url_api']:= S.URLs.ApiURL;
+        O2.S['url_login']:= S.URLs.LoginURL;
+        O2.S['url_register']:= S.URLs.RegisterURL;
+        O2.S['url_legal']:= S.URLs.LegalURL;
+      finally
+        O.O['services'].AsArray.Add(O2);
+      end;
+    end;
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TfrmMain.HandleServiceGet(AContext: TWeatherContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+  const Svc: IWeatherService);
+var
+  O: ISuperObject;
+begin
+  O:= SO;
+  try
+
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TfrmMain.SvrCommandGet(AContext: TIdContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  C: TWeatherContext;
+  X: Integer;
+  D, T: String;
+  P: Integer;
+begin
+  C:= TWeatherContext(AContext);
+  C.FKey:= ARequestInfo.Params.Values['k'];
+  C.FServiceUID:= ARequestInfo.Params.Values['s'];
+  C.FLocType:= ARequestInfo.Params.Values['l'];
+  C.FLoc1:= ARequestInfo.Params.Values['l1'];
+  C.FLoc2:= ARequestInfo.Params.Values['l2'];
+  C.FUnits:= ARequestInfo.Params.Values['u'];
+  C.FDet:= ARequestInfo.Params.Values['d'];
+
+  C.FDoc.Clear;
+  D:= ARequestInfo.Document;
+  Delete(D, 1, 1);
+  D:= D + '/';
+  while Length(D) > 0 do begin
+    P:= Pos('/', D);
+    T:= Copy(D, 1, P-1);
+    Delete(D, 1, P);
+    C.FDoc.Append(T);
+  end;
+
+  if C.FDoc.Count > 0 then begin
+    if C.FDoc[0] = 'services' then begin
+      //Return list of available services
+      HandleServiceList(C, ARequestInfo, AResponseInfo);
+    end else
+    if C.FDoc[0] = 'support' then begin
+      for X := 0 to FWeather.Services.Count-1 do begin
+        if FWeather.Services[X].UID = C.FServiceUID then begin
+          HandleServiceSupport(C, ARequestInfo, AResponseInfo, FWeather.Services[X]);
+          Break;
+        end;
+      end;
+    end else begin
+      for X := 0 to FWeather.Services.Count-1 do begin
+        if FWeather.Services[X].UID = C.FServiceUID then begin
+          HandleServiceGet(C, ARequestInfo, AResponseInfo, FWeather.Services[X]);
+          Break;
+        end;
+      end;
+    end;
+  end else begin
+    //No document was requested...
+
   end;
 end;
 
