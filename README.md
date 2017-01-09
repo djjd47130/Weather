@@ -6,6 +6,8 @@
 2. Standardizes weather data into a single common structure regardless of which service it came from.
 3. Support functions to describe which features are available and which are not in a given service.
 4. Lookup weather data by any given number of location information.
+5. Each weather service encapsulated in a DLL (Source Included).
+6. Add support for new services by writing a new DLL.
 
 ### IMPORTANT NOTE
 
