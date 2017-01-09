@@ -25,7 +25,7 @@ The code and resources in this repository are in no way guaranteed. The author(s
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
 
-### How to Use
+### How to Create Instance
 
 1. Create implementation objects for all interfaces found in `JD.Weather.Intf.pas`.
   1. This unit is shared across boundaries, and contains all common types, classes, interfaces, and functions required.
@@ -33,6 +33,8 @@ The code and resources in this repository are in no way guaranteed. The author(s
 2. Load the library `JDWeather.dll` and get the proc address for `CreateJDWeather`.
   1. There is a procedure type already defined in the interface unit, called `TCreateJDWeather`.
 3. Call the function `CreateJDWeather` to obtain a new instance of a `IJDWeather` interface.
+
+**NOTE:** In the future, this will not be necessary, as another component will be written to accommodate for this task.
 
 ```delphi
   FLib:= LoadLibrary('JDWeather.dll');
@@ -56,4 +58,11 @@ The code and resources in this repository are in no way guaranteed. The author(s
   end;
 ```
 
+### How to Use
+
+1. Choose a service from `IJDWeather.Services`
+  1. `Count` returns the number of services
+  2. `Items[]` returns a given service by its index
+2. Create an account with chosen service and obtain API key
+3. Wait until I get more stuff implemented and working here.............
 
