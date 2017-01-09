@@ -19,9 +19,9 @@ The code and resources in this repository are in no way guaranteed. The author(s
 
 ### Supported Weather Services
 
-1. Weather Underground
-2. AccuWeather
-3. OpenWeatherMap
-4. Foreca
-5. Weather Source OnPOINT®
+1. [Weather Underground](Readme/WUnderground.md)
+2. [AccuWeather](Readme/AccuWeather.md)
+3. [OpenWeatherMap](Readme/OpenWeatherMap.md)
+4. [Foreca](Readme/Foreca.md)
+5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
 
