@@ -25,3 +25,35 @@ The code and resources in this repository are in no way guaranteed. The author(s
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
 
+### How to Use
+
+1. Create implementation objects for all interfaces found in `JD.Weather.Intf.pas`.
+  1. This unit is shared across boundaries, and contains all common types, classes, interfaces, and functions required.
+  2. You can use the objects as already found in the same unit, as well as what's found in each DLL.
+2. Load the library `JDWeather.dll` and get the proc address for `CreateJDWeather`.
+  1. There is a procedure type already defined in the interface unit, called `TCreateJDWeather`.
+3. Call the function `CreateJDWeather` to obtain a new instance of a `IJDWeather` interface.
+
+```delphi
+  FLib:= LoadLibrary('JDWeather.dll');
+  if FLib <> 0 then begin
+    FCreateLib:= GetProcAddress(FLib, 'CreateJDWeather');
+    if Assigned(FCreateLib) then begin
+      try
+        FWeather:= FCreateLib(ExtractFilePath(ParamStr(0)));
+        LoadServices;
+      except
+        on E: Exception do begin
+          raise Exception.Create('Failed to create new instance of "IJDWeather": '+E.Message);
+        end;
+      end;
+    end else begin
+      raise Exception.Create('Function "CreateJDWeather" not found!');
+    end;
+  end else begin
+    E:= GetLastError;
+    raise Exception.Create('Failed to load library "JDWeather.dll" with error code '+IntToStr(E));
+  end;
+```
+
+
