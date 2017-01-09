@@ -51,7 +51,6 @@ object frmMain: TfrmMain
       TabOrder = 0
       ViewStyle = vsReport
       OnSelectItem = lstServicesSelectItem
-      ExplicitHeight = 129
     end
     object lstURLs: TListView
       Left = 211
@@ -80,7 +79,6 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnClick = lstURLsClick
-      ExplicitHeight = 129
     end
     object Panel10: TPanel
       Left = 624
@@ -90,7 +88,6 @@ object frmMain: TfrmMain
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitHeight = 137
       object imgLogo: TImage
         AlignWithMargins = True
         Left = 131
@@ -126,10 +123,10 @@ object frmMain: TfrmMain
         Value = 19.999999599008060000
       end
       item
-        Value = 19.999999982899630000
+        Value = 19.999999982899640000
       end
       item
-        Value = 20.000000210848560000
+        Value = 20.000000210848570000
       end
       item
         Value = 20.000000139451190000
@@ -193,8 +190,6 @@ object frmMain: TfrmMain
         Value = 50.000000000000000000
       end>
     TabOrder = 1
-    ExplicitTop = 288
-    ExplicitWidth = 686
     object Panel1: TPanel
       Left = 1
       Top = 1
@@ -203,8 +198,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label1: TLabel
         AlignWithMargins = True
         Left = 3
@@ -234,9 +227,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel2: TPanel
@@ -247,9 +237,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 225
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label2: TLabel
         AlignWithMargins = True
         Left = 3
@@ -279,9 +266,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel5: TPanel
@@ -292,9 +276,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 449
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label3: TLabel
         AlignWithMargins = True
         Left = 3
@@ -324,9 +305,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel3: TPanel
@@ -337,9 +315,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 3
-      ExplicitLeft = 673
-      ExplicitWidth = 225
-      ExplicitHeight = 169
       object Label7: TLabel
         AlignWithMargins = True
         Left = 3
@@ -369,9 +344,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 217
       end
     end
     object Panel6: TPanel
@@ -382,9 +354,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
-      ExplicitTop = 170
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label4: TLabel
         AlignWithMargins = True
         Left = 3
@@ -414,9 +383,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel7: TPanel
@@ -427,10 +393,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 5
-      ExplicitLeft = 225
-      ExplicitTop = 170
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label5: TLabel
         AlignWithMargins = True
         Left = 3
@@ -460,9 +422,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel8: TPanel
@@ -473,10 +432,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 6
-      ExplicitLeft = 449
-      ExplicitTop = 170
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label6: TLabel
         AlignWithMargins = True
         Left = 3
@@ -506,9 +461,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 216
       end
     end
     object Panel9: TPanel
@@ -519,8 +471,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 7
-      ExplicitLeft = 507
-      ExplicitTop = 140
       object Label8: TLabel
         AlignWithMargins = True
         Left = 3
@@ -550,9 +500,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 217
       end
     end
     object Panel11: TPanel
@@ -563,10 +510,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 8
-      ExplicitLeft = 449
-      ExplicitTop = 170
-      ExplicitWidth = 224
-      ExplicitHeight = 169
       object Label9: TLabel
         AlignWithMargins = True
         Left = 3
@@ -596,9 +539,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 160
       end
     end
     object Panel12: TPanel
@@ -609,9 +549,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 9
-      ExplicitTop = 47
-      ExplicitWidth = 225
-      ExplicitHeight = 169
       object Label10: TLabel
         AlignWithMargins = True
         Left = 3
@@ -641,9 +578,6 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         ItemHeight = 13
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 23
-        ExplicitWidth = 163
       end
     end
   end
@@ -656,5 +590,15 @@ object frmMain: TfrmMain
     OnCommandGet = SvrCommandGet
     Left = 128
     Top = 168
+  end
+  object IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 328
+    Top = 184
   end
 end

@@ -7,12 +7,15 @@ uses
   System.Classes,
   System.Generics.Collections,
   Vcl.Imaging.PngImage,
+  IdHTTP, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
   JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 
 type
+  TOPEndpoint = (oeForecastDaily, oeForecastHourly, oeHistory);
+
   TOPWeatherSupport = class(TInterfacedObject, IWeatherSupport)
   public
     function GetSupportedLogos: TWeatherLogoTypes;
@@ -63,7 +66,11 @@ type
   private
     FSupport: TOPWeatherSupport;
     FURLs: TOPWeatherURLs;
+    FSSL: TIdSSLIOHandlerSocketOpenSSL;
     procedure LoadLogos;
+    function GetEndpointUrl(const Endpoint: TOPEndpoint): String;
+    function GetEndpoint(const Endpoint: TOPEndpoint): ISuperObject;
+    function ParseDateTime(const S: String): TDateTime;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -87,11 +94,117 @@ type
     property URLs: IWeatherURLs read GetURLs;
   end;
 
+{ TOPWeatherSupport }
+
+function TOPWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
+begin
+  Result:= [wuImperial, wuMetric];
+end;
+
+function TOPWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
+begin
+  Result:= [wlCoords, wlZip];
+end;
+
+function TOPWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
+begin
+  Result:= [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
+end;
+
+function TOPWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
+begin
+  Result:= [];
+end;
+
+function TOPWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
+begin
+  Result:= [];
+end;
+
+function TOPWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
+begin
+  Result:= [cpPressureMB, cpPressureIn, cpWindDir, cpWindSpeed,
+    cpHumidity, cpVisibility, cpDewPoint, cpWindGust, cpWindChill,
+    cpFeelsLike, cpUV, cpTemp, cpPrecip,
+    cpIcon, cpCaption, cpStation, cpClouds];
+end;
+
+function TOPWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
+begin
+  Result:= [ftHourly, ftDaily];
+end;
+
+function TOPWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
+begin
+  Result:= [];
+end;
+
+function TOPWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
+begin
+  Result:= [fpPressureMB, fpWindSpeed,
+    fpHumidity, fpDewPoint,
+    fpFeelsLike, fpTemp, fpPrecip,
+    fpSnow, fpPrecipChance, fpClouds, fpWetBulb];
+end;
+
+function TOPWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
+begin
+  Result:= [fpPressureMB, fpWindSpeed,
+    fpHumidity, fpDewPoint, fpTempMin, fpTempMax,
+    fpFeelsLike, fpTemp, fpPrecip,
+    fpSnow, fpPrecipChance, fpClouds, fpWetBulb];
+end;
+
+function TOPWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
+begin
+  Result:= [wiConditions, wiForecastHourly, wiForecastDaily];
+end;
+
+function TOPWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
+begin
+  Result:= [];
+end;
+
+function TOPWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
+begin
+  Result:= [];
+end;
+
+{ TOPWeatherURLs }
+
+function TOPWeatherURLs.GetApiURL: WideString;
+begin
+  Result:= 'https://developer.weathersource.com/documentation/rest/';
+end;
+
+function TOPWeatherURLs.GetLegalURL: WideString;
+begin
+  Result:= 'https://developer.weathersource.com/documentation/terms-of-use/';
+end;
+
+function TOPWeatherURLs.GetLoginURL: WideString;
+begin
+  Result:= 'https://developer.weathersource.com/account/account-login/';
+end;
+
+function TOPWeatherURLs.GetMainURL: WideString;
+begin
+  Result:= 'http://weathersource.com/';
+end;
+
+function TOPWeatherURLs.GetRegisterURL: WideString;
+begin
+  Result:= 'https://developer.weathersource.com/';
+end;
+
 { TOPService }
 
 constructor TOPService.Create;
 begin
   inherited;
+  FSSL:= TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+  Web.IOHandler:= FSSL;
+  Web.HandleRedirects:= True;
   FSupport:= TOPWeatherSupport.Create;
   FSupport._AddRef;
   FURLs:= TOPWeatherURLs.Create;
@@ -105,6 +218,7 @@ begin
   FURLs:= nil;
   FSupport._Release;
   FSupport:= nil;
+  FSSL.Free;
   inherited;
 end;
 
@@ -148,6 +262,7 @@ procedure TOPService.LoadLogos;
 begin
   //TODO: Load Logos from Resources
   SetLogo(TWeatherLogoType.ltColor, Get('LOGO_COLOR'));
+  SetLogo(TWeatherLogoType.ltColorWide, Get('LOGO_COLOR'));
 
 
 end;
@@ -157,143 +272,154 @@ begin
   Result:= FSupport;
 end;
 
-function TOPService.GetMultiple(
-  const Info: TWeatherInfoTypes): IWeatherMultiInfo;
+function TOPService.GetEndpointUrl(const Endpoint: TOPEndpoint): String;
+begin
+  case Endpoint of
+    oeForecastDaily: begin
+      case LocationType of
+        wlZip:    Result:= 'postal_codes/'+LocationDetail1+',US/forecast.json?period=day';
+        wlCoords: Result:= 'forecast.json?period=hour&latitude_eq='+
+          LocationDetail1+'&longitude_eq='+LocationDetail2;
+      end;
+      Result:= Result + '&fields=tempMax,tempAvg,tempMin,precip,precipProb,snowfall,'+
+        'snowfallProb,windSpdMax,windSpdAvg,windSpdMin,cldCvrMax,cldCvrAvg,cldCvrMin,'+
+        'dewPtMax,dewPtAvg,dewPtMin,feelsLikeMax,feelsLikeAvg,feelsLikeMin,relHumMax,'+
+        'relHumAvg,relHumMin,sfcPresMax,sfcPresAvg,sfcPresMin,spcHumMax,spcHumAvg,'+
+        'spcHumMin,wetBultMax,wetBulbAvg,wetBulbMin,timestamp';
+    end;
+    oeForecastHourly: begin
+      case LocationType of
+        wlZip:    Result:= 'postal_codes/'+LocationDetail1+',US/forecast.json?period=hour';
+        wlCoords: Result:= 'forecast.json?period=hour&latitude_eq='+
+          LocationDetail1+'&longitude_eq='+LocationDetail2;
+      end;
+      Result:= Result + '&fields=temp,precip,precipProb,snowfall,snowfallProb,'+
+        'windSpd,windDir,cldCvr,dewPt,feelsLike,relHum,sfcPres,spcHum,wetBulb';
+    end;
+    oeHistory: begin
+      case LocationType of
+        wlZip:    Result:= 'history_by_postal_code.json?period=hour&postal_code_eq='+
+          LocationDetail1+'&country_eq=US';
+        wlCoords: Result:= 'history.json?period=hour&latitude_eq='+
+          LocationDetail1+'&longitude_eq='+LocationDetail2;
+      end;
+      Result:= Result + '&fields=tempMax,tempAvg,tempMin,precip,precipProb,snowfall,'+
+        'snowfallProb,windSpdMax,windSpdAvg,windSpdMin,cldCvrMax,cldCvrAvg,cldCvrMin,'+
+        'dewPtMax,dewPtAvg,dewPtMin,feelsLikeMax,feelsLikeAvg,feelsLikeMin,relHumMax,'+
+        'relHumAvg,relHumMin,sfcPresMax,sfcPresAvg,sfcPresMin,spcHumMax,spcHumAvg,'+
+        'spcHumMin,wetBultMax,wetBulbAvg,wetBulbMin,timestamp';
+    end;
+  end;
+  Result:= 'https://api.weathersource.com/v1/' + Key + '/' + Result;
+end;
+
+function TOPService.GetEndpoint(const Endpoint: TOPEndpoint): ISuperObject;
+var
+  U: String;
+  S: String;
+begin
+  U:= GetEndpointUrl(Endpoint);
+  S:= Web.Get(U);
+  Result:= SO(S);
+end;
+
+function TOPService.GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
 begin
 
 end;
 
 function TOPService.GetConditions: IWeatherConditions;
+var
+  O: ISuperObject;
+  R: TWeatherConditions;
 begin
+  R:= TWeatherConditions.Create;
+  try
 
+    //TODO: A WEATHER INFO SERVICE WHICH DOESN'T SUPPORT CURRENT CONDITIONS??!!
+    //I DO NOT COMPREHEND!!!
+
+    //O:= GetEndpoint(TOPEndpoint.weConditions);
+    //FillConditions(O, R);
+  finally
+    Result:= R;
+  end;
 end;
 
 function TOPService.GetAlerts: IWeatherAlerts;
+begin
+  //NOT SUPPORTED
+end;
+
+function TOPService.ParseDateTime(const S: String): TDateTime;
 begin
 
 end;
 
 function TOPService.GetForecastDaily: IWeatherForecast;
+var
+  O: ISuperObject;
+  A: TSuperArray;
+  F: TWeatherForecast;
+  I: TWeatherForecastItem;
+  X: Integer;
 begin
-
+  F:= TWeatherForecast.Create;
+  try
+    O:= GetEndpoint(TOPEndpoint.oeForecastDaily);
+    if Assigned(O) then begin
+      A:= O.AsArray;
+      for X := 0 to A.Length-1 do begin
+        O:= A.O[X];
+        I:= TWeatherForecastItem.Create(F);
+        try
+          I.FDateTime:= ParseDateTime(O.S['timestamp']);
+          //TODO: Cloud Cover
+          I.FDewPoint:= O.D['dewPtAvg'];
+          //TODO: Feels Like
+          //TODO: Precipitation
+          I.FHumidity:= O.D['relHumAvg'];
+          I.FPressure:= O.D['sfcPresAvg'];
+          //TODO: Snowfall
+          I.FTempMin:= O.D['tempMin'];
+          I.FTempMax:= O.D['tempMax'];
+          I.FWindSpeed:= O.D['windSpdAvg'];
+          //TODO: Wind Direction (Not Supported???)
+        finally
+          F.FItems.Add(I);
+        end;
+      end;
+    end;
+  finally
+    Result:= F;
+  end;
 end;
 
 function TOPService.GetForecastHourly: IWeatherForecast;
+var
+  O: ISuperObject;
+  F: TWeatherForecast;
 begin
+  F:= TWeatherForecast.Create;
+  try
+    O:= GetEndpoint(TOPEndpoint.oeForecastHourly);
 
+  finally
+    Result:= F;
+  end;
 end;
 
 function TOPService.GetForecastSummary: IWeatherForecast;
 begin
-
+  //NOT SUPPORTED
 end;
 
 function TOPService.GetMaps: IWeatherMaps;
 begin
-
+  //NOT SUPPORTED
 end;
 
-{ TOPWeatherSupport }
 
-function TOPWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
-begin
-  Result:= [wuImperial, wuMetric];
-end;
-
-function TOPWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
-begin
-  Result:= [wlCoords, wlCityState, wlCountryCity, wlCityCode,
-    wlZip, wlAutoIP];
-end;
-
-function TOPWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
-begin
-  Result:= [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
-end;
-
-function TOPWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
-begin
-  Result:= [apZones, apVerticies, apStorm, apType, apDescription,
-    apExpires, apMessage, apSignificance];
-end;
-
-function TOPWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
-begin
-  Result:= [waNone, waHurricaneStat, waTornadoWarn, waTornadoWatch, waSevThundWarn,
-    waSevThundWatch, waWinterAdv, waFloodWarn, waFloodWatch, waHighWind, waSevStat,
-    waHeatAdv, waFogAdv, waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
-    waRecordSet, waPublicRec, waPublicStat];
-end;
-
-function TOPWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
-begin
-  Result:= [cpPressureMB, cpPressureIn, cpWindDir, cpWindSpeed,
-    cpHumidity, cpVisibility, cpDewPoint, cpWindGust, cpWindChill,
-    cpFeelsLike, cpUV, cpTemp, cpPrecip,
-    cpIcon, cpCaption, cpStation, cpClouds];
-end;
-
-function TOPWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
-begin
-  Result:= [ftHourly, ftDaily];
-end;
-
-function TOPWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TOPWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TOPWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TOPWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
-begin
-  Result:= [wiConditions, wiForecastHourly, wiForecastDaily, wiAlerts];
-end;
-
-function TOPWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
-begin
-  Result:= [];
-end;
-
-function TOPWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
-begin
-  Result:= [];
-end;
-
-{ TOPWeatherURLs }
-
-function TOPWeatherURLs.GetApiURL: WideString;
-begin
-  Result:= 'https://developer.weathersource.com/documentation/rest/';
-end;
-
-function TOPWeatherURLs.GetLegalURL: WideString;
-begin
-  Result:= 'https://developer.weathersource.com/documentation/terms-of-use/';
-end;
-
-function TOPWeatherURLs.GetLoginURL: WideString;
-begin
-  Result:= 'https://developer.weathersource.com/account/account-login/';
-end;
-
-function TOPWeatherURLs.GetMainURL: WideString;
-begin
-  Result:= 'http://weathersource.com/';
-end;
-
-function TOPWeatherURLs.GetRegisterURL: WideString;
-begin
-  Result:= 'https://developer.weathersource.com/';
-end;
 
 
 

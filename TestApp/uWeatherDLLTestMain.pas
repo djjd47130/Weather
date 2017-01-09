@@ -3,16 +3,14 @@ unit uWeatherDLLTestMain;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages,
-  System.SysUtils, System.Variants, System.Classes,
-  TypInfo,
+  Winapi.Windows, Winapi.Messages, Winapi.ShellAPI,
+  System.SysUtils, System.Variants, System.Classes, System.TypInfo,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls,
-  JD.Weather.Intf,
-  JD.Weather.SuperObject,
-  ShellAPI,
+  JD.Weather.Intf, JD.Weather.SuperObject,
   IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
-  IdHTTPServer, IdContext, IdTCPConnection, IdYarn;
+  IdHTTPServer, IdContext, IdTCPConnection, IdYarn, IdIOHandler,
+  IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL;
 
 type
 
@@ -72,6 +70,7 @@ type
     Label10: TLabel;
     lstSupportedAlertProps: TListBox;
     Svr: TIdHTTPServer;
+    IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
     procedure FormCreate(Sender: TObject);
     procedure lstServicesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
@@ -124,7 +123,7 @@ begin
     FWeather._Release;
     FWeather:= nil;
   end;
-  FDoc.Free;
+  FreeAndNil(FDoc);
   inherited;
 end;
 
@@ -207,10 +206,10 @@ begin
       I.LoadFromStream(S);
       P.Assign(I);
     finally
-      I.Free;
+      FreeAndNil(I);
     end;
   finally
-    S.Free;
+    FreeAndNil(S);
   end;
 end;
 
@@ -557,15 +556,28 @@ procedure TfrmMain.HandleServiceSupport(AContext: TWeatherContext;
 var
   O, O2: ISuperObject;
   S: IWeatherService;
+  Loc: TJDWeatherLocationType;
   Inf: TWeatherInfoType;
   Uni: TWeatherUnits;
   Alt: TWeatherAlertType;
   Alp: TWeatherAlertProp;
+  Fop: TWeatherForecastProp;
+  Map: TWeatherMapType;
 begin
   O:= SO;
   try
     O.S['caption']:= Svc.Caption;
     O.S['serviceuid']:= Svc.UID;
+
+    O2:= SA([]);
+    try
+      for Loc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
+        if Loc in Svc.Support.SupportedLocations then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TJDWeatherLocationType), Ord(Loc))));
+      end;
+    finally
+      O.O['supported_locations']:= O2;
+    end;
 
     O2:= SA([]);
     try
@@ -605,6 +617,46 @@ begin
       end;
     finally
       O.O['supported_alert_props']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        if Fop in Svc.Support.SupportedForecastSummaryProps then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+      end;
+    finally
+      O.O['supported_forecast_summary_props']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        if Fop in Svc.Support.SupportedForecastHourlyProps then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+      end;
+    finally
+      O.O['supported_forecast_hourly_props']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        if Fop in Svc.Support.SupportedForecastDailyProps then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+      end;
+    finally
+      O.O['supported_forecast_daily_props']:= O2;
+    end;
+
+    O2:= SA([]);
+    try
+      for Map := Low(TWeatherMapType) to High(TWeatherMapType) do begin
+        if Map in Svc.Support.SupportedMaps then
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherMapType), Ord(Map))));
+      end;
+    finally
+      O.O['supported_maps']:= O2;
     end;
 
 
