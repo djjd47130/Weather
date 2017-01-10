@@ -70,3 +70,11 @@ The code and resources in this repository are in no way guaranteed. The author(s
 ### Test Application
 
 ![Test Application Screenshot](Readme/WeatherTestAppSS.png "Test Application Screenshot")
+
+The test application is not actually utilizing the service APIs themselves, but rather just a proof of concept with dynamically loading multiple DLLs. It shows the following:
+
+1. Supported services, as it finds each DLL.
+2. URLs to access the particular service's resources.
+3. Logo to represent the selected service.
+4. All the properties which are supported for different info types.
+
