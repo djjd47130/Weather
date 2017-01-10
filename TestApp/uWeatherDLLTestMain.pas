@@ -130,6 +130,8 @@ end;
 { TfrmMain }
 
 procedure TfrmMain.FormCreate(Sender: TObject);
+var
+  E: Integer;
 begin
   {$IFDEF DEBUG}
   ReportMemoryLeaksOnShutdown:= True;
@@ -154,13 +156,20 @@ begin
   if FLib <> 0 then begin
     FCreateLib:= GetProcAddress(FLib, 'CreateJDWeather');
     if Assigned(FCreateLib) then begin
-      FWeather:= FCreateLib(ExtractFilePath(ParamStr(0)));
-      LoadServices;
+      try
+        FWeather:= FCreateLib(ExtractFilePath(ParamStr(0)));
+        LoadServices;
+      except
+        on E: Exception do begin
+          raise Exception.Create('Failed to create new instance of "IJDWeather": '+E.Message);
+        end;
+      end;
     end else begin
-      //TODO
+      raise Exception.Create('Function "CreateJDWeather" not found!');
     end;
   end else begin
-    //TODO
+    E:= GetLastError;
+    raise Exception.Create('Failed to load library "JDWeather.dll" with error code '+IntToStr(E));
   end;
 
   Svr.Active:= True;
