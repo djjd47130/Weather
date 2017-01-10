@@ -6,7 +6,8 @@ uses
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
   Vcl.Themes,
   Vcl.Styles,
-  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas',
+  JD.Weather.ApiSvr in '..\JD.Weather.ApiSvr.pas';
 
 {$R *.res}
 

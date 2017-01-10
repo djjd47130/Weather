@@ -13,7 +13,6 @@ object frmMain: TfrmMain
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -580,25 +579,5 @@ object frmMain: TfrmMain
         TabOrder = 0
       end
     end
-  end
-  object Svr: TIdHTTPServer
-    Bindings = <>
-    DefaultPort = 8664
-    OnContextCreated = SvrContextCreated
-    OnConnect = SvrConnect
-    OnDisconnect = SvrDisconnect
-    OnCommandGet = SvrCommandGet
-    Left = 128
-    Top = 168
-  end
-  object IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL
-    MaxLineAction = maException
-    Port = 0
-    DefaultPort = 0
-    SSLOptions.Mode = sslmUnassigned
-    SSLOptions.VerifyMode = []
-    SSLOptions.VerifyDepth = 0
-    Left = 328
-    Top = 184
   end
 end
