@@ -67,3 +67,6 @@ The code and resources in this repository are in no way guaranteed. The author(s
 3. Use the `Support` property of a service to see what pieces of information are supported.
 4. Wait until I get more stuff implemented and working here...
 
+### Test Application
+
+![Test Application Screenshot](Readme/WeatherTestAppSS.png "Test Application Screenshot")
