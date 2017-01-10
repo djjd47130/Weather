@@ -30,6 +30,7 @@ The code and resources in this repository are in no way guaranteed. The author(s
 1. Create implementation objects for all interfaces found in `JD.Weather.Intf.pas`.
   1. This unit is shared across boundaries, and contains all common types, classes, interfaces, and functions required.
   2. You can use the objects as already found in the same unit, as well as what's found in each DLL.
+  3. You can also write a DLL using any programming language, such as C# or C++.
 2. Load the library `JDWeather.dll` and get the proc address for `CreateJDWeather`.
   1. There is a procedure type already defined in the interface unit, called `TCreateJDWeather`.
 3. Call the function `CreateJDWeather` to obtain a new instance of a `IJDWeather` interface.
