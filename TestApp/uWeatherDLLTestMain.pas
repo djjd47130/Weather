@@ -7,7 +7,8 @@ uses
   System.SysUtils, System.Variants, System.Classes, System.TypInfo,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls,
-  JD.Weather.Intf, JD.Weather.SuperObject;
+  JD.Weather.Intf, JD.Weather.SuperObject, System.ImageList, Vcl.ImgList,
+  Vcl.Menus;
 
 type
   TfrmMain = class(TForm)
@@ -16,37 +17,37 @@ type
     lstURLs: TListView;
     GP: TGridPanel;
     Panel1: TPanel;
-    Label1: TLabel;
-    lstSupportedInfo: TListBox;
     Panel2: TPanel;
-    Label2: TLabel;
-    lstSupportedLocationTypes: TListBox;
     Panel5: TPanel;
-    Label3: TLabel;
-    lstSupportedConditionProps: TListBox;
     Panel3: TPanel;
-    Label7: TLabel;
-    lstSupportedAlertTypes: TListBox;
     Panel6: TPanel;
-    Label4: TLabel;
-    lstSupportedForecastSummaryProps: TListBox;
     Panel7: TPanel;
-    Label5: TLabel;
-    lstSupportedForecastHourlyProps: TListBox;
     Panel8: TPanel;
-    Label6: TLabel;
-    lstSupportedForecastDailyProps: TListBox;
     Panel9: TPanel;
-    Label8: TLabel;
-    lstSupportedMaps: TListBox;
     Panel10: TPanel;
     imgLogo: TImage;
     Panel11: TPanel;
-    Label9: TLabel;
-    lstSupportedUnits: TListBox;
     Panel12: TPanel;
-    Label10: TLabel;
-    lstSupportedAlertProps: TListBox;
+    imgList: TImageList;
+    lstSupportedInfo: TListView;
+    lstSupportedLocationTypes: TListView;
+    lstSupportedConditionProps: TListView;
+    lstSupportedAlertTypes: TListView;
+    lstSupportedForecastSummaryProps: TListView;
+    lstSupportedAlertProps: TListView;
+    lstSupportedForecastHourlyProps: TListView;
+    lstSupportedForecastDailyProps: TListView;
+    lstSupportedMaps: TListView;
+    lstSupportedUnits: TListView;
+    MM: TMainMenu;
+    File1: TMenuItem;
+    Service1: TMenuItem;
+    Refresh1: TMenuItem;
+    N1: TMenuItem;
+    Exit1: TMenuItem;
+    EditSettings1: TMenuItem;
+    N2: TMenuItem;
+    estData1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure lstServicesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
@@ -79,10 +80,13 @@ begin
   {$IFDEF DEBUG}
   ReportMemoryLeaksOnShutdown:= True;
   {$ENDIF}
+  Width:= 1200;
+  Height:= 800;
   GP.Align:= alClient;
   imgLogo.Align:= alClient;
   lstURLs.Align:= alClient;
   lstServices.Width:= lstServices.Width + 1;
+  GP.Width:= GP.Width + 1;
 
   lstSupportedInfo.Align:= alClient;
   lstSupportedLocationTypes.Align:= alClient;
@@ -94,6 +98,10 @@ begin
   lstSupportedForecastDailyProps.Align:= alClient;
   lstSupportedMaps.Align:= alClient;
   lstSupportedUnits.Align:= alClient;
+
+  Show;
+  BringToFront;
+  Application.ProcessMessages;
 
   //Load weather library
   FLib:= LoadLibrary('JDWeather.dll');
@@ -206,6 +214,7 @@ var
   WMap: TWeatherMapType;
   WMaf: TWeatherMapFormat;
   WUni: TWeatherUnits;
+  I: TListItem;
   procedure ChkUrl(const N, V: String);
   var
     I: TListItem;
@@ -217,138 +226,251 @@ var
     end;
   end;
 begin
-  ClearInfo;
-  if Selected then begin
-    S:= IWeatherService(Item.Data);
+  Screen.Cursor:= crHourglass;
+  try
+    ClearInfo;
+    if Selected then begin
+      S:= IWeatherService(Item.Data);
 
-    //Display URLs for Service
-    ChkUrl('Website', S.URLs.MainURL);
-    ChkUrl('API Docs', S.URLs.ApiURL);
-    ChkUrl('Register', S.URLs.RegisterURL);
-    ChkUrl('Login', S.URLs.LoginURL);
-    ChkUrl('Legal', S.URLs.LegalURL);
+      //Display URLs for Service
+      ChkUrl('Website', S.URLs.MainURL);
+      ChkUrl('API Docs', S.URLs.ApiURL);
+      ChkUrl('Register', S.URLs.RegisterURL);
+      ChkUrl('Login', S.URLs.LoginURL);
+      ChkUrl('Legal', S.URLs.LegalURL);
 
-    //Show supported information types
-    for WInfo := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
-      if WInfo in S.Support.SupportedInfo then begin
-        lstSupportedInfo.Items.Add(WeatherInfoTypeToStr(WInfo));
+      //Show supported information types
+      lstSupportedInfo.Items.BeginUpdate;
+      try
+        for WInfo := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
+          I:= lstSupportedInfo.Items.Add;
+          I.Caption:= WeatherInfoTypeToStr(WInfo);
+          if WInfo in S.Support.SupportedInfo then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedInfo.Items.EndUpdate;
       end;
-    end;
-    TInfo:= lstSupportedInfo.Items.Count;
 
-    //Show supported location lookup types
-    for WLoc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
-      if WLoc in S.Support.SupportedLocations then begin
-        lstSupportedLocationTypes.Items.Add(WeatherLocationTypeToStr(WLoc));
+      //Show supported location lookup types
+      lstSupportedLocationTypes.Items.BeginUpdate;
+      try
+        for WLoc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
+          I:= lstSupportedLocationTypes.Items.Add;
+          I.Caption:= WeatherLocationTypeToStr(WLoc);
+          if WLoc in S.Support.SupportedLocations then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedLocationTypes.Items.EndUpdate;
       end;
-    end;
-    TLoc:= lstSupportedLocationTypes.Items.Count;
 
-    //Show supported condition properties
-    for WCond := Low(TWeatherConditionsProp) to High(TWeatherConditionsProp) do begin
-      if WCond in S.Support.SupportedConditionProps then begin
-        lstSupportedConditionProps.Items.Add(WeatherConditionPropToStr(WCond));
+      //Show supported condition properties
+      lstSupportedConditionProps.Items.BeginUpdate;
+      try
+        for WCond := Low(TWeatherConditionsProp) to High(TWeatherConditionsProp) do begin
+          I:= lstSupportedConditionProps.Items.Add;
+          I.Caption:= WeatherConditionPropToStr(WCond);
+          if WCond in S.Support.SupportedConditionProps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedConditionProps.Items.EndUpdate;
       end;
-    end;
-    TCond:= lstSupportedConditionProps.Items.Count;
 
-    //Display supported forecast summary properties
-    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-      if WFor in S.Support.SupportedForecastSummaryProps then begin
-        lstSupportedForecastSummaryProps.Items.Add(WeatherForecastPropToStr(WFor));
+      //Display supported forecast summary properties
+      lstSupportedForecastSummaryProps.Items.BeginUpdate;
+      try
+        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+          I:= lstSupportedForecastSummaryProps.Items.Add;
+          I.Caption:= WeatherForecastPropToStr(WFor);
+          if WFor in S.Support.SupportedForecastSummaryProps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedForecastSummaryProps.Items.EndUpdate;
       end;
-    end;
-    TForSum:= lstSupportedForecastSummaryProps.Items.Count;
 
-    //Display supported forecast hourly properties
-    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-      if WFor in S.Support.SupportedForecastHourlyProps then begin
-        lstSupportedForecastHourlyProps.Items.Add(WeatherForecastPropToStr(WFor));
+      //Display supported forecast hourly properties
+      lstSupportedForecastHourlyProps.Items.BeginUpdate;
+      try
+        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+          I:= lstSupportedForecastHourlyProps.Items.Add;
+          I.Caption:= WeatherForecastPropToStr(WFor);
+          if WFor in S.Support.SupportedForecastHourlyProps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedForecastHourlyProps.Items.EndUpdate;
       end;
-    end;
-    TForHour:= lstSupportedForecastHourlyProps.Items.Count;
 
-    //Display supported forecast daily properties
-    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-      if WFor in S.Support.SupportedForecastDailyProps then begin
-        lstSupportedForecastDailyProps.Items.Add(WeatherForecastPropToStr(WFor));
+      //Display supported forecast daily properties
+      lstSupportedForecastDailyProps.Items.BeginUpdate;
+      try
+        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+          I:= lstSupportedForecastDailyProps.Items.Add;
+          I.Caption:= WeatherForecastPropToStr(WFor);
+          if WFor in S.Support.SupportedForecastDailyProps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedForecastDailyProps.Items.EndUpdate;
       end;
-    end;
-    TForDay:= lstSupportedForecastDailyProps.Items.Count;
 
-    //Display supported alert types
-    for WAlt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
-      if WAlt in S.Support.SupportedAlerts then begin
-        lstSupportedAlertTypes.Items.Add(WeatherAlertTypeToStr(WAlt));
+      //Display supported alert types
+      lstSupportedAlertTypes.Items.BeginUpdate;
+      try
+        for WAlt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
+          I:= lstSupportedAlertTypes.Items.Add;
+          I.Caption:= WeatherAlertTypeToStr(WAlt);
+          if WAlt in S.Support.SupportedAlerts then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedAlertTypes.Items.EndUpdate;
       end;
-    end;
-    TAlert:= lstSupportedAlertTypes.Items.Count;
 
-    //Display supported alert properties
-    for WAlp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
-      if WAlp in S.Support.SupportedAlertProps then begin
-        lstSupportedAlertProps.Items.Add(WeatherAlertPropToStr(WAlp));
+      //Display supported alert properties
+      lstSupportedAlertProps.Items.BeginUpdate;
+      try
+        for WAlp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
+          I:= lstSupportedAlertProps.Items.Add;
+          I.Caption:= WeatherAlertPropToStr(WAlp);
+          if WAlp in S.Support.SupportedAlertProps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedAlertProps.Items.EndUpdate;
       end;
-    end;
-    TAlertProp:= lstSupportedAlertProps.Items.Count;
 
-    //Display supported map types
-    for WMap := Low(TWeatherMapType) to High(TWeatherMapType) do begin
-      if WMap in S.Support.SupportedMaps then begin
-        lstSupportedMaps.Items.Add(WeatherMapTypeToStr(WMap));
+      //Display supported map types
+      lstSupportedMaps.Items.BeginUpdate;
+      try
+        for WMap := Low(TWeatherMapType) to High(TWeatherMapType) do begin
+          I:= lstSupportedMaps.Items.Add;
+          I.Caption:= WeatherMapTypeToStr(WMap);
+          if WMap in S.Support.SupportedMaps then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedMaps.Items.EndUpdate;
       end;
-    end;
 
-    //Display supported map formats
-    for WMaf := Low(TWeatherMapFormat) to High(TWeatherMapFormat) do begin
-      if WMaf in S.Support.SupportedMapFormats then begin
-        lstSupportedMaps.Items.Add(WeatherMapFormatToStr(WMaf));
+      //Display supported map formats
+      lstSupportedMaps.Items.BeginUpdate;
+      try
+        for WMaf := Low(TWeatherMapFormat) to High(TWeatherMapFormat) do begin
+          I:= lstSupportedMaps.Items.Add;
+          I.Caption:= WeatherMapFormatToStr(WMaf);
+          if WMaf in S.Support.SupportedMapFormats then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedMaps.Items.EndUpdate;
       end;
-    end;
-    TMaps:= lstSupportedMaps.Items.Count;
 
-    //Display supported units of measurement
-    for WUni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
-      if WUni in S.Support.SupportedUnits then begin
-        lstSupportedUnits.Items.Add(WeatherUnitsToStr(WUni));
+      //Display supported units of measurement
+      lstSupportedUnits.Items.BeginUpdate;
+      try
+        for WUni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
+          I:= lstSupportedUnits.Items.Add;
+          I.Caption:= WeatherUnitsToStr(WUni);
+          if WUni in S.Support.SupportedUnits then begin
+            I.ImageIndex:= 1;
+          end else begin
+            I.ImageIndex:= 0;
+          end;
+        end;
+      finally
+        lstSupportedUnits.Items.EndUpdate;
       end;
+
+      //Get totals of each type of info
+      TInfo:= lstSupportedInfo.Items.Count;
+      TLoc:= lstSupportedLocationTypes.Items.Count;
+      TCond:= lstSupportedConditionProps.Items.Count;
+      TForSum:= lstSupportedForecastSummaryProps.Items.Count;
+      TForHour:= lstSupportedForecastHourlyProps.Items.Count;
+      TForDay:= lstSupportedForecastDailyProps.Items.Count;
+      TAlert:= lstSupportedAlertTypes.Items.Count;
+      TAlertProp:= lstSupportedAlertProps.Items.Count;
+      TMaps:= lstSupportedMaps.Items.Count;
+      TUnits:= lstSupportedUnits.Items.Count;
+
+      //Calculate percentage of support for each type of info
+      PInfo:= TInfo / (Integer(High(TWeatherInfoType))+1);
+      PLoc:= TLoc / (Integer(High(TJDWeatherLocationType))+1);
+      PCond:= TCond / (Integer(High(TWeatherConditionsProp))+1);
+      PAlert:= TAlert / (Integer(High(TWeatherAlertType))+1);
+      PAlertProp:= TAlertProp / (Integer(High(TWeatherAlertProp))+1);
+      PForSum:= TForSum / (Integer(High(TWeatherForecastProp))+1);
+      PForHour:= TForHour / (Integer(High(TWeatherForecastProp))+1);
+      PForDay:= TForDay / (Integer(High(TWeatherForecastProp))+1);
+      PMaps:= TMaps / ((Integer(High(TWeatherMapType))+1) + (Integer(High(TWeatherMapFormat))+1));
+      PUnits:= TUnits / (Integer(High(TWeatherUnits))+1);
+
+      //Display percentages of support for each type of info
+      {
+      I:= lstSupportedInfo.Items.Add;
+      I.Caption:= '-- Percent: '+FormatFloat('0.00%', PInfo*100);
+      I:= lstSupportedLocationTypes.Items.Add;
+      I.Caption:= '-- Percent: '+FormatFloat('0.00%', PLoc*100);
+      lstSupportedConditionProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PCond*100));
+      lstSupportedAlertTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlert*100));
+      lstSupportedAlertProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlertProp*100));
+      lstSupportedForecastSummaryProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForSum*100));
+      lstSupportedForecastHourlyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForHour*100));
+      lstSupportedForecastDailyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForDay*100));
+      lstSupportedMaps.Items.Add('-- Percent: '+FormatFloat('0.00%', PMaps*100));
+      lstSupportedUnits.Items.Add('-- Percent: '+FormatFloat('0.00%', PUnits*100));
+      }
+
+      //Calculate overall average of support percentage for selected service
+      TP:=(PInfo + PLoc + PCond + PAlert + PAlertProp + PForSum +
+        PForHour + PForDay + PMaps + PUnits) / 10;
+      Caption:= 'JD Weather DLL Test - '+S.Caption+' - '+FormatFloat('0.00%', TP*100);
+
+      //Display service company logo
+      WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
+
+    end else begin
+      Caption:= 'JD Weather DLL Test';
     end;
-    TUnits:= lstSupportedUnits.Items.Count;
 
-    //Calculate percentage of support for each type of info
-    PInfo:= TInfo / (Integer(High(TWeatherInfoType))+1);
-    PLoc:= TLoc / (Integer(High(TJDWeatherLocationType))+1);
-    PCond:= TCond / (Integer(High(TWeatherConditionsProp))+1);
-    PAlert:= TAlert / (Integer(High(TWeatherAlertType))+1);
-    PAlertProp:= TAlertProp / (Integer(High(TWeatherAlertProp))+1);
-    PForSum:= TForSum / (Integer(High(TWeatherForecastProp))+1);
-    PForHour:= TForHour / (Integer(High(TWeatherForecastProp))+1);
-    PForDay:= TForDay / (Integer(High(TWeatherForecastProp))+1);
-    PMaps:= TMaps / ((Integer(High(TWeatherMapType))+1) + (Integer(High(TWeatherMapFormat))+1));
-    PUnits:= TUnits / (Integer(High(TWeatherUnits))+1);
+    GP.Width:= GP.Width + 1;
 
-    //Display percentages of support for each type of info
-    lstSupportedInfo.Items.Add('-- Percent: '+FormatFloat('0.00%', PInfo*100));
-    lstSupportedLocationTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PLoc*100));
-    lstSupportedConditionProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PCond*100));
-    lstSupportedAlertTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlert*100));
-    lstSupportedAlertProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlertProp*100));
-    lstSupportedForecastSummaryProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForSum*100));
-    lstSupportedForecastHourlyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForHour*100));
-    lstSupportedForecastDailyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForDay*100));
-    lstSupportedMaps.Items.Add('-- Percent: '+FormatFloat('0.00%', PMaps*100));
-    lstSupportedUnits.Items.Add('-- Percent: '+FormatFloat('0.00%', PUnits*100));
-
-    //Calculate overall average of support percentage for selected service
-    TP:=(PInfo + PLoc + PCond + PAlert + PAlertProp + PForSum +
-      PForHour + PForDay + PMaps + PUnits) / 10;
-    Caption:= 'JD Weather DLL Test - '+S.Caption+' - '+FormatFloat('0.00%', TP*100);
-
-    //Display service company logo
-    WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
-
-  end else begin
-    Caption:= 'JD Weather DLL Test';
+  finally
+    Screen.Cursor:= crDefault;
   end;
 end;
 

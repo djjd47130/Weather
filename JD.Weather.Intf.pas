@@ -930,6 +930,33 @@ type
     }
   end;
 
+
+
+
+
+
+type
+  TJDWeather = class(TComponent)
+  private
+    FLib: HMODULE;
+    FCreateLib: TCreateJDWeather;
+    FWeather: IJDWeather;
+    FService: IWeatherService;
+    function GetWantedMaps: TWeatherMapTypes;
+    procedure SetWantedMaps(const Value: TWeatherMapTypes);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    function Active: Boolean;
+  published
+    property WantedMaps: TWeatherMapTypes read GetWantedMaps write SetWantedMaps;
+  end;
+
+
+
+
+
+
 {$IFDEF USE_VCL}
 function TempColor(const Temp: Single): TColor;
 {$ENDIF}
@@ -2244,6 +2271,73 @@ end;
 procedure TWeatherServiceBase.SetUnits(const Value: TWeatherUnits);
 begin
   FUnits:= Value;
+end;
+
+{ TJDWeather }
+
+constructor TJDWeather.Create(AOwner: TComponent);
+var
+  EC: Integer;
+begin
+  inherited;
+  FService:= nil;
+  try
+    FLib:= LoadLibrary('JDWeather.dll');
+    if FLib <> 0 then begin
+      FCreateLib:= GetProcAddress(FLib, 'CreateJDWeather');
+      if Assigned(FCreateLib) then begin
+        try
+          FWeather:= FCreateLib(ExtractFilePath(ParamStr(0)));
+          FWeather._AddRef;
+          //TODO: Select default service
+
+        except
+          on E: Exception do begin
+            raise Exception.Create('Failed to create new instance of "IJDWeather": '+E.Message);
+          end;
+        end;
+      end else begin
+        raise Exception.Create('Function "CreateJDWeather" not found!');
+      end;
+    end else begin
+      EC:= GetLastError;
+      raise Exception.Create('LoadLibrary failed with error code '+IntToStr(EC));
+    end;
+  except
+    on E: Exception do begin
+      raise Exception.Create('Failed to load JDWeather library: '+E.Message);
+    end;
+  end;
+end;
+
+destructor TJDWeather.Destroy;
+begin
+  FWeather._Release;
+  FWeather:= nil;
+  inherited;
+end;
+
+function TJDWeather.GetWantedMaps: TWeatherMapTypes;
+begin
+  if Assigned(FService) then begin
+    Result:= []; // FService.WantedMaps; //TODO
+  end else begin
+    Result:= [];
+  end;
+end;
+
+procedure TJDWeather.SetWantedMaps(const Value: TWeatherMapTypes);
+begin
+  if Assigned(FService) then begin
+    //FService.WantedMaps:= Value; //TODO
+  end else begin
+    //Cannot assign
+  end;
+end;
+
+function TJDWeather.Active: Boolean;
+begin
+  Result:= Assigned(FService);
 end;
 
 end.

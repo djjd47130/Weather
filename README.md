@@ -1,4 +1,4 @@
-# JD Weather Library
+﻿# JD Weather Library
 
 ### About
 
