@@ -82,3 +82,13 @@ The test application is not actually utilizing the service APIs themselves, but 
 3. Logo to represent the selected service.
 4. All the properties which are supported for different info types.
 
+### Future Plans
+
+In the end, this entire system will be encapsulated inside a single component which can be installed into the Delphi IDE. It provides a multi-threaded environment which in turn automatically fetches weather data on a schedule.
+
+Another major idea is to merge multiple weather data sources into one, averaging out each data point. This helps accomplish the following:
+
+1. More realistic weather data based on averages.
+2. Fill in pieces of weather data which are only supported by certain services.
+
+
