@@ -226,6 +226,16 @@ var
     end;
   end;
 begin
+  TInfo:= 0;
+  TCond:= 0;
+  TLoc:= 0;
+  TAlert:= 0;
+  TAlertProp:= 0;
+  TForSum:= 0;
+  TForHour:= 0;
+  TForDay:= 0;
+  TMaps:= 0;
+  TUnits:= 0;
   Screen.Cursor:= crHourglass;
   try
     ClearInfo;
@@ -246,6 +256,7 @@ begin
           I:= lstSupportedInfo.Items.Add;
           I.Caption:= WeatherInfoTypeToStr(WInfo);
           if WInfo in S.Support.SupportedInfo then begin
+            Inc(TInfo);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -262,6 +273,7 @@ begin
           I:= lstSupportedLocationTypes.Items.Add;
           I.Caption:= WeatherLocationTypeToStr(WLoc);
           if WLoc in S.Support.SupportedLocations then begin
+            Inc(TLoc);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -278,6 +290,7 @@ begin
           I:= lstSupportedConditionProps.Items.Add;
           I.Caption:= WeatherConditionPropToStr(WCond);
           if WCond in S.Support.SupportedConditionProps then begin
+            Inc(TCond);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -294,6 +307,7 @@ begin
           I:= lstSupportedForecastSummaryProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastSummaryProps then begin
+            Inc(TForSum);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -310,6 +324,7 @@ begin
           I:= lstSupportedForecastHourlyProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastHourlyProps then begin
+            Inc(TForHour);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -326,6 +341,7 @@ begin
           I:= lstSupportedForecastDailyProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastDailyProps then begin
+            Inc(TForDay);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -342,6 +358,7 @@ begin
           I:= lstSupportedAlertTypes.Items.Add;
           I.Caption:= WeatherAlertTypeToStr(WAlt);
           if WAlt in S.Support.SupportedAlerts then begin
+            Inc(TAlert);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -358,6 +375,7 @@ begin
           I:= lstSupportedAlertProps.Items.Add;
           I.Caption:= WeatherAlertPropToStr(WAlp);
           if WAlp in S.Support.SupportedAlertProps then begin
+            Inc(TAlertProp);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -374,6 +392,7 @@ begin
           I:= lstSupportedMaps.Items.Add;
           I.Caption:= WeatherMapTypeToStr(WMap);
           if WMap in S.Support.SupportedMaps then begin
+            Inc(TMaps);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -390,6 +409,7 @@ begin
           I:= lstSupportedMaps.Items.Add;
           I.Caption:= WeatherMapFormatToStr(WMaf);
           if WMaf in S.Support.SupportedMapFormats then begin
+            Inc(TMaps);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -406,6 +426,7 @@ begin
           I:= lstSupportedUnits.Items.Add;
           I.Caption:= WeatherUnitsToStr(WUni);
           if WUni in S.Support.SupportedUnits then begin
+            Inc(TUnits);
             I.ImageIndex:= 1;
           end else begin
             I.ImageIndex:= 0;
@@ -414,18 +435,6 @@ begin
       finally
         lstSupportedUnits.Items.EndUpdate;
       end;
-
-      //Get totals of each type of info
-      TInfo:= lstSupportedInfo.Items.Count;
-      TLoc:= lstSupportedLocationTypes.Items.Count;
-      TCond:= lstSupportedConditionProps.Items.Count;
-      TForSum:= lstSupportedForecastSummaryProps.Items.Count;
-      TForHour:= lstSupportedForecastHourlyProps.Items.Count;
-      TForDay:= lstSupportedForecastDailyProps.Items.Count;
-      TAlert:= lstSupportedAlertTypes.Items.Count;
-      TAlertProp:= lstSupportedAlertProps.Items.Count;
-      TMaps:= lstSupportedMaps.Items.Count;
-      TUnits:= lstSupportedUnits.Items.Count;
 
       //Calculate percentage of support for each type of info
       PInfo:= TInfo / (Integer(High(TWeatherInfoType))+1);

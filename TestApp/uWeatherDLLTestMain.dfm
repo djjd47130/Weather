@@ -36,7 +36,7 @@ object frmMain: TfrmMain
       Align = alLeft
       BevelOuter = bvNone
       BorderStyle = bsNone
-      Color = 16445163
+      Color = clWhite
       Columns = <
         item
           AutoSize = True
@@ -67,7 +67,7 @@ object frmMain: TfrmMain
       Align = alLeft
       BevelOuter = bvNone
       BorderStyle = bsNone
-      Color = 16445163
+      Color = clWhite
       Columns = <
         item
           Caption = 'Purpose'
@@ -219,6 +219,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -250,6 +251,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -283,6 +285,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -315,6 +318,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -347,6 +351,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -380,6 +385,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -413,6 +419,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -446,6 +453,7 @@ object frmMain: TfrmMain
         Width = 172
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -479,6 +487,7 @@ object frmMain: TfrmMain
         Width = 175
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
@@ -510,6 +519,7 @@ object frmMain: TfrmMain
         Width = 175
         Height = 86
         Align = alTop
+        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True
