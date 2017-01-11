@@ -24,13 +24,16 @@ The code and resources in this repository are in no way guaranteed. The author(s
 3. [OpenWeatherMap](Readme/OpenWeatherMap.md)
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
+6. National Weather Service was removed because it only supported raw station data.
+7. NOAA was removed because it only supported raw station data.
 
 ### How to Create Instance
 
-1. Create implementation objects for all interfaces found in `JD.Weather.Intf.pas`.
+1. Implement objects for all interfaces found in `JD.Weather.Intf.pas`.
   1. This unit is shared across boundaries, and contains all common types, classes, interfaces, and functions required.
-  2. You can use the objects as already found in the same unit, as well as what's found in each DLL.
-  3. You can also write a DLL using any programming language, such as C# or C++.
+  2. For use of existing supported services, use or convert the unit in your project.
+  3. For use of newly supported service, copy or convert the source of one of the existing services.
+  4. You can also write a DLL using any programming language, such as C# or C++.
 2. Load the library `JDWeather.dll` and get the proc address for `CreateJDWeather`.
   1. There is a procedure type already defined in the interface unit, called `TCreateJDWeather`.
 3. Call the function `CreateJDWeather` to obtain a new instance of a `IJDWeather` interface.
