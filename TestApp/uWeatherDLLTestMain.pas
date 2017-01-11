@@ -200,6 +200,9 @@ end;
 procedure TfrmMain.lstServicesSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 //Display all supported pieces of selected service
+const
+  IMG_CHECK = 1;
+  IMG_UNCHECK = -1;
 var
   S: IWeatherService;
   TInfo, TCond, TLoc, TAlert, TAlertProp, TForSum, TForHour, TForDay, TMaps, TUnits: Integer;
@@ -257,9 +260,9 @@ begin
           I.Caption:= WeatherInfoTypeToStr(WInfo);
           if WInfo in S.Support.SupportedInfo then begin
             Inc(TInfo);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -274,9 +277,9 @@ begin
           I.Caption:= WeatherLocationTypeToStr(WLoc);
           if WLoc in S.Support.SupportedLocations then begin
             Inc(TLoc);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -291,9 +294,9 @@ begin
           I.Caption:= WeatherConditionPropToStr(WCond);
           if WCond in S.Support.SupportedConditionProps then begin
             Inc(TCond);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -308,9 +311,9 @@ begin
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastSummaryProps then begin
             Inc(TForSum);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -325,9 +328,9 @@ begin
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastHourlyProps then begin
             Inc(TForHour);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -342,9 +345,9 @@ begin
           I.Caption:= WeatherForecastPropToStr(WFor);
           if WFor in S.Support.SupportedForecastDailyProps then begin
             Inc(TForDay);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -359,9 +362,9 @@ begin
           I.Caption:= WeatherAlertTypeToStr(WAlt);
           if WAlt in S.Support.SupportedAlerts then begin
             Inc(TAlert);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -376,9 +379,9 @@ begin
           I.Caption:= WeatherAlertPropToStr(WAlp);
           if WAlp in S.Support.SupportedAlertProps then begin
             Inc(TAlertProp);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -393,9 +396,9 @@ begin
           I.Caption:= WeatherMapTypeToStr(WMap);
           if WMap in S.Support.SupportedMaps then begin
             Inc(TMaps);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -410,9 +413,9 @@ begin
           I.Caption:= WeatherMapFormatToStr(WMaf);
           if WMaf in S.Support.SupportedMapFormats then begin
             Inc(TMaps);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
@@ -427,9 +430,9 @@ begin
           I.Caption:= WeatherUnitsToStr(WUni);
           if WUni in S.Support.SupportedUnits then begin
             Inc(TUnits);
-            I.ImageIndex:= 1;
+            I.ImageIndex:= IMG_CHECK;
           end else begin
-            I.ImageIndex:= 0;
+            I.ImageIndex:= IMG_UNCHECK;
           end;
         end;
       finally
