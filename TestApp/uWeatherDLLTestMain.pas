@@ -83,6 +83,7 @@ begin
   imgLogo.Align:= alClient;
   lstURLs.Align:= alClient;
   lstServices.Width:= lstServices.Width + 1;
+
   lstSupportedInfo.Align:= alClient;
   lstSupportedLocationTypes.Align:= alClient;
   lstSupportedConditionProps.Align:= alClient;
@@ -94,6 +95,7 @@ begin
   lstSupportedMaps.Align:= alClient;
   lstSupportedUnits.Align:= alClient;
 
+  //Load weather library
   FLib:= LoadLibrary('JDWeather.dll');
   if FLib <> 0 then begin
     FCreateLib:= GetProcAddress(FLib, 'CreateJDWeather');
@@ -127,6 +129,7 @@ var
   S: IWeatherService;
   I: TListItem;
 begin
+  //Displays a list of supported services
   lstServices.Items.Clear;
   for X := 0 to FWeather.Services.Count-1 do begin
     S:= FWeather.Services.Items[X];
@@ -136,12 +139,12 @@ begin
   end;
 end;
 
-procedure TfrmMain.WeatherImageToPicture(const G: IWeatherGraphic;
-  const P: TPicture);
+procedure TfrmMain.WeatherImageToPicture(const G: IWeatherGraphic; const P: TPicture);
 var
   S: TStringStream;
   I: TWicImage;
 begin
+  //Converts an `IWeatherGraphic` interface to a `TPicture`
   S:= TStringStream.Create;
   try
     S.WriteString(G.Base64);
@@ -160,6 +163,7 @@ end;
 
 procedure TfrmMain.ClearInfo;
 begin
+  //Clear all service information
   lstURLs.Items.Clear;
   lstSupportedInfo.Items.Clear;
   lstSupportedLocationTypes.Items.Clear;
@@ -174,13 +178,34 @@ begin
   imgLogo.Picture.Assign(nil);
 end;
 
+procedure TfrmMain.lstURLsClick(Sender: TObject);
+var
+  U: String;
+begin
+  //Launch url in browser
+  if lstURLs.ItemIndex >= 0 then begin
+    U:= lstURLs.Selected.SubItems[0];
+    ShellExecute(0, 'open', PChar(U), nil, nil, SW_SHOWNORMAL);
+  end;
+end;
+
 procedure TfrmMain.lstServicesSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
+//Display all supported pieces of selected service
 var
   S: IWeatherService;
   TInfo, TCond, TLoc, TAlert, TAlertProp, TForSum, TForHour, TForDay, TMaps, TUnits: Integer;
   PInfo, PCond, PLoc, PAlert, PAlertProp, PForSum, PForHour, PForDay, PMaps, PUnits: Single;
   TP: Single;
+  WInfo: TWeatherInfoType;
+  WLoc: TJDWeatherLocationType;
+  WCond: TWeatherConditionsProp;
+  WFor: TWeatherForecastProp;
+  WAlt: TWeatherAlertType;
+  WAlp: TWeatherAlertProp;
+  WMap: TWeatherMapType;
+  WMaf: TWeatherMapFormat;
+  WUni: TWeatherUnits;
   procedure ChkUrl(const N, V: String);
   var
     I: TListItem;
@@ -191,282 +216,106 @@ var
       I.SubItems.Add(V);
     end;
   end;
-  procedure ChkInfo(const I: TWeatherInfoType; const Str: String);
-  begin
-    if I in S.Support.SupportedInfo then begin
-      lstSupportedInfo.Items.Add(Str);
-    end;
-  end;
-  procedure ChkLoc(const L: TJDWeatherLocationType; const Str: String);
-  begin
-    if L in S.Support.SupportedLocations then begin
-      lstSupportedLocationTypes.Items.Add(Str);
-    end;
-  end;
-  procedure ChkCon(const P: TWeatherConditionsProp; const Str: String);
-  begin
-    if P in S.Support.SupportedConditionProps then begin
-      lstSupportedConditionProps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkForSum(const P: TWeatherForecastProp; const Str: String);
-  begin
-    if P in S.Support.SupportedForecastSummaryProps then begin
-      lstSupportedForecastSummaryProps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkForHou(const P: TWeatherForecastProp; const Str: String);
-  begin
-    if P in S.Support.SupportedForecastHourlyProps then begin
-      lstSupportedForecastHourlyProps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkForDay(const P: TWeatherForecastProp; const Str: String);
-  begin
-    if P in S.Support.SupportedForecastDailyProps then begin
-      lstSupportedForecastDailyProps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkAltTyp(const P: TWeatherAlertType; const Str: String);
-  begin
-    if P in S.Support.SupportedAlerts then begin
-      lstSupportedAlertTypes.Items.Add(Str);
-    end;
-  end;
-  procedure ChkAltPro(const P: TWeatherAlertProp; const Str: String);
-  begin
-    if P in S.Support.SupportedAlertProps then begin
-      lstSupportedAlertProps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkMap(const M: TWeatherMapType; const Str: String);
-  begin
-    if M in S.Support.SupportedMaps then begin
-      lstSupportedMaps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkMapFor(const F: TWeatherMapFormat; const Str: String);
-  begin
-    if F in S.Support.SupportedMapFormats then begin
-      lstSupportedMaps.Items.Add(Str);
-    end;
-  end;
-  procedure ChkUni(const U: TWeatherUnits; const Str: String);
-  begin
-    if U in S.Support.SupportedUnits then begin
-      lstSupportedUnits.Items.Add(Str);
-    end;
-  end;
 begin
   ClearInfo;
   if Selected then begin
     S:= IWeatherService(Item.Data);
 
+    //Display URLs for Service
     ChkUrl('Website', S.URLs.MainURL);
     ChkUrl('API Docs', S.URLs.ApiURL);
     ChkUrl('Register', S.URLs.RegisterURL);
     ChkUrl('Login', S.URLs.LoginURL);
     ChkUrl('Legal', S.URLs.LegalURL);
 
-    ChkInfo(wiConditions, 'Conditions');
-    ChkInfo(wiAlerts, 'Alerts');
-    ChkInfo(wiForecastSummary, 'Forecast Summary');
-    ChkInfo(wiForecastHourly, 'Forecast Hourly');
-    ChkInfo(wiForecastDaily, 'Forecast Daily');
-    ChkInfo(wiMaps, 'Maps');
-    ChkInfo(wiAlmanac, 'Almanac');
-    ChkInfo(wiAstronomy, 'Astronomy');
-    ChkInfo(wiHurricane, 'Hurricane');
-    ChkInfo(wiHistory, 'History');
-    ChkInfo(wiPlanner, 'Planner');
-    ChkInfo(wiStation, 'Station');
+    //Show supported information types
+    for WInfo := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
+      if WInfo in S.Support.SupportedInfo then begin
+        lstSupportedInfo.Items.Add(WeatherInfoTypeToStr(WInfo));
+      end;
+    end;
     TInfo:= lstSupportedInfo.Items.Count;
 
-    ChkLoc(TJDWeatherLocationType.wlZip, 'Zip Code');
-    ChkLoc(TJDWeatherLocationType.wlCityState, 'City and state');
-    ChkLoc(TJDWeatherLocationType.wlCoords, 'Geographical Coordinates');
-    ChkLoc(TJDWeatherLocationType.wlAutoIP, 'IP Address');
-    ChkLoc(TJDWeatherLocationType.wlCityCode, 'City Code');
-    ChkLoc(TJDWeatherLocationType.wlCountryCity, 'Country and City');
-    ChkLoc(TJDWeatherLocationType.wlAirportCode, 'Airport Code');
-    ChkLoc(TJDWeatherLocationType.wlPWS, 'PWS');
+    //Show supported location lookup types
+    for WLoc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
+      if WLoc in S.Support.SupportedLocations then begin
+        lstSupportedLocationTypes.Items.Add(WeatherLocationTypeToStr(WLoc));
+      end;
+    end;
     TLoc:= lstSupportedLocationTypes.Items.Count;
 
-    ChkCon(TWeatherConditionsProp.cpPressureMB, 'Pressure MB');
-    ChkCon(TWeatherConditionsProp.cpPressureIn, 'Pressure inHg');
-    ChkCon(TWeatherConditionsProp.cpWindDir, 'Wind Direction');
-    ChkCon(TWeatherConditionsProp.cpWindSpeed, 'Wind Speed');
-    ChkCon(TWeatherConditionsProp.cpHumidity, 'Humidity');
-    ChkCon(TWeatherConditionsProp.cpVisibility, 'Visibility');
-    ChkCon(TWeatherConditionsProp.cpDewPoint, 'Dew Point');
-    ChkCon(TWeatherConditionsProp.cpHeatIndex, 'Heat Index');
-    ChkCon(TWeatherConditionsProp.cpWindGust, 'Wind Gusts');
-    ChkCon(TWeatherConditionsProp.cpWindChill, 'Wind Chill');
-    ChkCon(TWeatherConditionsProp.cpFeelsLike, 'Feels Like Temp');
-    ChkCon(TWeatherConditionsProp.cpSolarRad, 'Solar Radiation');
-    ChkCon(TWeatherConditionsProp.cpUV, 'UV Index');
-    ChkCon(TWeatherConditionsProp.cpTemp, 'Temperature');
-    ChkCon(TWeatherConditionsProp.cpTempMin, 'Min Temp');
-    ChkCon(TWeatherConditionsProp.cpTempMax, 'Max Temp');
-    ChkCon(TWeatherConditionsProp.cpPrecip, 'Precipitation Amount');
-    ChkCon(TWeatherConditionsProp.cpIcon, 'Weather Condition Icon');
-    ChkCon(TWeatherConditionsProp.cpCaption, 'Caption');
-    ChkCon(TWeatherConditionsProp.cpDescription, 'Description');
-    ChkCon(TWeatherConditionsProp.cpStation, 'Station');
-    ChkCon(TWeatherConditionsProp.cpClouds, 'Cloud Cover');
-    ChkCon(TWeatherConditionsProp.cpRain, 'Rain Amount');
-    ChkCon(TWeatherConditionsProp.cpSnow, 'Snow Amount');
-    ChkCon(TWeatherConditionsProp.cpSunrise, 'Sunrise');
-    ChkCon(TWeatherConditionsProp.cpSunset, 'Sunset');
+    //Show supported condition properties
+    for WCond := Low(TWeatherConditionsProp) to High(TWeatherConditionsProp) do begin
+      if WCond in S.Support.SupportedConditionProps then begin
+        lstSupportedConditionProps.Items.Add(WeatherConditionPropToStr(WCond));
+      end;
+    end;
     TCond:= lstSupportedConditionProps.Items.Count;
 
-    ChkForSum(TWeatherForecastProp.fpPressureMB, 'Pressure MB');
-    ChkForSum(TWeatherForecastProp.fpPressureIn, 'Pressure inHg');
-    ChkForSum(TWeatherForecastProp.fpWindDir, 'Wind Direction');
-    ChkForSum(TWeatherForecastProp.fpWindSpeed, 'Wind Speed');
-    ChkForSum(TWeatherForecastProp.fpHumidity, 'Humidity');
-    ChkForSum(TWeatherForecastProp.fpVisibility, 'Visibility');
-    ChkForSum(TWeatherForecastProp.fpDewPoint, 'Dew Point');
-    ChkForSum(TWeatherForecastProp.fpHeatIndex, 'Heat Index');
-    ChkForSum(TWeatherForecastProp.fpWindGust, 'Wind Gusts');
-    ChkForSum(TWeatherForecastProp.fpWindChill, 'Wind Chill');
-    ChkForSum(TWeatherForecastProp.fpFeelsLike, 'Feels Like');
-    ChkForSum(TWeatherForecastProp.fpSolarRad, 'Solar Radiation');
-    ChkForSum(TWeatherForecastProp.fpUV, 'UV Index');
-    ChkForSum(TWeatherForecastProp.fpTemp, 'Temperature');
-    ChkForSum(TWeatherForecastProp.fpTempMin, 'Temp Min');
-    ChkForSum(TWeatherForecastProp.fpTempMax, 'Temp Max');
-    ChkForSum(TWeatherForecastProp.fpCaption, 'Caption');
-    ChkForSum(TWeatherForecastProp.fpDescription, 'Description');
-    ChkForSum(TWeatherForecastProp.fpIcon, 'Condition Icon');
-    ChkForSum(TWeatherForecastProp.fpGroundPressure, 'Ground Pressure');
-    ChkForSum(TWeatherForecastProp.fpSeaPressure, 'Sea Pressure');
-    ChkForSum(TWeatherForecastProp.fpPrecip, 'Precipitation Amount');
-    ChkForSum(TWeatherForecastProp.fpURL, 'Website URL');
-    ChkForSum(TWeatherForecastProp.fpDaylight, 'Daylight Amount');
-    ChkForSum(TWeatherForecastProp.fpSnow, 'Snow Amount');
-    ChkForSum(TWeatherForecastProp.fpSleet, 'Sleet Amount');
-    ChkForSum(TWeatherForecastProp.fpPrecipChance, 'Chance of Precipitation');
-    ChkForSum(TWeatherForecastProp.fpClouds, 'Cloud Cover');
-    ChkForSum(TWeatherForecastProp.fpRain, 'Rain Amount');
+    //Display supported forecast summary properties
+    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      if WFor in S.Support.SupportedForecastSummaryProps then begin
+        lstSupportedForecastSummaryProps.Items.Add(WeatherForecastPropToStr(WFor));
+      end;
+    end;
     TForSum:= lstSupportedForecastSummaryProps.Items.Count;
 
-    ChkForHou(TWeatherForecastProp.fpPressureMB, 'Pressure MB');
-    ChkForHou(TWeatherForecastProp.fpPressureIn, 'Pressure inHg');
-    ChkForHou(TWeatherForecastProp.fpWindDir, 'Wind Direction');
-    ChkForHou(TWeatherForecastProp.fpWindSpeed, 'Wind Speed');
-    ChkForHou(TWeatherForecastProp.fpHumidity, 'Humidity');
-    ChkForHou(TWeatherForecastProp.fpVisibility, 'Visibility');
-    ChkForHou(TWeatherForecastProp.fpDewPoint, 'Dew Point');
-    ChkForHou(TWeatherForecastProp.fpHeatIndex, 'Heat Index');
-    ChkForHou(TWeatherForecastProp.fpWindGust, 'Wind Gusts');
-    ChkForHou(TWeatherForecastProp.fpWindChill, 'Wind Chill');
-    ChkForHou(TWeatherForecastProp.fpFeelsLike, 'Feels Like');
-    ChkForHou(TWeatherForecastProp.fpSolarRad, 'Solar Radiation');
-    ChkForHou(TWeatherForecastProp.fpUV, 'UV Index');
-    ChkForHou(TWeatherForecastProp.fpTemp, 'Temperature');
-    ChkForHou(TWeatherForecastProp.fpTempMin, 'Temp Min');
-    ChkForHou(TWeatherForecastProp.fpTempMax, 'Temp Max');
-    ChkForHou(TWeatherForecastProp.fpCaption, 'Caption');
-    ChkForHou(TWeatherForecastProp.fpDescription, 'Description');
-    ChkForHou(TWeatherForecastProp.fpIcon, 'Condition Icon');
-    ChkForHou(TWeatherForecastProp.fpGroundPressure, 'Ground Pressure');
-    ChkForHou(TWeatherForecastProp.fpSeaPressure, 'Sea Pressure');
-    ChkForHou(TWeatherForecastProp.fpPrecip, 'Precipitation Amount');
-    ChkForHou(TWeatherForecastProp.fpURL, 'Website URL');
-    ChkForHou(TWeatherForecastProp.fpDaylight, 'Daylight Amount');
-    ChkForHou(TWeatherForecastProp.fpSnow, 'Snow Amount');
-    ChkForHou(TWeatherForecastProp.fpSleet, 'Sleet Amount');
-    ChkForHou(TWeatherForecastProp.fpPrecipChance, 'Chance of Precipitation');
-    ChkForHou(TWeatherForecastProp.fpClouds, 'Cloud Cover');
-    ChkForHou(TWeatherForecastProp.fpRain, 'Rain Amount');
+    //Display supported forecast hourly properties
+    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      if WFor in S.Support.SupportedForecastHourlyProps then begin
+        lstSupportedForecastHourlyProps.Items.Add(WeatherForecastPropToStr(WFor));
+      end;
+    end;
     TForHour:= lstSupportedForecastHourlyProps.Items.Count;
 
-    ChkForDay(TWeatherForecastProp.fpPressureMB, 'Pressure MB');
-    ChkForDay(TWeatherForecastProp.fpPressureIn, 'Pressure inHg');
-    ChkForDay(TWeatherForecastProp.fpWindDir, 'Wind Direction');
-    ChkForDay(TWeatherForecastProp.fpWindSpeed, 'Wind Speed');
-    ChkForDay(TWeatherForecastProp.fpHumidity, 'Humidity');
-    ChkForDay(TWeatherForecastProp.fpVisibility, 'Visibility');
-    ChkForDay(TWeatherForecastProp.fpDewPoint, 'Dew Point');
-    ChkForDay(TWeatherForecastProp.fpHeatIndex, 'Heat Index');
-    ChkForDay(TWeatherForecastProp.fpWindGust, 'Wind Gusts');
-    ChkForDay(TWeatherForecastProp.fpWindChill, 'Wind Chill');
-    ChkForDay(TWeatherForecastProp.fpFeelsLike, 'Feels Like');
-    ChkForDay(TWeatherForecastProp.fpSolarRad, 'Solar Radiation');
-    ChkForDay(TWeatherForecastProp.fpUV, 'UV Index');
-    ChkForDay(TWeatherForecastProp.fpTemp, 'Temperature');
-    ChkForDay(TWeatherForecastProp.fpTempMin, 'Temp Min');
-    ChkForDay(TWeatherForecastProp.fpTempMax, 'Temp Max');
-    ChkForDay(TWeatherForecastProp.fpCaption, 'Caption');
-    ChkForDay(TWeatherForecastProp.fpDescription, 'Description');
-    ChkForDay(TWeatherForecastProp.fpIcon, 'Condition Icon');
-    ChkForDay(TWeatherForecastProp.fpGroundPressure, 'Ground Pressure');
-    ChkForDay(TWeatherForecastProp.fpSeaPressure, 'Sea Pressure');
-    ChkForDay(TWeatherForecastProp.fpPrecip, 'Precipitation Amount');
-    ChkForDay(TWeatherForecastProp.fpURL, 'Website URL');
-    ChkForDay(TWeatherForecastProp.fpDaylight, 'Daylight Amount');
-    ChkForDay(TWeatherForecastProp.fpSnow, 'Snow Amount');
-    ChkForDay(TWeatherForecastProp.fpSleet, 'Sleet Amount');
-    ChkForDay(TWeatherForecastProp.fpPrecipChance, 'Chance of Precipitation');
-    ChkForDay(TWeatherForecastProp.fpClouds, 'Cloud Cover');
-    ChkForDay(TWeatherForecastProp.fpRain, 'Rain Amount');
+    //Display supported forecast daily properties
+    for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      if WFor in S.Support.SupportedForecastDailyProps then begin
+        lstSupportedForecastDailyProps.Items.Add(WeatherForecastPropToStr(WFor));
+      end;
+    end;
     TForDay:= lstSupportedForecastDailyProps.Items.Count;
 
-    ChkAltTyp(TWeatherAlertType.waHurricaneStat, 'Hurricane Status');
-    ChkAltTyp(TWeatherAlertType.waTornadoWarn, 'Tornado Warning');
-    ChkAltTyp(TWeatherAlertType.waTornadoWatch, 'Tornado Watch');
-    ChkAltTyp(TWeatherAlertType.waSevThundWarn, 'Severe Thunderstorm Warning');
-    ChkAltTyp(TWeatherAlertType.waSevThundWatch, 'Severe Thunderstorm Watch');
-    ChkAltTyp(TWeatherAlertType.waWinterAdv, 'Winter Weather Advisory');
-    ChkAltTyp(TWeatherAlertType.waFloodWarn, 'Flood Warning');
-    ChkAltTyp(TWeatherAlertType.waFloodWatch, 'Flood Watch');
-    ChkAltTyp(TWeatherAlertType.waHighWind, 'High Wind Advisory');
-    ChkAltTyp(TWeatherAlertType.waSevStat, 'Severe Weather Status');
-    ChkAltTyp(TWeatherAlertType.waHeatAdv, 'Heat Advisory');
-    ChkAltTyp(TWeatherAlertType.waFogAdv, 'Fog Advisory');
-    ChkAltTyp(TWeatherAlertType.waSpecialStat, 'Special Weather Statement');
-    ChkAltTyp(TWeatherAlertType.waFireAdv, 'Fire Advisory');
-    ChkAltTyp(TWeatherAlertType.waVolcanicStat, 'Volcanic Status');
-    ChkAltTyp(TWeatherAlertType.waHurricaneWarn, 'Hurricane Warning');
-    ChkAltTyp(TWeatherAlertType.waRecordSet, 'Record Set');
-    ChkAltTyp(TWeatherAlertType.waPublicRec, 'Public Record');
-    ChkAltTyp(TWeatherAlertType.waPublicStat, 'Public Status');
+    //Display supported alert types
+    for WAlt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
+      if WAlt in S.Support.SupportedAlerts then begin
+        lstSupportedAlertTypes.Items.Add(WeatherAlertTypeToStr(WAlt));
+      end;
+    end;
     TAlert:= lstSupportedAlertTypes.Items.Count;
 
-    ChkAltPro(TWeatherAlertProp.apZones, 'Alerted Zones');
-    ChkAltPro(TWeatherAlertProp.apVerticies, 'Storm Verticies');
-    ChkAltPro(TWeatherAlertProp.apStorm, 'Storm Information');
-    ChkAltPro(TWeatherAlertProp.apType, 'Alert Type');
-    ChkAltPro(TWeatherAlertProp.apDescription, 'Description');
-    ChkAltPro(TWeatherAlertProp.apExpires, 'Expiration Time');
-    ChkAltPro(TWeatherAlertProp.apMessage, 'Alert Message');
-    ChkAltPro(TWeatherAlertProp.apPhenomena, 'Phenomena');
-    ChkAltPro(TWeatherAlertProp.apSignificance, 'Significance');
+    //Display supported alert properties
+    for WAlp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
+      if WAlp in S.Support.SupportedAlertProps then begin
+        lstSupportedAlertProps.Items.Add(WeatherAlertPropToStr(WAlp));
+      end;
+    end;
     TAlertProp:= lstSupportedAlertProps.Items.Count;
 
-    ChkMap(TWeatherMapType.mpSatellite, 'Satellite');
-    ChkMap(TWeatherMapType.mpRadar, 'Radar');
-    ChkMap(TWeatherMapType.mpSatelliteRadar, 'Satellite and Radar');
-    ChkMap(TWeatherMapType.mpAniSatellite, 'Animated Satellite');
-    ChkMap(TWeatherMapType.mpAniRadar, 'Animated Radar');
-    ChkMap(TWeatherMapType.mpAniSatelliteRadar, 'Animated Satellite and Radar');
+    //Display supported map types
+    for WMap := Low(TWeatherMapType) to High(TWeatherMapType) do begin
+      if WMap in S.Support.SupportedMaps then begin
+        lstSupportedMaps.Items.Add(WeatherMapTypeToStr(WMap));
+      end;
+    end;
 
-    ChkMapFor(TWeatherMapFormat.wfJpg, 'Jpg Format');
-    ChkMapFor(TWeatherMapFormat.wfPng, 'Png Format');
-    ChkMapFor(TWeatherMapFormat.wfGif, 'Gif Format');
-    ChkMapFor(TWeatherMapFormat.wfTiff, 'Tiff Format');
-    ChkMapFor(TWeatherMapFormat.wfBmp, 'Bmp Format');
-    ChkMapFor(TWeatherMapFormat.wfFlash, 'Flash Format');
-    ChkMapFor(TWeatherMapFormat.wfHtml, 'Html Format');
+    //Display supported map formats
+    for WMaf := Low(TWeatherMapFormat) to High(TWeatherMapFormat) do begin
+      if WMaf in S.Support.SupportedMapFormats then begin
+        lstSupportedMaps.Items.Add(WeatherMapFormatToStr(WMaf));
+      end;
+    end;
     TMaps:= lstSupportedMaps.Items.Count;
 
-    ChkUni(TWeatherUnits.wuKelvin, 'Kelvin');
-    ChkUni(TWeatherUnits.wuImperial, 'Imperial');
-    ChkUni(TWeatherUnits.wuMetric, 'Metric');
+    //Display supported units of measurement
+    for WUni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
+      if WUni in S.Support.SupportedUnits then begin
+        lstSupportedUnits.Items.Add(WeatherUnitsToStr(WUni));
+      end;
+    end;
     TUnits:= lstSupportedUnits.Items.Count;
 
-
+    //Calculate percentage of support for each type of info
     PInfo:= TInfo / (Integer(High(TWeatherInfoType))+1);
     PLoc:= TLoc / (Integer(High(TJDWeatherLocationType))+1);
     PCond:= TCond / (Integer(High(TWeatherConditionsProp))+1);
@@ -475,37 +324,31 @@ begin
     PForSum:= TForSum / (Integer(High(TWeatherForecastProp))+1);
     PForHour:= TForHour / (Integer(High(TWeatherForecastProp))+1);
     PForDay:= TForDay / (Integer(High(TWeatherForecastProp))+1);
-    PMaps:= TMaps / (Integer(High(TWeatherMapType))+1);
+    PMaps:= TMaps / ((Integer(High(TWeatherMapType))+1) + (Integer(High(TWeatherMapFormat))+1));
     PUnits:= TUnits / (Integer(High(TWeatherUnits))+1);
 
-    lstSupportedInfo.Items.Add('-Percent: '+FormatFloat('0.00%', PInfo*100));
-    lstSupportedLocationTypes.Items.Add('-Percent: '+FormatFloat('0.00%', PLoc*100));
-    lstSupportedConditionProps.Items.Add('-Percent: '+FormatFloat('0.00%', PCond*100));
-    lstSupportedAlertTypes.Items.Add('-Percent: '+FormatFloat('0.00%', PAlert*100));
-    lstSupportedAlertProps.Items.Add('-Percent: '+FormatFloat('0.00%', PAlertProp*100));
-    lstSupportedForecastSummaryProps.Items.Add('-Percent: '+FormatFloat('0.00%', PForSum*100));
-    lstSupportedForecastHourlyProps.Items.Add('-Percent: '+FormatFloat('0.00%', PForHour*100));
-    lstSupportedForecastDailyProps.Items.Add('-Percent: '+FormatFloat('0.00%', PForDay*100));
-    lstSupportedMaps.Items.Add('-Percent: '+FormatFloat('0.00%', PMaps*100));
-    lstSupportedUnits.Items.Add('-Percent: '+FormatFloat('0.00%', PUnits*100));
+    //Display percentages of support for each type of info
+    lstSupportedInfo.Items.Add('-- Percent: '+FormatFloat('0.00%', PInfo*100));
+    lstSupportedLocationTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PLoc*100));
+    lstSupportedConditionProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PCond*100));
+    lstSupportedAlertTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlert*100));
+    lstSupportedAlertProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlertProp*100));
+    lstSupportedForecastSummaryProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForSum*100));
+    lstSupportedForecastHourlyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForHour*100));
+    lstSupportedForecastDailyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForDay*100));
+    lstSupportedMaps.Items.Add('-- Percent: '+FormatFloat('0.00%', PMaps*100));
+    lstSupportedUnits.Items.Add('-- Percent: '+FormatFloat('0.00%', PUnits*100));
 
+    //Calculate overall average of support percentage for selected service
     TP:=(PInfo + PLoc + PCond + PAlert + PAlertProp + PForSum +
       PForHour + PForDay + PMaps + PUnits) / 10;
     Caption:= 'JD Weather DLL Test - '+S.Caption+' - '+FormatFloat('0.00%', TP*100);
 
+    //Display service company logo
     WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
+
   end else begin
     Caption:= 'JD Weather DLL Test';
-  end;
-end;
-
-procedure TfrmMain.lstURLsClick(Sender: TObject);
-var
-  U: String;
-begin
-  if lstURLs.ItemIndex >= 0 then begin
-    U:= lstURLs.Selected.SubItems[0];
-    ShellExecute(0, 'open', PChar(U), nil, nil, SW_SHOWNORMAL);
   end;
 end;
 

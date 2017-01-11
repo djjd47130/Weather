@@ -951,7 +951,214 @@ function EpochLocal(const Value: String): TDateTime; overload;
 
 function LocalDateTimeFromUTCDateTime(const UTCDateTime: TDateTime): TDateTime;
 
+function WeatherUnitsToStr(const Value: TWeatherUnits): String;
+function WeatherMapFormatToStr(const Value: TWeatherMapFormat): String;
+function WeatherMapTypeToStr(const Value: TWeatherMapType): String;
+function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
+function WeatherForecastTypeToStr(const Value: TWeatherForecastType): String;
+function WeatherAlertPropToStr(const Value: TWeatherAlertProp): String;
+function WeatherAlertTypeToStr(const Value: TWeatherAlertType): String;
+function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
+function WeatherInfoTypeToStr(const Value: TWeatherInfoType): String;
+function WeatherLocationTypeToStr(const Value: TJDWeatherLocationType): String;
+
 implementation
+
+function WeatherLocationTypeToStr(const Value: TJDWeatherLocationType): String;
+begin
+  case Value of
+    wlZip:          Result:= 'Zip Code';
+    wlCityState:    Result:= 'City and State';
+    wlCoords:       Result:= 'Coordinates';
+    wlAutoIP:       Result:= 'Automatic IP';
+    wlCityCode:     Result:= 'City Code';
+    wlCountryCity:  Result:= 'City and Country';
+    wlAirportCode:  Result:= 'Airport Code';
+    wlPWS:          Result:= 'PWS';
+  end;
+end;
+
+function WeatherInfoTypeToStr(const Value: TWeatherInfoType): String;
+begin
+  case Value of
+    wiConditions:       Result:= 'Current Conditions';
+    wiAlerts:           Result:= 'Weather Alerts';
+    wiForecastSummary:  Result:= 'Forecast Summary';
+    wiForecastHourly:   Result:= 'Forecast Hourly';
+    wiForecastDaily:    Result:= 'Forecast Daily';
+    wiMaps:             Result:= 'Maps';
+    wiAlmanac:          Result:= 'Almanac';
+    wiAstronomy:        Result:= 'Astronomy';
+    wiHurricane:        Result:= 'Hurricane';
+    wiHistory:          Result:= 'History';
+    wiPlanner:          Result:= 'Planner';
+    wiStation:          Result:= 'Station';
+  end;
+end;
+
+function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
+begin
+  case Value of
+    cpPressureMB:   Result:= 'Pressure (Mb)';
+    cpPressureIn:   Result:= 'Pressure (In)';
+    cpWindDir:      Result:= 'Wind Direction';
+    cpWindSpeed:    Result:= 'Wind Speed';
+    cpHumidity:     Result:= 'Humidity';
+    cpVisibility:   Result:= 'Visibility';
+    cpDewPoint:     Result:= 'Dew Point';
+    cpHeatIndex:    Result:= 'Heat Index';
+    cpWindGust:     Result:= 'Wind Gusts';
+    cpWindChill:    Result:= 'Wind Chill';
+    cpFeelsLike:    Result:= 'Feels Like';
+    cpSolarRad:     Result:= 'Solar Radiation';
+    cpUV:           Result:= 'UV Index';
+    cpTemp:         Result:= 'Temperature';
+    cpTempMin:      Result:= 'Temp Min';
+    cpTempMax:      Result:= 'Temp Max';
+    cpPrecip:       Result:= 'Precipitation';
+    cpIcon:         Result:= 'Weather Icon';
+    cpCaption:      Result:= 'Caption';
+    cpDescription:  Result:= 'Description';
+    cpStation:      Result:= 'Station';
+    cpClouds:       Result:= 'Clouds';
+    cpRain:         Result:= 'Rain';
+    cpSnow:         Result:= 'Snow';
+    cpSunrise:      Result:= 'Sunrise';
+    cpSunset:       Result:= 'Sunset';
+  end;
+end;
+
+function WeatherAlertTypeToStr(const Value: TWeatherAlertType): String;
+begin
+  case Value of
+    waNone:           Result:= 'None';
+    waHurricaneStat:  Result:= 'Hurricane Status';
+    waTornadoWarn:    Result:= 'Tornado Warning';
+    waTornadoWatch:   Result:= 'Tornado Watch';
+    waSevThundWarn:   Result:= 'Severe Thunderstorm Warning';
+    waSevThundWatch:  Result:= 'Severe Thunderstorm Watch';
+    waWinterAdv:      Result:= 'Winter Weather Advisory';
+    waFloodWarn:      Result:= 'Flood Warning';
+    waFloodWatch:     Result:= 'Flood Watch';
+    waHighWind:       Result:= 'High Wind Advisory';
+    waSevStat:        Result:= 'Severe Weather Status';
+    waHeatAdv:        Result:= 'Heat Advisory';
+    waFogAdv:         Result:= 'Fog Advisory';
+    waSpecialStat:    Result:= 'Special Weather Statement';
+    waFireAdv:        Result:= 'Fire Advisory';
+    waVolcanicStat:   Result:= 'Volcanic Status';
+    waHurricaneWarn:  Result:= 'Hurricane Warning';
+    waRecordSet:      Result:= 'Record Set';
+    waPublicRec:      Result:= 'Public Record';
+    waPublicStat:     Result:= 'Public Status';
+  end;
+end;
+
+function WeatherAlertPropToStr(const Value: TWeatherAlertProp): String;
+begin
+  case Value of
+    apZones:        Result:= 'Affected Zones';
+    apVerticies:    Result:= 'Storm Verticies';
+    apStorm:        Result:= 'Storm Information';
+    apType:         Result:= 'Alert Type';
+    apDescription:  Result:= 'Description';
+    apExpires:      Result:= 'Expiration Time';
+    apMessage:      Result:= 'Alert Message';
+    apPhenomena:    Result:= 'Phenomena';
+    apSignificance: Result:= 'Significance';
+  end;
+end;
+
+function WeatherForecastTypeToStr(const Value: TWeatherForecastType): String;
+begin
+  case Value of
+    ftSummary:  Result:= 'Summary';
+    ftHourly:   Result:= 'Hourly';
+    ftDaily:    Result:= 'Daily';
+  end;
+end;
+
+function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
+begin
+  case Value of
+    fpPressureMB:     Result:= 'Pressure (Mb)';
+    fpPressureIn:     Result:= 'Pressure (In)';
+    fpWindDir:        Result:= 'Wind Direction';
+    fpWindSpeed:      Result:= 'Wind Speed';
+    fpHumidity:       Result:= 'Humidity';
+    fpVisibility:     Result:= 'Visibility';
+    fpDewPoint:       Result:= 'Dew Point';
+    fpHeatIndex:      Result:= 'Heat Index';
+    fpWindGust:       Result:= 'Wind Gusts';
+    fpWindChill:      Result:= 'Wind Chill';
+    fpFeelsLike:      Result:= 'Feels Like';
+    fpSolarRad:       Result:= 'Solar Radiation';
+    fpUV:             Result:= 'UV Index';
+    fpTemp:           Result:= 'Temperature';
+    fpTempMin:        Result:= 'Temp Min';
+    fpTempMax:        Result:= 'Temp Max';
+    fpCaption:        Result:= 'Caption';
+    fpDescription:    Result:= 'Description';
+    fpIcon:           Result:= 'Weather Icon';
+    fpGroundPressure: Result:= 'Ground Pressure';
+    fpSeaPressure:    Result:= 'Sea Pressure';
+    fpPrecip:         Result:= 'Precipitation Amount';
+    fpURL:            Result:= 'URL';
+    fpDaylight:       Result:= 'Daylight';
+    fpSnow:           Result:= 'Snow Amount';
+    fpSleet:          Result:= 'Sleet Amount';
+    fpPrecipChance:   Result:= 'Chance of Precipitation';
+    fpClouds:         Result:= 'Cloud Cover';
+    fpRain:           Result:= 'Rain Amount';
+    fpWetBulb:        Result:= 'Wet Bulb';
+  end;
+end;
+
+function WeatherMapTypeToStr(const Value: TWeatherMapType): String;
+begin
+  case Value of
+    mpSatellite:      Result:= 'Satellite';
+    mpRadar:          Result:= 'Radar';
+    mpSatelliteRadar: Result:= 'Satellite and Radar';
+    mpRadarClouds:    Result:= 'Radar and Clouds';
+    mpClouds:         Result:= 'Clouds';
+    mpTemp:           Result:= 'Temperature';
+    mpTempChange:     Result:= 'Temp Change';
+    mpSnowCover:      Result:= 'Snow Cover';
+    mpPrecip:         Result:= 'Precipitation';
+    mpAlerts:         Result:= 'Alerts';
+    mpHeatIndex:      Result:= 'Heat Index';
+    mpDewPoint:       Result:= 'Dew Point';
+    mpWindChill:      Result:= 'Wind Chill';
+    mpPressureSea:    Result:= 'Sea Level Pressure';
+    mpWind:           Result:= 'Wind';
+    mpAniSatellite:   Result:= 'Animated Satellite';
+    mpAniRadar:       Result:= 'Animated Radar';
+    mpAniSatelliteRadar:  Result:= 'Animated Satellite and Radar';
+  end;
+end;
+
+function WeatherMapFormatToStr(const Value: TWeatherMapFormat): String;
+begin
+  case Value of
+    wfJpg:    Result:= 'Jpg';
+    wfPng:    Result:= 'Png';
+    wfGif:    Result:= 'Gif';
+    wfTiff:   Result:= 'Tiff';
+    wfBmp:    Result:= 'Bitmap';
+    wfFlash:  Result:= 'Flash Object';
+    wfHtml:   Result:= 'HTML Page';
+  end;
+end;
+
+function WeatherUnitsToStr(const Value: TWeatherUnits): String;
+begin
+  case Value of
+    wuKelvin:   Result:= 'Kelvin';
+    wuImperial: Result:= 'Imperial';
+    wuMetric:   Result:= 'Metric';
+  end;
+end;
 
 {$IFDEF USE_VCL}
 function TempColor(const Temp: Single): TColor;
