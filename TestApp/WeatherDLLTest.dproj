@@ -131,6 +131,7 @@
         <DCCReference Include="..\JD.Weather.Intf.pas"/>
         <DCCReference Include="..\JD.Weather.SuperObject.pas"/>
         <DCCReference Include="..\JD.Weather.ApiSvr.pas"/>
+        <DCCReference Include="..\JD.Weather.pas"/>
         <None Include="..\README.md"/>
         <None Include="..\Readme\AccuWeather.md"/>
         <None Include="..\Readme\DLLStructure.md"/>
