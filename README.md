@@ -24,8 +24,7 @@ The code and resources in this repository are in no way guaranteed. The author(s
 3. [OpenWeatherMap](Readme/OpenWeatherMap.md)
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
-6. National Weather Service was removed because it only supported raw station data.
-7. NOAA was removed because it only supported raw station data.
+6. [National Weather Service](Readme/NWS.md)
 
 ### How to Create Instance
 

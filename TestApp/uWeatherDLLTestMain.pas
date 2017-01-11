@@ -48,6 +48,16 @@ type
     EditSettings1: TMenuItem;
     N2: TMenuItem;
     estData1: TMenuItem;
+    View1: TMenuItem;
+    LogoType1: TMenuItem;
+    SquareLight1: TMenuItem;
+    SquareDark1: TMenuItem;
+    WideLight1: TMenuItem;
+    WideDark1: TMenuItem;
+    Help1: TMenuItem;
+    ShowHelp1: TMenuItem;
+    N3: TMenuItem;
+    About1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure lstServicesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
@@ -60,6 +70,7 @@ type
     procedure ClearInfo;
     procedure WeatherImageToPicture(const G: IWeatherGraphic;
       const P: TPicture);
+    procedure DisplayService(const S: IWeatherService);
   public
     procedure LoadServices;
   end;
@@ -197,14 +208,11 @@ begin
   end;
 end;
 
-procedure TfrmMain.lstServicesSelectItem(Sender: TObject; Item: TListItem;
-  Selected: Boolean);
-//Display all supported pieces of selected service
+procedure TfrmMain.DisplayService(const S: IWeatherService);
 const
   IMG_CHECK = 1;
   IMG_UNCHECK = -1;
 var
-  S: IWeatherService;
   TInfo, TCond, TLoc, TAlert, TAlertProp, TForSum, TForHour, TForDay, TMaps, TUnits: Integer;
   PInfo, PCond, PLoc, PAlert, PAlertProp, PForSum, PForHour, PForDay, PMaps, PUnits: Single;
   TP: Single;
@@ -218,6 +226,7 @@ var
   WMaf: TWeatherMapFormat;
   WUni: TWeatherUnits;
   I: TListItem;
+  X: Integer;
   procedure ChkUrl(const N, V: String);
   var
     I: TListItem;
@@ -229,21 +238,21 @@ var
     end;
   end;
 begin
-  TInfo:= 0;
-  TCond:= 0;
-  TLoc:= 0;
-  TAlert:= 0;
-  TAlertProp:= 0;
-  TForSum:= 0;
-  TForHour:= 0;
-  TForDay:= 0;
-  TMaps:= 0;
-  TUnits:= 0;
   Screen.Cursor:= crHourglass;
   try
     ClearInfo;
-    if Selected then begin
-      S:= IWeatherService(Item.Data);
+    if Assigned(S) then begin
+      //Reset Defaults
+      TInfo:= 0;
+      TCond:= 0;
+      TLoc:= 0;
+      TAlert:= 0;
+      TAlertProp:= 0;
+      TForSum:= 0;
+      TForHour:= 0;
+      TForDay:= 0;
+      TMaps:= 0;
+      TUnits:= 0;
 
       //Display URLs for Service
       ChkUrl('Website', S.URLs.MainURL);
@@ -457,16 +466,35 @@ begin
       Caption:= 'JD Weather DLL Test - '+S.Caption+' - '+FormatFloat('0.00%', TP*100);
 
       //Display service company logo
-      WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
+      try
+        WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
+      except
+        on E: Exception do begin
+          //TODO
+        end;
+      end;
 
     end else begin
       Caption:= 'JD Weather DLL Test';
     end;
 
-    GP.Width:= GP.Width + 1;
+    GP.Width:= GP.Width + 5;
+    for X := 0 to GP.ControlCount-1 do begin
+      GP.Controls[X].Width:= GP.Controls[X].Width + 1;
+    end;
 
   finally
     Screen.Cursor:= crDefault;
+  end;
+end;
+
+procedure TfrmMain.lstServicesSelectItem(Sender: TObject; Item: TListItem;
+  Selected: Boolean);
+begin
+  if Selected then begin
+    DisplayService(IWeatherService(Item.Data));
+  end else begin
+    DisplayService(nil);
   end;
 end;
 

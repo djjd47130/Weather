@@ -26,7 +26,6 @@ object frmMain: TfrmMain
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 845
     object lstServices: TListView
       AlignWithMargins = True
       Left = 3
@@ -54,9 +53,6 @@ object frmMain: TfrmMain
       TabOrder = 0
       ViewStyle = vsReport
       OnSelectItem = lstServicesSelectItem
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitHeight = 145
     end
     object lstURLs: TListView
       AlignWithMargins = True
@@ -84,9 +80,6 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnClick = lstURLsClick
-      ExplicitLeft = 211
-      ExplicitTop = 0
-      ExplicitHeight = 145
     end
     object Panel10: TPanel
       AlignWithMargins = True
@@ -97,9 +90,6 @@ object frmMain: TfrmMain
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 624
-      ExplicitTop = 0
-      ExplicitHeight = 145
       object imgLogo: TImage
         AlignWithMargins = True
         Left = 131
@@ -201,7 +191,6 @@ object frmMain: TfrmMain
         Value = 50.000000000000000000
       end>
     TabOrder = 1
-    ExplicitWidth = 845
     object Panel1: TPanel
       Left = 1
       Top = 1
@@ -210,8 +199,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedInfo: TListView
         AlignWithMargins = True
         Left = 3
@@ -230,7 +217,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitWidth = 162
       end
     end
     object Panel2: TPanel
@@ -241,9 +227,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 169
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedLocationTypes: TListView
         AlignWithMargins = True
         Left = 3
@@ -262,9 +245,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
-        ExplicitWidth = 162
       end
     end
     object Panel5: TPanel
@@ -275,9 +255,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 337
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedConditionProps: TListView
         AlignWithMargins = True
         Left = 3
@@ -296,8 +273,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel3: TPanel
@@ -308,9 +283,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 3
-      ExplicitLeft = 505
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedAlertTypes: TListView
         AlignWithMargins = True
         Left = 3
@@ -329,8 +301,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel6: TPanel
@@ -341,9 +311,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
-      ExplicitTop = 134
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedForecastSummaryProps: TListView
         AlignWithMargins = True
         Left = 3
@@ -362,8 +329,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel7: TPanel
@@ -374,10 +339,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 5
-      ExplicitLeft = 169
-      ExplicitTop = 134
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedForecastHourlyProps: TListView
         AlignWithMargins = True
         Left = 3
@@ -396,8 +357,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel8: TPanel
@@ -408,10 +367,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 6
-      ExplicitLeft = 337
-      ExplicitTop = 134
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedForecastDailyProps: TListView
         AlignWithMargins = True
         Left = 3
@@ -430,8 +385,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel9: TPanel
@@ -442,10 +395,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 7
-      ExplicitLeft = 505
-      ExplicitTop = 134
-      ExplicitWidth = 168
-      ExplicitHeight = 133
       object lstSupportedMaps: TListView
         AlignWithMargins = True
         Left = 3
@@ -464,8 +413,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
     object Panel11: TPanel
@@ -476,10 +423,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 8
-      ExplicitLeft = 673
-      ExplicitTop = 134
-      ExplicitWidth = 171
-      ExplicitHeight = 133
       object lstSupportedUnits: TListView
         AlignWithMargins = True
         Left = 3
@@ -498,7 +441,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitTop = 6
       end
     end
     object Panel12: TPanel
@@ -509,9 +451,6 @@ object frmMain: TfrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 9
-      ExplicitLeft = 673
-      ExplicitWidth = 171
-      ExplicitHeight = 133
       object lstSupportedAlertProps: TListView
         AlignWithMargins = True
         Left = 3
@@ -530,8 +469,6 @@ object frmMain: TfrmMain
         SmallImages = imgList
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 6
-        ExplicitTop = 11
       end
     end
   end
@@ -539,7 +476,7 @@ object frmMain: TfrmMain
     Left = 240
     Top = 160
     Bitmap = {
-      494C010102000800200010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000800240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000CCCCD6336266A3A0D1D1D72EFFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00B4B5
@@ -703,6 +640,37 @@ object frmMain: TfrmMain
       end
       object estData1: TMenuItem
         Caption = 'Test Data'
+      end
+    end
+    object View1: TMenuItem
+      Caption = 'View'
+      object LogoType1: TMenuItem
+        Caption = 'Logo Type'
+        object SquareLight1: TMenuItem
+          Caption = 'Square Light'
+          Checked = True
+        end
+        object SquareDark1: TMenuItem
+          Caption = 'Square Dark'
+        end
+        object WideLight1: TMenuItem
+          Caption = 'Wide Light'
+        end
+        object WideDark1: TMenuItem
+          Caption = 'Wide Dark'
+        end
+      end
+    end
+    object Help1: TMenuItem
+      Caption = 'Help'
+      object ShowHelp1: TMenuItem
+        Caption = 'Show Help'
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
+      object About1: TMenuItem
+        Caption = 'About'
       end
     end
   end

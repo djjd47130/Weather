@@ -2,6 +2,8 @@ unit JD.Weather.Intf;
 
 interface
 
+{$MINENUMSIZE 4}
+
 uses
   Winapi.Windows,
   DateUtils,
