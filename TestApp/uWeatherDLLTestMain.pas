@@ -448,22 +448,6 @@ begin
       PMaps:= TMaps / ((Integer(High(TWeatherMapType))+1) + (Integer(High(TWeatherMapFormat))+1));
       PUnits:= TUnits / (Integer(High(TWeatherUnits))+1);
 
-      //Display percentages of support for each type of info
-      {
-      I:= lstSupportedInfo.Items.Add;
-      I.Caption:= '-- Percent: '+FormatFloat('0.00%', PInfo*100);
-      I:= lstSupportedLocationTypes.Items.Add;
-      I.Caption:= '-- Percent: '+FormatFloat('0.00%', PLoc*100);
-      lstSupportedConditionProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PCond*100));
-      lstSupportedAlertTypes.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlert*100));
-      lstSupportedAlertProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PAlertProp*100));
-      lstSupportedForecastSummaryProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForSum*100));
-      lstSupportedForecastHourlyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForHour*100));
-      lstSupportedForecastDailyProps.Items.Add('-- Percent: '+FormatFloat('0.00%', PForDay*100));
-      lstSupportedMaps.Items.Add('-- Percent: '+FormatFloat('0.00%', PMaps*100));
-      lstSupportedUnits.Items.Add('-- Percent: '+FormatFloat('0.00%', PUnits*100));
-      }
-
       //Calculate overall average of support percentage for selected service
       TP:=(PInfo + PLoc + PCond + PAlert + PAlertProp + PForSum +
         PForHour + PForDay + PMaps + PUnits) / 10;

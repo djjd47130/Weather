@@ -89,7 +89,8 @@ type
     fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
     fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
     fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
-    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb);
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
+    fpIce, fpCeiling);
   TWeatherForecastProps = set of TWeatherForecastProp;
 
   ///<summary>

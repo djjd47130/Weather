@@ -325,12 +325,13 @@ end;
 
 function TOPService.GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
 begin
+  //TODO: Fetch multiple pieces of weather data at once
 
 end;
 
 function TOPService.GetConditions: IWeatherConditions;
 var
-  O: ISuperObject;
+  //O: ISuperObject;
   R: TWeatherConditions;
 begin
   R:= TWeatherConditions.Create;

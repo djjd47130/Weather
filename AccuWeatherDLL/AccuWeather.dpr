@@ -240,17 +240,29 @@ end;
 
 function TAWWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
+    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
+    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb];
 end;
 
 function TAWWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpWindGust,
+    fpFeelsLike, fpUV, fpTemp, fpCaption,
+    fpIcon, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb];
 end;
 
 function TAWWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
+    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
+    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb];
 end;
 
 function TAWWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;

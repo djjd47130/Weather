@@ -206,12 +206,12 @@ end;
 
 function TWUWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
 begin
-  Result:= [wfPng, wfGif];
+  Result:= [wfPng, wfGif, wfFlash];
 end;
 
 function TWUWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
 begin
-  Result:= [mpSatellite, mpRadar, mpSatelliteRadar,
+  Result:= [mpSatellite, mpRadar, mpSatelliteRadar, 
     mpAniSatellite, mpAniRadar, mpAniSatelliteRadar];
 end;
 
