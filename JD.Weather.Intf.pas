@@ -77,15 +77,15 @@ type
   TWeatherUnits = (wuKelvin, wuImperial, wuMetric);
   TWeatherUnitsSet = set of TWeatherUnits;
 
+  TWeatherForecastType = (ftSummary, ftHourly, ftDaily);
+  TWeatherForecastTypes = set of TWeatherForecastType;
+
   TWeatherConditionsProp = (cpPressureMB, cpPressureIn, cpWindDir, cpWindSpeed,
     cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex, cpWindGust, cpWindChill,
     cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin, cpTempMax, cpPrecip,
     cpIcon, cpCaption, cpDescription, cpStation, cpClouds,
     cpRain, cpSnow, cpSunrise, cpSunset);
   TWeatherConditionsProps = set of TWeatherConditionsProp;
-
-  TWeatherForecastType = (ftSummary, ftHourly, ftDaily);
-  TWeatherForecastTypes = set of TWeatherForecastType;
 
   TWeatherForecastProp = (fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
     fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
@@ -94,6 +94,55 @@ type
     fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
     fpIce, fpCeiling);
   TWeatherForecastProps = set of TWeatherForecastProp;
+
+  TWeatherProp = (
+    wpIcon,
+    wpCaption,
+    wpDescription,
+    wpDetails,
+    wpURL,
+    wpStation,
+    wpPropsMin,
+    wpPropsMax,
+    wpTemp,
+    wpTempMin,
+    wpTempMax,
+    wpFeelsLike,
+    wpFeelsLikeSun,
+    wpFeelsLikeShade,
+    wpWindDir,
+    wpWindSpeed,
+    wpWindGust,
+    wpWindChill,
+    wpHeatIndex,
+    wpPressure,
+    wpPressureGround,
+    wpPressureSea,
+    wpHumidity,
+    wpDewPoint,
+    wpVisibility,
+    wpSolarRad,
+    wpUVIndex,
+    wpCloudCover,
+    wpPrecipAmt,
+    wpRainAmt,
+    wpSnowAmt,
+    wpIceAmt,
+    wpSleetAmt,
+    wpStorm,
+    wpPrecipPred,
+    wpRainPred,
+    wpSnowPred,
+    wpIcePred,
+    wpSleetPred,
+    wpStormPred,
+    wpWetBulb,
+    wpCeiling,
+    wpSunrise,
+    wpSunset,
+    wpDaylight
+    );
+  TWeatherProps = set of TWeatherProp;
 
   ///<summary>
   ///  Specifies different types of weather alerts.
@@ -964,6 +1013,7 @@ function WeatherMapFormatToStr(const Value: TWeatherMapFormat): String;
 function WeatherMapTypeToStr(const Value: TWeatherMapType): String;
 function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
 function WeatherForecastTypeToStr(const Value: TWeatherForecastType): String;
+function WeatherPropToStr(const Value: TWeatherProp): String;
 function WeatherAlertPropToStr(const Value: TWeatherAlertProp): String;
 function WeatherAlertTypeToStr(const Value: TWeatherAlertType): String;
 function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
@@ -1086,6 +1136,55 @@ begin
   end;
 end;
 
+function WeatherPropToStr(const Value: TWeatherProp): String;
+begin
+  case Value of
+    wpIcon: ;
+    wpCaption: ;
+    wpDescription: ;
+    wpDetails: ;
+    wpURL: ;
+    wpStation: ;
+    wpTemp: ;
+    wpTempMin: ;
+    wpTempMax: ;
+    wpFeelsLike: ;
+    wpFeelsLikeSun: ;
+    wpFeelsLikeShade: ;
+    wpWindDir: ;
+    wpWindSpeed: ;
+    wpWindGust: ;
+    wpWindChill: ;
+    wpHeatIndex: ;
+    wpPressure: ;
+    wpPressureGround: ;
+    wpPressureSea: ;
+    wpHumidity: ;
+    wpDewPoint: ;
+    wpVisibility: ;
+    wpSolarRad: ;
+    wpUVIndex: ;
+    wpCloudCover: ;
+    wpPrecipAmt: ;
+    wpRainAmt: ;
+    wpSnowAmt: ;
+    wpIceAmt: ;
+    wpSleetAmt: ;
+    wpStorm: ;
+    wpPrecipPred: ;
+    wpRainPred: ;
+    wpSnowPred: ;
+    wpIcePred: ;
+    wpSleetPred: ;
+    wpStormPred: ;
+    wpWetBulb: ;
+    wpCeiling: ;
+    wpSunrise: ;
+    wpSunset: ;
+    wpDaylight: ;
+  end;
+end;
+
 function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
 begin
   case Value of
@@ -1119,6 +1218,8 @@ begin
     fpClouds:         Result:= 'Cloud Cover';
     fpRain:           Result:= 'Rain Amount';
     fpWetBulb:        Result:= 'Wet Bulb';
+    fpIce:            Result:= 'Ice';
+    fpCeiling:        Result:= 'Ceiling';
   end;
 end;
 

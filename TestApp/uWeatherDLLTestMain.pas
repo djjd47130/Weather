@@ -478,9 +478,9 @@ begin
       Caption:= 'JD Weather DLL Test';
     end;
 
-    GP.Width:= GP.Width + 5;
+    GP.Width:= GP.Width - 5;
     for X := 0 to GP.ControlCount-1 do begin
-      GP.Controls[X].Width:= GP.Controls[X].Width + 1;
+      GP.Controls[X].Width:= GP.Controls[X].Width - 1;
     end;
 
   finally

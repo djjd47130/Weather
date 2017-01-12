@@ -5,9 +5,9 @@ uses
   System.Classes,
   System.Generics.Collections,
   Vcl.Imaging.PngImage,
-  IdHTTP, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
+  IdHTTP,
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
-  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
+  JD.Weather.NDFD in '..\JD.Weather.NDFD.pas';
 
 {$R *.res}
 
@@ -68,10 +68,8 @@ type
   private
     FSupport: TNWSWeatherSupport;
     FURLs: TNWSWeatherURLs;
-    FSSL: TIdSSLIOHandlerSocketOpenSSL;
     procedure LoadLogos;
     function GetEndpointUrl(const Endpoint: TNWSEndpoint): String;
-    function GetEndpoint(const Endpoint: TNWSEndpoint): ISuperObject;
     function ParseDateTime(const S: String): TDateTime;
   public
     constructor Create; override;
@@ -100,67 +98,97 @@ type
 
 function TNWSWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
 begin
-  Result:= [];
+  Result:= [{apZones, apVerticies, apStorm, apType, apDescription,
+    apExpires, apMessage, apPhenomena, apSignificance}];
 end;
 
 function TNWSWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
 begin
-  Result:= [];
+  Result:= [{waNone, waHurricaneStat, waTornadoWarn, waTornadoWatch, waSevThundWarn,
+    waSevThundWatch, waWinterAdv, waFloodWarn, waFloodWatch, waHighWind, waSevStat,
+    waHeatAdv, waFogAdv, waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
+    waRecordSet, waPublicRec, waPublicStat}];
 end;
 
 function TNWSWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
 begin
-  Result:= [];
+  Result:= [{cpPressureMB, cpPressureIn, cpWindDir, cpWindSpeed,
+    cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex, cpWindGust, cpWindChill,
+    cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin, cpTempMax, cpPrecip,
+    cpIcon, cpCaption, cpDescription, cpStation, cpClouds,
+    cpRain, cpSnow, cpSunrise, cpSunset}];
 end;
 
 function TNWSWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [{fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
+    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
+    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
+    fpIce, fpCeiling}];
 end;
 
 function TNWSWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [{fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
+    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
+    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
+    fpIce, fpCeiling}];
 end;
 
 function TNWSWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
 begin
-  Result:= [];
+  Result:= [{ftSummary, ftHourly, ftDaily}];
 end;
 
 function TNWSWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
 begin
-  Result:= [];
+  Result:= [{fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
+    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
+    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
+    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
+    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
+    fpIce, fpCeiling}];
 end;
 
 function TNWSWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
 begin
-  Result:= [];
+  Result:= [wiConditions, wiAlerts, wiForecastSummary,
+    wiForecastHourly, wiForecastDaily{, wiMaps, wiAlmanac, wiAstronomy,
+    wiHurricane, wiHistory, wiPlanner, wiStation}];
 end;
 
 function TNWSWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
 begin
-  Result:= [];
+  Result:= [{wlZip, wlCityState, wlCoords, wlAutoIP, wlCityCode,
+    wlCountryCity, wlAirportCode, wlPWS}];
 end;
 
 function TNWSWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
 begin
-  Result:= [];
+  Result:= [{ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
+    ltColorLeft, ltColorRight}];
 end;
 
 function TNWSWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
 begin
-  Result:= [];
+  Result:= [{wfJpg, wfPng, wfGif, wfTiff, wfBmp, wfFlash, wfHtml}];
 end;
 
 function TNWSWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
 begin
-  Result:= [];
+  Result:= [{mpSatellite, mpRadar, mpSatelliteRadar, mpRadarClouds,
+    mpClouds, mpTemp, mpTempChange, mpSnowCover, mpPrecip, mpAlerts, mpHeatIndex,
+    mpDewPoint, mpWindChill, mpPressureSea, mpWind,
+    mpAniSatellite, mpAniRadar, mpAniSatelliteRadar}];
 end;
 
 function TNWSWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
 begin
-  Result:= [];
+  Result:= [wuImperial, wuMetric];
 end;
 
 { TNWSWeatherURLs }
@@ -195,8 +223,6 @@ end;
 constructor TNWSService.Create;
 begin
   inherited;
-  FSSL:= TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-  Web.IOHandler:= FSSL;
   Web.HandleRedirects:= True;
   FSupport:= TNWSWeatherSupport.Create;
   FSupport._AddRef;
@@ -211,7 +237,6 @@ begin
   FURLs:= nil;
   FSupport._Release;
   FSupport:= nil;
-  FSSL.Free;
   inherited;
 end;
 
@@ -226,11 +251,6 @@ begin
 end;
 
 function TNWSService.GetEndpointUrl(const Endpoint: TNWSEndpoint): String;
-begin
-
-end;
-
-function TNWSService.GetEndpoint(const Endpoint: TNWSEndpoint): ISuperObject;
 begin
 
 end;
@@ -292,10 +312,10 @@ procedure TNWSService.LoadLogos;
         R.Position:= 0;
         Result.Base64:= R.DataString;
       finally
-        R.Free;
+        FreeAndNil(R);
       end;
     finally
-      S.Free;
+      FreeAndNil(S);
     end;
   end;
 begin
