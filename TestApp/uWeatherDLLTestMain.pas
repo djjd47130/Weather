@@ -63,6 +63,7 @@ type
       Selected: Boolean);
     procedure lstURLsClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Refresh1Click(Sender: TObject);
   private
     FCreateLib: TCreateJDWeather;
     FLib: HMODULE;
@@ -205,6 +206,15 @@ begin
   if lstURLs.ItemIndex >= 0 then begin
     U:= lstURLs.Selected.SubItems[0];
     ShellExecute(0, 'open', PChar(U), nil, nil, SW_SHOWNORMAL);
+  end;
+end;
+
+procedure TfrmMain.Refresh1Click(Sender: TObject);
+begin
+  if lstServices.ItemIndex >= 0 then begin
+    DisplayService(IWeatherService(lstServices.Selected.Data));
+  end else begin
+    DisplayService(nil);
   end;
 end;
 

@@ -622,6 +622,7 @@ object frmMain: TfrmMain
       Caption = 'File'
       object Refresh1: TMenuItem
         Caption = 'Refresh'
+        OnClick = Refresh1Click
       end
       object N1: TMenuItem
         Caption = '-'
