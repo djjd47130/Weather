@@ -209,8 +209,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Info'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -237,8 +237,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Location Types'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -265,8 +265,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Condition Props'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -293,8 +293,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Alert Types'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -321,8 +321,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Forecast Summary Props'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -349,8 +349,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Forecast Hourly Props'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -377,8 +377,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Forecast Daily Props'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -405,8 +405,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Map Types'
+            Width = 172
           end>
         ReadOnly = True
         RowSelect = True
@@ -433,8 +433,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Units'
+            Width = 175
           end>
         ReadOnly = True
         RowSelect = True
@@ -461,8 +461,8 @@ object frmMain: TfrmMain
         BorderStyle = bsNone
         Columns = <
           item
-            AutoSize = True
             Caption = 'Supported Alert Types'
+            Width = 175
           end>
         ReadOnly = True
         RowSelect = True

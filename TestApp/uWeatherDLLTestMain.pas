@@ -478,9 +478,11 @@ begin
       Caption:= 'JD Weather DLL Test';
     end;
 
-    GP.Width:= GP.Width - 5;
     for X := 0 to GP.ControlCount-1 do begin
-      GP.Controls[X].Width:= GP.Controls[X].Width - 1;
+      if GP.Controls[X] is TListView then begin
+        TListView(GP.Controls[X]).Columns[0].Width:= (GP.ClientWidth div 5) - 6;
+        //GP.Controls[X].Width:= GP.Controls[X].Width - 1;
+      end;
     end;
 
   finally
