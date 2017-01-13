@@ -1,15 +1,19 @@
-library OpenWeatherMaps;
+unit JD.Weather.Services.OpenWeatherMap;
+
+interface
 
 {$R 'OpenWeatherMapsRes.res' 'OpenWeatherMapsRes.rc'}
 
 uses
   System.SysUtils,
   System.Classes,
-  System.Generics.Collections,
-  Vcl.Imaging.PngImage,
-  JD.Weather.Intf in '..\JD.Weather.Intf.pas';
+  JD.Weather.Intf,
+  JD.Weather.SuperObject,
+  System.Generics.Collections;
 
-{$R *.res}
+const
+  SVC_CAPTION = 'Open Weather Map';
+  SVC_UID = '{12ECA995-0C16-49EB-AF76-83690B426A9D}';
 
 type
   TOWMWeatherSupport = class(TInterfacedObject, IWeatherSupport)
@@ -86,6 +90,8 @@ type
     property URLs: IWeatherURLs read GetURLs;
   end;
 
+implementation
+
 { TOWMService }
 
 constructor TOWMService.Create;
@@ -109,12 +115,12 @@ end;
 
 function TOWMService.GetCaption: WideString;
 begin
-  Result:= 'Open Weather Maps';
+  Result:= SVC_CAPTION;
 end;
 
 function TOWMService.GetUID: WideString;
 begin
-  Result:= '{12ECA995-0C16-49EB-AF76-83690B426A9D}';
+  Result:= SVC_UID;
 end;
 
 function TOWMService.GetURLs: IWeatherURLs;
@@ -296,29 +302,4 @@ begin
   Result:= 'https://home.openweathermap.org/users/sign_up';
 end;
 
-
-
-
-
-
-
-
-
-function CreateWeatherService: IWeatherService; stdcall;
-var
-  R: TOWMService;
-begin
-  R:= TOWMService.Create;
-  try
-
-
-  finally
-    Result:= R;
-  end;
-end;
-
-exports
-  CreateWeatherService;
-
-begin
 end.

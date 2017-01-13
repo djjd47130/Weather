@@ -30,6 +30,8 @@ type
 
   TNDFDOperationalModeType = (omtTest, omtDevelopmental, omtExperimental, omtOfficial);
 
+  TNDFDSrsNameType = (sntWGS1984);
+
   TNDFDDocument = class(TObject)
   private
     FHead: TNDFDHead;
@@ -143,11 +145,13 @@ type
   private
     FTimeStart: TDateTime;
     FTimeEnd: TDateTime;
+    procedure SetTimeEnd(const Value: TDateTime);
+    procedure SetTimeStart(const Value: TDateTime);
   public
     constructor Create;
     destructor Destroy; override;
-    property TimeStart: TDateTime;
-    property TimeEnd: TDateTime;
+    property TimeStart: TDateTime read FTimeStart write SetTimeStart;
+    property TimeEnd: TDateTime read FTimeEnd write SetTimeEnd;
   end;
 
   TNDFDTimeLayoutItems = class(TObject)
@@ -439,6 +443,16 @@ destructor TNDFDTimeLayoutItem.Destroy;
 begin
 
   inherited;
+end;
+
+procedure TNDFDTimeLayoutItem.SetTimeEnd(const Value: TDateTime);
+begin
+  FTimeEnd := Value;
+end;
+
+procedure TNDFDTimeLayoutItem.SetTimeStart(const Value: TDateTime);
+begin
+  FTimeStart := Value;
 end;
 
 { TNDFDTimeLayoutItems }

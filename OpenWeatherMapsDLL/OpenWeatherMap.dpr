@@ -1,17 +1,17 @@
-library WUnderground;
+library OpenWeatherMap;
 
 uses
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
-  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas',
-  JD.Weather.Services.WUnderground in '..\Services\JD.Weather.Services.WUnderground.pas';
+  JD.Weather.Services.OpenWeatherMap in '..\Services\JD.Weather.Services.OpenWeatherMap.pas',
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 
 function CreateWeatherService: IWeatherService; stdcall;
 var
-  R: TWUService;
+  R: TOWMService;
 begin
-  R:= TWUService.Create;
+  R:= TOWMService.Create;
   try
 
   finally
