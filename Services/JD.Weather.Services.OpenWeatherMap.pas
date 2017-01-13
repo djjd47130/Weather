@@ -13,6 +13,7 @@ uses
 
 const
   SVC_CAPTION = 'Open Weather Map';
+  SVC_NAME = 'OpenWeatherMap';
   SVC_UID = '{12ECA995-0C16-49EB-AF76-83690B426A9D}';
 
 type
@@ -62,20 +63,41 @@ type
     property LegalURL: WideString read GetLegalURL;
   end;
 
-  TOWMService = class(TWeatherServiceBase, IWeatherService)
+  TOWMServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
   private
     FSupport: TOWMWeatherSupport;
     FURLs: TOWMWeatherURLs;
+    FLogos: TLogoArray;
+    procedure SetLogo(const LT: TWeatherLogoType; const Value: IWeatherGraphic);
     procedure LoadLogos;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetCaption: WideString;
+    function GetName: WideString;
+    function GetUID: WideString;
+    function GetURLs: IWeatherURLs;
+    function GetSupport: IWeatherSupport;
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+
+    property Logos[const LT: TWeatherLogoType]: IWeatherGraphic read GetLogo write SetLogo;
+
+    property Caption: WideString read GetCaption;
+    property Name: WideString read GetName;
+    property UID: WideString read GetUID;
+    property Support: IWeatherSupport read GetSupport;
+    property URLs: IWeatherURLs read GetURLs;
+  end;
+
+  TOWMService = class(TWeatherServiceBase, IWeatherService)
+  private
+    FInfo: TOWMServiceInfo;
   public
     constructor Create; override;
     destructor Destroy; override;
   public
-    function GetUID: WideString;
-    function GetCaption: WideString;
-    function GetURLs: IWeatherURLs;
-
-    function Support: IWeatherSupport;
+    function GetInfo: IWeatherServiceInfo;
 
     function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
     function GetConditions: IWeatherConditions;
@@ -85,9 +107,7 @@ type
     function GetForecastDaily: IWeatherForecast;
     function GetMaps: IWeatherMaps;
 
-    property UID: WideString read GetUID;
-    property Caption: WideString read GetCaption;
-    property URLs: IWeatherURLs read GetURLs;
+    property Info: IWeatherServiceInfo read GetInfo;
   end;
 
 implementation
@@ -97,69 +117,15 @@ implementation
 constructor TOWMService.Create;
 begin
   inherited;
-  FSupport:= TOWMWeatherSupport.Create;
-  FSupport._AddRef;
-  FURLs:= TOWMWeatherURLs.Create;
-  FURLs._AddRef;
-  LoadLogos;
+  FInfo:= TOWMServiceInfo.Create;
+  FInfo._AddRef;
 end;
 
 destructor TOWMService.Destroy;
 begin
-  FURLs._Release;
-  FURLs:= nil;
-  FSupport._Release;
-  FSupport:= nil;
+  FInfo._Release;
+  FInfo:= nil;
   inherited;
-end;
-
-function TOWMService.GetCaption: WideString;
-begin
-  Result:= SVC_CAPTION;
-end;
-
-function TOWMService.GetUID: WideString;
-begin
-  Result:= SVC_UID;
-end;
-
-function TOWMService.GetURLs: IWeatherURLs;
-begin
-  Result:= FURLs;
-end;
-
-procedure TOWMService.LoadLogos;
-  function Get(const N: String): IWeatherGraphic;
-  var
-    S: TResourceStream;
-    R: TStringStream;
-  begin
-    Result:= TWeatherGraphic.Create;
-    S:= TResourceStream.Create(HInstance, N, 'PNG');
-    try
-      R:= TStringStream.Create;
-      try
-        S.Position:= 0;
-        R.LoadFromStream(S);
-        R.Position:= 0;
-        Result.Base64:= R.DataString;
-      finally
-        R.Free;
-      end;
-    finally
-      S.Free;
-    end;
-  end;
-begin
-  //TODO: Load Logos from Resources
-  SetLogo(TWeatherLogoType.ltColor, Get('LOGO_COLOR'));
-
-
-end;
-
-function TOWMService.Support: IWeatherSupport;
-begin
-  Result:= FSupport;
 end;
 
 function TOWMService.GetMultiple(
@@ -191,6 +157,11 @@ end;
 function TOWMService.GetForecastSummary: IWeatherForecast;
 begin
 
+end;
+
+function TOWMService.GetInfo: IWeatherServiceInfo;
+begin
+  Result:= FInfo;
 end;
 
 function TOWMService.GetMaps: IWeatherMaps;
@@ -300,6 +271,102 @@ end;
 function TOWMWeatherURLs.GetRegisterURL: WideString;
 begin
   Result:= 'https://home.openweathermap.org/users/sign_up';
+end;
+
+{ TOWMServiceInfo }
+
+constructor TOWMServiceInfo.Create;
+var
+  LT: TWeatherLogoType;
+begin
+  FSupport:= TOWMWeatherSupport.Create;
+  FSupport._AddRef;
+  FURLs:= TOWMWeatherURLs.Create;
+  FURLs._AddRef;
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]:= TWeatherGraphic.Create;
+    FLogos[LT]._AddRef;
+  end;
+  LoadLogos;
+end;
+
+destructor TOWMServiceInfo.Destroy;
+var
+  LT: TWeatherLogoType;
+begin
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]._Release;
+  end;
+  FURLs._Release;
+  FURLs:= nil;
+  FSupport._Release;
+  FSupport:= nil;
+  inherited;
+end;
+
+function TOWMServiceInfo.GetCaption: WideString;
+begin
+  Result:= SVC_CAPTION;
+end;
+
+function TOWMServiceInfo.GetName: WideString;
+begin
+  Result:= SVC_NAME;
+end;
+
+function TOWMServiceInfo.GetSupport: IWeatherSupport;
+begin
+  Result:= FSupport;
+end;
+
+function TOWMServiceInfo.GetUID: WideString;
+begin
+  Result:= SVC_UID;
+end;
+
+function TOWMServiceInfo.GetURLs: IWeatherURLs;
+begin
+  Result:= FURLs;
+end;
+
+function TOWMServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+begin
+  Result:= FLogos[LT];
+end;
+
+procedure TOWMServiceInfo.LoadLogos;
+  function Get(const N: String): IWeatherGraphic;
+  var
+    S: TResourceStream;
+    R: TStringStream;
+  begin
+    Result:= TWeatherGraphic.Create;
+    S:= TResourceStream.Create(HInstance, N, 'PNG');
+    try
+      R:= TStringStream.Create;
+      try
+        S.Position:= 0;
+        R.LoadFromStream(S);
+        R.Position:= 0;
+        Result.Base64:= R.DataString;
+      finally
+        R.Free;
+      end;
+    finally
+      S.Free;
+    end;
+  end;
+begin
+  //TODO: Load Logos from Resources
+  SetLogo(TWeatherLogoType.ltColor, Get('LOGO_COLOR'));
+
+
+end;
+
+procedure TOWMServiceInfo.SetLogo(const LT: TWeatherLogoType;
+  const Value: IWeatherGraphic);
+begin
+  FLogos[LT].Base64:= Value.Base64;
 end;
 
 end.

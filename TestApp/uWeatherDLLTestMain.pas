@@ -154,7 +154,7 @@ begin
   for X := 0 to FWeather.Services.Count-1 do begin
     S:= FWeather.Services.Items[X];
     I:= lstServices.Items.Add;
-    I.Caption:= S.Caption;
+    I.Caption:= S.Info.Caption;
     I.Data:= Pointer(S);
   end;
 end;
@@ -265,11 +265,11 @@ begin
       TUnits:= 0;
 
       //Display URLs for Service
-      ChkUrl('Website', S.URLs.MainURL);
-      ChkUrl('API Docs', S.URLs.ApiURL);
-      ChkUrl('Register', S.URLs.RegisterURL);
-      ChkUrl('Login', S.URLs.LoginURL);
-      ChkUrl('Legal', S.URLs.LegalURL);
+      ChkUrl('Website', S.Info.URLs.MainURL);
+      ChkUrl('API Docs', S.Info.URLs.ApiURL);
+      ChkUrl('Register', S.Info.URLs.RegisterURL);
+      ChkUrl('Login', S.Info.URLs.LoginURL);
+      ChkUrl('Legal', S.Info.URLs.LegalURL);
 
       //Show supported information types
       lstSupportedInfo.Items.BeginUpdate;
@@ -277,7 +277,7 @@ begin
         for WInfo := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
           I:= lstSupportedInfo.Items.Add;
           I.Caption:= WeatherInfoTypeToStr(WInfo);
-          if WInfo in S.Support.SupportedInfo then begin
+          if WInfo in S.Info.Support.SupportedInfo then begin
             Inc(TInfo);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -294,7 +294,7 @@ begin
         for WLoc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
           I:= lstSupportedLocationTypes.Items.Add;
           I.Caption:= WeatherLocationTypeToStr(WLoc);
-          if WLoc in S.Support.SupportedLocations then begin
+          if WLoc in S.Info.Support.SupportedLocations then begin
             Inc(TLoc);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -311,7 +311,7 @@ begin
         for WCond := Low(TWeatherConditionsProp) to High(TWeatherConditionsProp) do begin
           I:= lstSupportedConditionProps.Items.Add;
           I.Caption:= WeatherConditionPropToStr(WCond);
-          if WCond in S.Support.SupportedConditionProps then begin
+          if WCond in S.Info.Support.SupportedConditionProps then begin
             Inc(TCond);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -328,7 +328,7 @@ begin
         for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
           I:= lstSupportedForecastSummaryProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Support.SupportedForecastSummaryProps then begin
+          if WFor in S.Info.Support.SupportedForecastSummaryProps then begin
             Inc(TForSum);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -345,7 +345,7 @@ begin
         for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
           I:= lstSupportedForecastHourlyProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Support.SupportedForecastHourlyProps then begin
+          if WFor in S.Info.Support.SupportedForecastHourlyProps then begin
             Inc(TForHour);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -362,7 +362,7 @@ begin
         for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
           I:= lstSupportedForecastDailyProps.Items.Add;
           I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Support.SupportedForecastDailyProps then begin
+          if WFor in S.Info.Support.SupportedForecastDailyProps then begin
             Inc(TForDay);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -379,7 +379,7 @@ begin
         for WAlt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
           I:= lstSupportedAlertTypes.Items.Add;
           I.Caption:= WeatherAlertTypeToStr(WAlt);
-          if WAlt in S.Support.SupportedAlerts then begin
+          if WAlt in S.Info.Support.SupportedAlerts then begin
             Inc(TAlert);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -396,7 +396,7 @@ begin
         for WAlp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
           I:= lstSupportedAlertProps.Items.Add;
           I.Caption:= WeatherAlertPropToStr(WAlp);
-          if WAlp in S.Support.SupportedAlertProps then begin
+          if WAlp in S.Info.Support.SupportedAlertProps then begin
             Inc(TAlertProp);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -413,7 +413,7 @@ begin
         for WMap := Low(TWeatherMapType) to High(TWeatherMapType) do begin
           I:= lstSupportedMaps.Items.Add;
           I.Caption:= WeatherMapTypeToStr(WMap);
-          if WMap in S.Support.SupportedMaps then begin
+          if WMap in S.Info.Support.SupportedMaps then begin
             Inc(TMaps);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -430,7 +430,7 @@ begin
         for WMaf := Low(TWeatherMapFormat) to High(TWeatherMapFormat) do begin
           I:= lstSupportedMaps.Items.Add;
           I.Caption:= WeatherMapFormatToStr(WMaf);
-          if WMaf in S.Support.SupportedMapFormats then begin
+          if WMaf in S.Info.Support.SupportedMapFormats then begin
             Inc(TMaps);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -447,7 +447,7 @@ begin
         for WUni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
           I:= lstSupportedUnits.Items.Add;
           I.Caption:= WeatherUnitsToStr(WUni);
-          if WUni in S.Support.SupportedUnits then begin
+          if WUni in S.Info.Support.SupportedUnits then begin
             Inc(TUnits);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -473,11 +473,11 @@ begin
       //Calculate overall average of support percentage for selected service
       TP:=(PInfo + PLoc + PCond + PAlert + PAlertProp + PForSum +
         PForHour + PForDay + PMaps + PUnits) / 10;
-      Caption:= 'JD Weather DLL Test - '+S.Caption+' - '+FormatFloat('0.00%', TP*100);
+      Caption:= 'JD Weather DLL Test - '+S.Info.Caption+' - '+FormatFloat('0.00%', TP*100);
 
       //Display service company logo
       try
-        WeatherImageToPicture(S.GetLogo(ltColor), imgLogo.Picture);
+        WeatherImageToPicture(S.Info.GetLogo(ltColor), imgLogo.Picture);
       except
         on E: Exception do begin
           //TODO

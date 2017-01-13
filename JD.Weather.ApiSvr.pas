@@ -178,13 +178,13 @@ var
 begin
   O:= SO;
   try
-    O.S['caption']:= AContext.FService.Caption;
-    O.S['serviceuid']:= AContext.FService.UID;
+    O.S['caption']:= AContext.FService.Info.Caption;
+    O.S['serviceuid']:= AContext.FService.Info.UID;
 
     O2:= SA([]);
     try
       for Loc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
-        if Loc in AContext.FService.Support.SupportedLocations then
+        if Loc in AContext.FService.Info.Support.SupportedLocations then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TJDWeatherLocationType), Ord(Loc))));
       end;
     finally
@@ -194,7 +194,7 @@ begin
     O2:= SA([]);
     try
       for Inf := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
-        if Inf in AContext.FService.Support.SupportedInfo then
+        if Inf in AContext.FService.Info.Support.SupportedInfo then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherInfoType), Ord(Inf))));
       end;
     finally
@@ -204,7 +204,7 @@ begin
     O2:= SA([]);
     try
       for Uni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
-        if Uni in AContext.FService.Support.SupportedUnits then
+        if Uni in AContext.FService.Info.Support.SupportedUnits then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherUnits), Ord(Uni))));
       end;
     finally
@@ -214,7 +214,7 @@ begin
     O2:= SA([]);
     try
       for Alt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
-        if Alt in AContext.FService.Support.SupportedAlerts then
+        if Alt in AContext.FService.Info.Support.SupportedAlerts then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertType), Ord(Alt))));
       end;
     finally
@@ -224,7 +224,7 @@ begin
     O2:= SA([]);
     try
       for Alp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
-        if Alp in AContext.FService.Support.SupportedAlertProps then
+        if Alp in AContext.FService.Info.Support.SupportedAlertProps then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertProp), Ord(Alp))));
       end;
     finally
@@ -234,7 +234,7 @@ begin
     O2:= SA([]);
     try
       for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-        if Fop in AContext.FService.Support.SupportedForecastSummaryProps then
+        if Fop in AContext.FService.Info.Support.SupportedForecastSummaryProps then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
       end;
     finally
@@ -244,7 +244,7 @@ begin
     O2:= SA([]);
     try
       for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-        if Fop in AContext.FService.Support.SupportedForecastHourlyProps then
+        if Fop in AContext.FService.Info.Support.SupportedForecastHourlyProps then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
       end;
     finally
@@ -254,7 +254,7 @@ begin
     O2:= SA([]);
     try
       for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
-        if Fop in AContext.FService.Support.SupportedForecastDailyProps then
+        if Fop in AContext.FService.Info.Support.SupportedForecastDailyProps then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
       end;
     finally
@@ -264,7 +264,7 @@ begin
     O2:= SA([]);
     try
       for Map := Low(TWeatherMapType) to High(TWeatherMapType) do begin
-        if Map in AContext.FService.Support.SupportedMaps then
+        if Map in AContext.FService.Info.Support.SupportedMaps then
           O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherMapType), Ord(Map))));
       end;
     finally
@@ -292,13 +292,13 @@ begin
       S:= AContext.FWeather.Services[X];
       O2:= SO;
       try
-        O2.S['caption']:= S.Caption;
-        O2.S['uid']:= S.UID;
-        O2.S['url_main']:= S.URLs.MainURL;
-        O2.S['url_api']:= S.URLs.ApiURL;
-        O2.S['url_login']:= S.URLs.LoginURL;
-        O2.S['url_register']:= S.URLs.RegisterURL;
-        O2.S['url_legal']:= S.URLs.LegalURL;
+        O2.S['caption']:= S.Info.Caption;
+        O2.S['uid']:= S.Info.UID;
+        O2.S['url_main']:= S.Info.URLs.MainURL;
+        O2.S['url_api']:= S.Info.URLs.ApiURL;
+        O2.S['url_login']:= S.Info.URLs.LoginURL;
+        O2.S['url_register']:= S.Info.URLs.RegisterURL;
+        O2.S['url_legal']:= S.Info.URLs.LegalURL;
       finally
         O.O['services'].AsArray.Add(O2);
       end;
@@ -371,7 +371,7 @@ begin
   //Identify Service
   C.FService:= nil;
   for X := 0 to C.FWeather.Services.Count-1 do begin
-    if C.FWeather.Services[X].UID = C.FServiceUID then begin
+    if C.FWeather.Services[X].Info.UID = C.FServiceUID then begin
       C.FService:= C.FWeather.Services[X];
       Break;
     end;

@@ -19,8 +19,21 @@ begin
   end;
 end;
 
+function GetServiceInfo: IWeatherServiceInfo; stdcall;
+var
+  R: TWUServiceInfo;
+begin
+  R:= TWUServiceInfo.Create;
+  try
+
+  finally
+    Result:= R;
+  end;
+end;
+
 exports
-  CreateWeatherService;
+  CreateWeatherService,
+  GetServiceInfo;
 
 begin
 end.

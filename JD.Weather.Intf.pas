@@ -19,6 +19,7 @@ const
   clLightRed = $00B0B0FF;
 
 type
+  IWeatherServiceInfo = interface;
   IWeatherService = interface;
   IWeatherServices = interface;
   IJDWeather = interface;
@@ -225,6 +226,8 @@ type
 
   TCreateWeatherService = function: IWeatherService; stdcall;
 
+  TGetServiceInfo = function: IWeatherServiceInfo; stdcall;
+
   IWeatherSupport = interface
     function GetSupportedLogos: TWeatherLogoTypes;
     function GetSupportedUnits: TWeatherUnitsSet;
@@ -285,12 +288,25 @@ type
     property Maps: IWeatherMaps read GetMaps;
   end;
 
-  IWeatherService = interface
-    function GetModule: HMODULE;
-    procedure SetModule(const Value: HMODULE);
-    function GetUID: WideString;
+  IWeatherServiceInfo = interface
     function GetCaption: WideString;
+    function GetName: WideString;
+    function GetUID: WideString;
     function GetURLs: IWeatherURLs;
+    function GetSupport: IWeatherSupport;
+
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+
+    property Caption: WideString read GetCaption;
+    property Name: WideString read GetName;
+    property UID: WideString read GetUID;
+    property Support: IWeatherSupport read GetSupport;
+    property URLs: IWeatherURLs read GetURLs;
+  end;
+
+  IWeatherService = interface
+    //function GetModule: HMODULE;
+    //procedure SetModule(const Value: HMODULE);
     function GetKey: WideString;
     procedure SetKey(const Value: WideString);
     function GetLocationType: TJDWeatherLocationType;
@@ -302,8 +318,7 @@ type
     function GetUnits: TWeatherUnits;
     procedure SetUnits(const Value: TWeatherUnits);
 
-    function Support: IWeatherSupport;
-    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+    function GetInfo: IWeatherServiceInfo;
 
     function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
     function GetConditions: IWeatherConditions;
@@ -313,10 +328,8 @@ type
     function GetForecastDaily: IWeatherForecast;
     function GetMaps: IWeatherMaps;
 
-    property Module: HMODULE read GetModule write SetModule;
-    property UID: WideString read GetUID;
-    property Caption: WideString read GetCaption;
-    property URLs: IWeatherURLs read GetURLs;
+    property Info: IWeatherServiceInfo read GetInfo;
+    //property Module: HMODULE read GetModule write SetModule;
     property Key: WideString read GetKey write SetKey;
     property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
     property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
@@ -922,8 +935,7 @@ type
 
   TWeatherServiceBase = class(TInterfacedObject)
   private
-    FLogos: TLogoArray;
-    FModule: HMODULE;
+    //FModule: HMODULE;
     FKey: WideString;
     FWeb: TIdHTTP;
     FLocationType: TJDWeatherLocationType;
@@ -934,10 +946,9 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     property Web: TIdHTTP read FWeb;
-    procedure SetLogo(const LT: TWeatherLogoType; const Value: IWeatherGraphic);
   public
-    function GetModule: HMODULE;
-    procedure SetModule(const Value: HMODULE);
+    //function GetModule: HMODULE;
+    //procedure SetModule(const Value: HMODULE);
     function GetKey: WideString;
     procedure SetKey(const Value: WideString);
     function GetLocationType: TJDWeatherLocationType;
@@ -949,9 +960,8 @@ type
     function GetUnits: TWeatherUnits;
     procedure SetUnits(const Value: TWeatherUnits);
 
-    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
 
-    property Module: HMODULE read GetModule write SetModule;
+    //property Module: HMODULE read GetModule write SetModule;
     property Key: WideString read GetKey write SetKey;
     property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
     property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
@@ -2262,37 +2272,23 @@ end;
 { TWeatherServiceBase }
 
 constructor TWeatherServiceBase.Create;
-var
-  LT: TWeatherLogoType;
 begin
   FWeb:= TIdHTTP.Create(nil);
   FLocationType:= TJDWeatherLocationType.wlAutoIP;
-  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
-    FLogos[LT]:= TWeatherGraphic.Create;
-    FLogos[LT]._AddRef;
-  end;
 end;
 
 destructor TWeatherServiceBase.Destroy;
-var
-  LT: TWeatherLogoType;
 begin
-  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
-    FLogos[LT]._Release;
-  end;
   FreeAndNil(FWeb);
   inherited;
 end;
 
-function TWeatherServiceBase.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
-begin
-  Result:= FLogos[LT];
-end;
-
+{
 function TWeatherServiceBase.GetModule: HMODULE;
 begin
   Result:= FModule;
 end;
+}
 
 function TWeatherServiceBase.GetKey: WideString;
 begin
@@ -2339,16 +2335,12 @@ begin
   FLocationType:= Value;
 end;
 
-procedure TWeatherServiceBase.SetLogo(const LT: TWeatherLogoType;
-  const Value: IWeatherGraphic);
-begin
-  FLogos[LT].Base64:= Value.Base64;
-end;
-
+{
 procedure TWeatherServiceBase.SetModule(const Value: HMODULE);
 begin
   FModule:= Value;
 end;
+}
 
 procedure TWeatherServiceBase.SetUnits(const Value: TWeatherUnits);
 begin

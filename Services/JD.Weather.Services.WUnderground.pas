@@ -14,7 +14,64 @@ uses
 
 const
   SVC_CAPTION = 'Weather Underground';
+  SVC_NAME = 'WUnderground';
   SVC_UID = '{87940B1A-0435-4E2D-8DE8-6DE3BDCD43BB}';
+
+  SUP_INFO = [wiConditions, wiAlerts, wiForecastSummary,
+    wiForecastHourly, wiForecastDaily, wiMaps];
+  SUP_LOC = [wlZip, wlCityState, wlCoords, wlAutoIP,
+    wlCountryCity, wlAirportCode, wlPWS];
+  SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
+    ltColorLeft, ltColorRight];
+  SUP_COND_PROP = [cpPressureMB, cpPressureIn, cpWindDir,
+    cpWindSpeed, cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex,
+    cpWindGust, cpWindChill, cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin,
+    cpTempMax, cpPrecip, cpIcon, cpCaption, cpDescription, cpStation,
+    cpClouds, cpRain, cpSnow, cpSunrise, cpSunset];
+  SUP_ALERT_TYPE = [waNone, waHurricaneStat, waTornadoWarn,
+    waTornadoWatch, waSevThundWarn, waSevThundWatch, waWinterAdv,
+    waFloodWarn, waFloodWatch, waHighWind, waSevStat, waHeatAdv, waFogAdv,
+    waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
+    waRecordSet, waPublicRec, waPublicStat];
+  SUP_ALERT_PROP = [apZones, apVerticies, apStorm, apType,
+    apDescription, apExpires, apMessage, apPhenomena, apSignificance];
+  SUP_FOR = [ftSummary, ftHourly, ftDaily];
+  SUP_FOR_SUM = [fpCaption,
+    fpDescription,
+    fpIcon,
+    fpPrecipChance];
+  SUP_FOR_HOUR = [fpPressureMB,
+    fpPressureIn,
+    fpWindDir,
+    fpWindSpeed,
+    fpHumidity,
+    fpDewPoint,
+    fpHeatIndex,
+    fpWindChill,
+    fpFeelsLike,
+    fpUV,
+    fpTemp,
+    fpCaption,
+    fpIcon,
+    fpPrecip,
+    fpSnow,
+    fpPrecipChance];
+  SUP_FOR_DAY = [fpWindDir,
+    fpWindSpeed,
+    fpHumidity,
+    fpTemp,
+    fpTempMin,
+    fpTempMax,
+    fpCaption,
+    fpIcon,
+    fpPrecip,
+    fpSnow,
+    fpPrecipChance];
+  SUP_UNITS = [wuImperial, wuMetric];
+  SUP_MAP = [mpSatellite, mpRadar, mpSatelliteRadar,
+    mpAniSatellite, mpAniRadar, mpAniSatelliteRadar];
+  SUP_MAP_FOR = [wfPng, wfGif, wfFlash];
+
 
 type
   TWUEndpoint = (weAll, weAlerts, weAlmanac, weAstronomy, weConditions,
@@ -70,10 +127,36 @@ type
     property LegalURL: WideString read GetLegalURL;
   end;
 
-  TWUService = class(TWeatherServiceBase, IWeatherService)
+  TWUServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
   private
     FSupport: TWUWeatherSupport;
     FURLs: TWUWeatherURLs;
+    FLogos: TLogoArray;
+    procedure SetLogo(const LT: TWeatherLogoType; const Value: IWeatherGraphic);
+    procedure LoadLogos;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetCaption: WideString;
+    function GetName: WideString;
+    function GetUID: WideString;
+    function GetURLs: IWeatherURLs;
+    function GetSupport: IWeatherSupport;
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+
+    property Logos[const LT: TWeatherLogoType]: IWeatherGraphic read GetLogo write SetLogo;
+
+    property Caption: WideString read GetCaption;
+    property Name: WideString read GetName;
+    property UID: WideString read GetUID;
+    property Support: IWeatherSupport read GetSupport;
+    property URLs: IWeatherURLs read GetURLs;
+  end;
+
+  TWUService = class(TWeatherServiceBase, IWeatherService)
+  private
+    FInfo: TWUServiceInfo;
     function GetEndpointUrl(const Endpoint: TWUEndpoint): String;
     function GetMultiEndpointUrl(const Endpoints: TWUEndpoints; const Ext: String): String;
     function GetEndpoint(const Endpoint: TWUEndpoint): ISuperObject;
@@ -88,15 +171,11 @@ type
       Forecast: TWeatherForecast);
     procedure FillForecastSummary(const O: ISuperObject;
       Forecast: TWeatherForecast);
-    procedure LoadLogos;
   public
     constructor Create; override;
     destructor Destroy; override;
   public
-    function GetUID: WideString;
-    function GetCaption: WideString;
-    function GetURLs: IWeatherURLs;
-    function Support: IWeatherSupport;
+    function GetInfo: IWeatherServiceInfo;
 
     function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
     function GetConditions: IWeatherConditions;
@@ -106,9 +185,7 @@ type
     function GetForecastDaily: IWeatherForecast;
     function GetMaps: IWeatherMaps;
 
-    property UID: WideString read GetUID;
-    property Caption: WideString read GetCaption;
-    property URLs: IWeatherURLs read GetURLs;
+    property Info: IWeatherServiceInfo read GetInfo;
   end;
 
 implementation
@@ -117,108 +194,67 @@ implementation
 
 function TWUWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
 begin
-  Result:= [wuImperial, wuMetric];
+  Result:= SUP_UNITS;
 end;
 
 function TWUWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
 begin
-  Result:= [wlZip, wlCityState, wlCoords, wlAutoIP,
-    wlCountryCity, wlAirportCode, wlPWS];
+  Result:= SUP_LOC;
 end;
 
 function TWUWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
 begin
-  Result:= [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
-    ltColorLeft, ltColorRight];
+  Result:= SUP_LOGO;
 end;
 
 function TWUWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
 begin
-  Result:= [apZones, apVerticies, apStorm, apType,
-    apDescription, apExpires, apMessage, apPhenomena, apSignificance];
+  Result:= SUP_ALERT_PROP;
 end;
 
 function TWUWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
 begin
-  Result:= [waNone, waHurricaneStat, waTornadoWarn,
-    waTornadoWatch, waSevThundWarn, waSevThundWatch, waWinterAdv,
-    waFloodWarn, waFloodWatch, waHighWind, waSevStat, waHeatAdv, waFogAdv,
-    waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
-    waRecordSet, waPublicRec, waPublicStat];
+  Result:= SUP_ALERT_TYPE;
 end;
 
 function TWUWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
 begin
-  Result:= [cpPressureMB, cpPressureIn, cpWindDir,
-    cpWindSpeed, cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex,
-    cpWindGust, cpWindChill, cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin,
-    cpTempMax, cpPrecip, cpIcon, cpCaption, cpDescription, cpStation,
-    cpClouds, cpRain, cpSnow, cpSunrise, cpSunset];
+  Result:= SUP_COND_PROP;
 end;
 
 function TWUWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
 begin
-  Result:= [ftSummary, ftHourly, ftDaily];
+  Result:= SUP_FOR;
 end;
 
 function TWUWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
 begin
-  Result:= [fpWindDir,
-    fpWindSpeed,
-    fpHumidity,
-    fpTemp,
-    fpTempMin,
-    fpTempMax,
-    fpCaption,
-    fpIcon,
-    fpPrecip,
-    fpSnow,
-    fpPrecipChance];
+  Result:= SUP_FOR_DAY;
 end;
 
 function TWUWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
 begin
-  Result:= [fpPressureMB,
-    fpPressureIn,
-    fpWindDir,
-    fpWindSpeed,
-    fpHumidity,
-    fpDewPoint,
-    fpHeatIndex,
-    fpWindChill,
-    fpFeelsLike,
-    fpUV,
-    fpTemp,
-    fpCaption,
-    fpIcon,
-    fpPrecip,
-    fpSnow,
-    fpPrecipChance];
+  Result:= SUP_FOR_HOUR;
 end;
 
 function TWUWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
 begin
-  Result:= [fpCaption,
-    fpDescription,
-    fpIcon,
-    fpPrecipChance];
+  Result:= SUP_FOR_SUM;
 end;
 
 function TWUWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
 begin
-  Result:= [wiConditions, wiAlerts, wiForecastSummary,
-    wiForecastHourly, wiForecastDaily, wiMaps];
+  Result:= SUP_INFO;
 end;
 
 function TWUWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
 begin
-  Result:= [wfPng, wfGif, wfFlash];
+  Result:= SUP_MAP_FOR;
 end;
 
 function TWUWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
 begin
-  Result:= [mpSatellite, mpRadar, mpSatelliteRadar,
-    mpAniSatellite, mpAniRadar, mpAniSatelliteRadar];
+  Result:= SUP_MAP;
 end;
 
 { TWUWeatherURLs }
@@ -248,20 +284,30 @@ begin
   Result:= 'https://www.wunderground.com/member/registration';
 end;
 
-{ TWUService }
+{ TWUServiceInfo }
 
-constructor TWUService.Create;
+constructor TWUServiceInfo.Create;
+var
+  LT: TWeatherLogoType;
 begin
-  inherited;
   FSupport:= TWUWeatherSupport.Create;
   FSupport._AddRef;
   FURLs:= TWUWeatherURLs.Create;
   FURLs._AddRef;
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]:= TWeatherGraphic.Create;
+    FLogos[LT]._AddRef;
+  end;
   LoadLogos;
 end;
 
-destructor TWUService.Destroy;
+destructor TWUServiceInfo.Destroy;
+var
+  LT: TWeatherLogoType;
 begin
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]._Release;
+  end;
   FURLs._Release;
   FURLs:= nil;
   FSupport._Release;
@@ -269,7 +315,37 @@ begin
   inherited;
 end;
 
-procedure TWUService.LoadLogos;
+function TWUServiceInfo.GetCaption: WideString;
+begin
+  Result:= SVC_CAPTION;
+end;
+
+function TWUServiceInfo.GetName: WideString;
+begin
+  Result:= SVC_NAME;
+end;
+
+function TWUServiceInfo.GetSupport: IWeatherSupport;
+begin
+  Result:= FSupport;
+end;
+
+function TWUServiceInfo.GetUID: WideString;
+begin
+  Result:= SVC_UID;
+end;
+
+function TWUServiceInfo.GetURLs: IWeatherURLs;
+begin
+  Result:= FURLs;
+end;
+
+function TWUServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+begin
+  Result:= FLogos[LT];
+end;
+
+procedure TWUServiceInfo.LoadLogos;
   function Get(const N: String): IWeatherGraphic;
   var
     S: TResourceStream;
@@ -298,24 +374,26 @@ begin
 
 end;
 
-function TWUService.GetUID: WideString;
+procedure TWUServiceInfo.SetLogo(const LT: TWeatherLogoType;
+  const Value: IWeatherGraphic);
 begin
-  Result:= SVC_UID;
+  FLogos[LT].Base64:= Value.Base64;
 end;
 
-function TWUService.GetCaption: WideString;
+{ TWUService }
+
+constructor TWUService.Create;
 begin
-  Result:= SVC_CAPTION;
+  inherited;
+  FInfo:= TWUServiceInfo.Create;
+  FInfo._AddRef;
 end;
 
-function TWUService.GetURLs: IWeatherURLs;
+destructor TWUService.Destroy;
 begin
-  Result:= FURLs;
-end;
-
-function TWUService.Support: IWeatherSupport;
-begin
-  Result:= IWeatherSupport(FSupport);
+  FInfo._Release;
+  FInfo:= nil;
+  inherited;
 end;
 
 function TWUService.GetEndpointUrl(const Endpoint: TWUEndpoint): String;
@@ -572,6 +650,11 @@ begin
   finally
     Result:= R;
   end;
+end;
+
+function TWUService.GetInfo: IWeatherServiceInfo;
+begin
+  Result:= FInfo;
 end;
 
 function MapOptions(
