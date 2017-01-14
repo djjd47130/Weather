@@ -19,22 +19,91 @@ const
   clLightRed = $00B0B0FF;
 
 type
+  IWeatherProps = interface;
+  IWeatherGraphic = interface;
+  IWeatherLocation = interface;
+  IWeatherForecast = interface;
+  IWeatherAlertZone = interface;
+  IWeatherAlertZones = interface;
+  IWeatherStormVertex = interface;
+  IWeatherStormVerticies = interface;
+  IWeatherAlertStorm = interface;
+  IWeatherAlert = interface;
+  IWeatherAlerts = interface;
+  IWeatherMaps = interface;
+  IWeatherSupport = interface;
+  IWeatherURLs = interface;
+  IWeatherMultiInfo = interface;
   IWeatherServiceInfo = interface;
   IWeatherService = interface;
   IWeatherServices = interface;
+  IWeatherMultiService = interface;
   IJDWeather = interface;
-  IWeatherConditions = interface;
-  IWeatherForecast = interface;
-  IWeatherAlerts = interface;
-  IWeatherMaps = interface;
-  IWeatherGraphic = interface;
+
   TWeatherGraphic = class;
+
 
 
   TWeatherInfoType = (wiConditions, wiAlerts, wiForecastSummary,
     wiForecastHourly, wiForecastDaily, wiMaps, wiAlmanac, wiAstronomy,
-    wiHurricane, wiHistory, wiPlanner, wiStation);
+    wiHurricane, wiHistory, wiPlanner, wiStation, wiLocation);
   TWeatherInfoTypes = set of TWeatherInfoType;
+
+  TWeatherLogoType = (ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
+    ltColorLeft, ltColorRight);
+  TWeatherLogoTypes = set of TWeatherLogoType;
+
+  TLogoArray = array[TWeatherLogoType] of IWeatherGraphic;
+
+  TWeatherLocationType = (wlZip, wlCityState, wlCoords, wlAutoIP, wlCityCode,
+    wlCountryCity, wlAirportCode, wlPWS);
+  TWeatherLocationTypes = set of TWeatherLocationType;
+
+  TWeatherUnits = (wuKelvin, wuImperial, wuMetric);
+  TWeatherUnitsSet = set of TWeatherUnits;
+
+  TWeatherForecastType = (ftSummary, ftHourly, ftDaily);
+  TWeatherForecastTypes = set of TWeatherForecastType;
+
+  TWeatherPropType = (wpIcon, wpCaption, wpDescription, wpDetails, wpURL,
+    wpStation, wpPropsMin, wpPropsMax, wpTemp, wpTempMin, wpTempMax,
+    wpFeelsLike, wpFeelsLikeSun, wpFeelsLikeShade, wpWindDir, wpWindSpeed,
+    wpWindGust, wpWindChill, wpHeatIndex, wpPressure, wpPressureGround,
+    wpPressureSea, wpHumidity, wpDewPoint, wpVisibility, wpSolarRad, wpUVIndex,
+    wpCloudCover, wpPrecipAmt, wpRainAmt, wpSnowAmt, wpIceAmt, wpSleetAmt,
+    wpFogAmt, wpStormAmt, wpPrecipPred, wpRainPred, wpSnowPred, wpIcePred,
+    wpSleetPred, wpFogPred, wpStormPred, wpWetBulb, wpCeiling, wpSunrise,
+    wpSunset, wpDaylight);
+  TWeatherPropTypes = set of TWeatherPropType;
+
+  TWeatherAlertType = (waNone, waHurricaneStat, waTornadoWarn, waTornadoWatch, waSevThundWarn,
+    waSevThundWatch, waWinterAdv, waFloodWarn, waFloodWatch, waHighWind, waSevStat,
+    waHeatAdv, waFogAdv, waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
+    waRecordSet, waPublicRec, waPublicStat);
+  TWeatherAlertTypes = set of TWeatherAlertType;
+
+  TWeatherAlertProp = (apZones, apVerticies, apStorm, apType, apDescription,
+    apExpires, apMessage, apPhenomena, apSignificance);
+  TWeatherAlertProps = set of TWeatherAlertProp;
+
+  TWeatherAlertPhenomena = (wpWind, wpHeat, wpSmallCraft);
+
+  TWeatherMapType = (mpSatellite, mpRadar, mpSatelliteRadar, mpRadarClouds,
+    mpClouds, mpTemp, mpTempChange, mpSnowCover, mpPrecip, mpAlerts, mpHeatIndex,
+    mpDewPoint, mpWindChill, mpPressureSea, mpWind,
+    mpAniSatellite, mpAniRadar, mpAniSatelliteRadar);
+  TWeatherMapTypes = set of TWeatherMapType;
+
+  TWeatherMapFormat = (wfJpg, wfPng, wfGif, wfTiff, wfBmp, wfFlash, wfHtml);
+  TWeatherMapFormats = set of TWeatherMapFormat;
+
+  TMapArray = array[TWeatherMapType] of TWeatherGraphic;
+
+  TDayNight = (dnDay, dnNight);
+  TCloudCode = (ccClear = 0, ccAlmostClear = 1, ccHalfCloudy = 2, ccBroken = 3,
+    ccOvercast = 4, ccThinClouds = 5, ccFog = 6);
+  TPrecipCode = (pcNone = 0, pcSlight = 1, pcShowers = 2, pcPrecip = 3, pcThunder = 4);
+  TPrecipTypeCode = (ptRain = 0, ptSleet = 1, ptSnow = 2);
 
   TTemperature = record
     Value: Double;
@@ -51,155 +120,6 @@ type
     class operator Implicit(const Value: Double): TTemperature;
   end;
 
-  TWeatherMapFormat = (wfJpg, wfPng, wfGif, wfTiff, wfBmp, wfFlash, wfHtml);
-  TWeatherMapFormats = set of TWeatherMapFormat;
-
-  TJDWeatherLocationType = (wlZip, wlCityState, wlCoords, wlAutoIP, wlCityCode,
-    wlCountryCity, wlAirportCode, wlPWS);
-  TJDWeatherLocationTypes = set of TJDWeatherLocationType;
-
-  TWeatherConditionsEvent = procedure(Sender: TObject; const Conditions: IWeatherConditions) of object;
-
-  TWeatherForecastEvent = procedure(Sender: TObject; const Forecast: IWeatherForecast) of object;
-
-  TWeatherAlertEvent = procedure(Sender: TObject; const Alert: IWeatherAlerts) of object;
-
-  TWeatherMapEvent = procedure(Sender: TObject; const Image: IWeatherMaps) of object;
-
-  ///<summary>
-  ///  Specifies a particular weather info service provider.
-  ///</summary>
-  TWeatherService = (wsOpenWeatherMap, wsWUnderground, wsNWS,
-    wsNOAA, wsAccuWeather, wsForeca);
-
-  ///<summary>
-  ///  Specifies different types of measurement units.
-  ///</summary>
-  TWeatherUnits = (wuKelvin, wuImperial, wuMetric);
-  TWeatherUnitsSet = set of TWeatherUnits;
-
-  TWeatherForecastType = (ftSummary, ftHourly, ftDaily);
-  TWeatherForecastTypes = set of TWeatherForecastType;
-
-  TWeatherConditionsProp = (cpPressureMB, cpPressureIn, cpWindDir, cpWindSpeed,
-    cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex, cpWindGust, cpWindChill,
-    cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin, cpTempMax, cpPrecip,
-    cpIcon, cpCaption, cpDescription, cpStation, cpClouds,
-    cpRain, cpSnow, cpSunrise, cpSunset);
-  TWeatherConditionsProps = set of TWeatherConditionsProp;
-
-  TWeatherForecastProp = (fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
-    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
-    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
-    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
-    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb,
-    fpIce, fpCeiling);
-  TWeatherForecastProps = set of TWeatherForecastProp;
-
-  TWeatherProp = (
-    wpIcon,
-    wpCaption,
-    wpDescription,
-    wpDetails,
-    wpURL,
-    wpStation,
-    wpPropsMin,
-    wpPropsMax,
-    wpTemp,
-    wpTempMin,
-    wpTempMax,
-    wpFeelsLike,
-    wpFeelsLikeSun,
-    wpFeelsLikeShade,
-    wpWindDir,
-    wpWindSpeed,
-    wpWindGust,
-    wpWindChill,
-    wpHeatIndex,
-    wpPressure,
-    wpPressureGround,
-    wpPressureSea,
-    wpHumidity,
-    wpDewPoint,
-    wpVisibility,
-    wpSolarRad,
-    wpUVIndex,
-    wpCloudCover,
-    wpPrecipAmt,
-    wpRainAmt,
-    wpSnowAmt,
-    wpIceAmt,
-    wpSleetAmt,
-    wpStorm,
-    wpPrecipPred,
-    wpRainPred,
-    wpSnowPred,
-    wpIcePred,
-    wpSleetPred,
-    wpStormPred,
-    wpWetBulb,
-    wpCeiling,
-    wpSunrise,
-    wpSunset,
-    wpDaylight
-    );
-  TWeatherProps = set of TWeatherProp;
-
-  ///<summary>
-  ///  Specifies different types of weather alerts.
-  ///</summary>
-  TWeatherAlertType = (waNone, waHurricaneStat, waTornadoWarn, waTornadoWatch, waSevThundWarn,
-    waSevThundWatch, waWinterAdv, waFloodWarn, waFloodWatch, waHighWind, waSevStat,
-    waHeatAdv, waFogAdv, waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
-    waRecordSet, waPublicRec, waPublicStat);
-  TWeatherAlertTypes = set of TWeatherAlertType;
-
-  TWeatherAlertProp = (apZones, apVerticies, apStorm, apType, apDescription,
-    apExpires, apMessage, apPhenomena, apSignificance);
-  TWeatherAlertProps = set of TWeatherAlertProp;
-
-  ///<summary>
-  ///  Specifies different types of weather phenomena.
-  ///</summary>
-  TWeatherAlertPhenomena = (wpWind, wpHeat, wpSmallCraft);
-
-  TWeatherMapType = (mpSatellite, mpRadar, mpSatelliteRadar, mpRadarClouds,
-    mpClouds, mpTemp, mpTempChange, mpSnowCover, mpPrecip, mpAlerts, mpHeatIndex,
-    mpDewPoint, mpWindChill, mpPressureSea, mpWind,
-    mpAniSatellite, mpAniRadar, mpAniSatelliteRadar);
-  TWeatherMapTypes = set of TWeatherMapType;
-
-  {$IFDEF USE_VCL}
-  TMapArray = array[TWeatherMapType] of TPicture;
-  {$ELSE}
-  TMapArray = array[TWeatherMapType] of TWeatherGraphic;
-  {$ENDIF}
-
-  ///<summary>
-  ///  Specifies whether it's day or night.
-  ///</summary>
-  TDayNight = (dnDay, dnNight);
-
-  ///<summary>
-  ///  Specifies the type of cloud cover.
-  ///</summary>
-  TCloudCode = (ccClear = 0, ccAlmostClear = 1, ccHalfCloudy = 2, ccBroken = 3,
-    ccOvercast = 4, ccThinClouds = 5, ccFog = 6);
-
-  ///<summary>
-  ///  Specifies the level of precipitation.
-  ///</summary>
-  TPrecipCode = (pcNone = 0, pcSlight = 1, pcShowers = 2, pcPrecip = 3, pcThunder = 4);
-
-  ///<summary>
-  ///  Specifies the type of precipitation.
-  ///</summary>
-  TPrecipTypeCode = (ptRain = 0, ptSleet = 1, ptSnow = 2);
-
-  ///<summary>
-  ///  Represents standard weather condition information, and is
-  ///  interchangable with a standard string format.
-  ///</summary>
   TWeatherCode = record
   public
     DayNight: TDayNight;
@@ -218,9 +138,19 @@ type
 
 
 
-  TWeatherLogoType = (ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
-    ltColorLeft, ltColorRight);
-  TWeatherLogoTypes = set of TWeatherLogoType;
+
+
+
+  TWeatherConditionsEvent = procedure(Sender: TObject; const Conditions: IWeatherProps) of object;
+
+  TWeatherForecastEvent = procedure(Sender: TObject; const Forecast: IWeatherForecast) of object;
+
+  TWeatherAlertEvent = procedure(Sender: TObject; const Alert: IWeatherAlerts) of object;
+
+  TWeatherMapEvent = procedure(Sender: TObject; const Image: IWeatherMaps) of object;
+
+
+
 
   TCreateJDWeather = function(const LibDir: WideString): IJDWeather; stdcall;
 
@@ -228,138 +158,116 @@ type
 
   TGetServiceInfo = function: IWeatherServiceInfo; stdcall;
 
-  IWeatherSupport = interface
-    function GetSupportedLogos: TWeatherLogoTypes;
-    function GetSupportedUnits: TWeatherUnitsSet;
-    function GetSupportedInfo: TWeatherInfoTypes;
-    function GetSupportedLocations: TJDWeatherLocationTypes;
-    function GetSupportedAlerts: TWeatherAlertTypes;
-    function GetSupportedAlertProps: TWeatherAlertProps;
-    function GetSupportedConditionProps: TWeatherConditionsProps;
-    function GetSupportedForecasts: TWeatherForecastTypes;
-    function GetSupportedForecastSummaryProps: TWeatherForecastProps;
-    function GetSupportedForecastHourlyProps: TWeatherForecastProps;
-    function GetSupportedForecastDailyProps: TWeatherForecastProps;
-    function GetSupportedMaps: TWeatherMapTypes;
-    function GetSupportedMapFormats: TWeatherMapFormats;
 
-    property SupportedLogos: TWeatherLogoTypes read GetSupportedLogos;
-    property SupportedUnits: TWeatherUnitsSet read GetSupportedUnits;
-    property SupportedInfo: TWeatherInfoTypes read GetSupportedInfo;
-    property SupportedLocations: TJDWeatherLocationTypes read GetSupportedLocations;
-    property SupportedAlerts: TWeatherAlertTypes read GetSupportedAlerts;
-    property SupportedAlertProps: TWeatherAlertProps read GetSupportedAlertProps;
-    property SupportedConditionProps: TWeatherConditionsProps read GetSupportedConditionProps;
-    property SupportedForecasts: TWeatherForecastTypes read GetSupportedForecasts;
-    property SupportedForecastSummaryProps: TWeatherForecastProps read GetSupportedForecastSummaryProps;
-    property SupportedForecastHourlyProps: TWeatherForecastProps read GetSupportedForecastHourlyProps;
-    property SupportedForecastDailyProps: TWeatherForecastProps read GetSupportedForecastDailyProps;
-    property SupportedMaps: TWeatherMapTypes read GetSupportedMaps;
-    property SupportedMapFormats: TWeatherMapFormats read GetSupportedMapFormats;
-  end;
 
-  IWeatherURLs = interface
-    function GetMainURL: WideString;
-    function GetApiURL: WideString;
-    function GetLoginURL: WideString;
-    function GetRegisterURL: WideString;
-    function GetLegalURL: WideString;
 
-    property MainURL: WideString read GetMainURL;
-    property ApiURL: WideString read GetApiURL;
-    property LoginURL: WideString read GetLoginURL;
-    property RegisterURL: WideString read GetRegisterURL;
-    property LegalURL: WideString read GetLegalURL;
-  end;
 
-  IWeatherMultiInfo = interface
-    function GetConditions: IWeatherConditions;
-    function GetAlerts: IWeatherAlerts;
-    function GetForecastSummary: IWeatherForecast;
-    function GetForecastHourly: IWeatherForecast;
-    function GetForecastDaily: IWeatherForecast;
-    function GetMaps: IWeatherMaps;
 
-    property Conditions: IWeatherConditions read GetConditions;
-    property Alerts: IWeatherAlerts read GetAlerts;
-    property ForecastSummary: IWeatherForecast read GetForecastSummary;
-    property ForecastHourly: IWeatherForecast read GetForecastHourly;
-    property ForecastDaily: IWeatherForecast read GetForecastDaily;
-    property Maps: IWeatherMaps read GetMaps;
-  end;
 
-  IWeatherServiceInfo = interface
+
+
+
+  //Common Interface Definitions
+
+  IWeatherProps = interface
+    function GetDateTime: TDateTime;
     function GetCaption: WideString;
-    function GetName: WideString;
-    function GetUID: WideString;
-    function GetURLs: IWeatherURLs;
-    function GetSupport: IWeatherSupport;
+    function GetCeiling: Double;
+    function GetCloudCover: Double;
+    function GetDaylight: Double;
+    function GetDescription: WideString;
+    function GetDetails: WideString;
+    function GetDewPoint: Double;
+    function GetFeelsLike: Double;
+    function GetFeelsLikeShade: Double;
+    function GetFeelsLikeSun: Double;
+    function GetFogAmt: Double;
+    function GetFogPred: Double;
+    function GetHeatIndex: Double;
+    function GetHumidity: Double;
+    function GetIceAmt: Double;
+    function GetIcePred: Double;
+    function GetIcon: IWeatherGraphic;
+    function GetPrecipAmt: Double;
+    function GetPrecipPred: Double;
+    function GetPressure: Double;
+    function GetPressureGround: Double;
+    function GetPressureSea: Double;
+    function GetRainAmt: Double;
+    function GetRainPred: Double;
+    function GetSleetAmt: Double;
+    function GetSleetProd: Double;
+    function GetSnowAmt: Double;
+    function GetSnowPred: Double;
+    function GetSolarRad: Double;
+    function GetStation: WideString;
+    function GetStormAmt: Double;
+    function GetStormPred: Double;
+    function GetSunrise: TDateTime;
+    function GetSunset: TDateTime;
+    function GetTemp: Double;
+    function GetTempMax: Double;
+    function GetTempMin: Double;
+    function GetURL: WideString;
+    function GetUVIndex: Double;
+    function GetVisibility: Double;
+    function GetWetBulb: Double;
+    function GetWindChill: Double;
+    function GetWindDir: Double;
+    function GetWindGusts: Double;
+    function GetWindSpeed: Double;
 
-    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+    procedure AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
+    procedure CalcAverages;
 
+    property DateTime: TDateTime read GetDateTime;
+    property Icon: IWeatherGraphic read GetIcon;
     property Caption: WideString read GetCaption;
-    property Name: WideString read GetName;
-    property UID: WideString read GetUID;
-    property Support: IWeatherSupport read GetSupport;
-    property URLs: IWeatherURLs read GetURLs;
-  end;
-
-  IWeatherService = interface
-    //function GetModule: HMODULE;
-    //procedure SetModule(const Value: HMODULE);
-    function GetKey: WideString;
-    procedure SetKey(const Value: WideString);
-    function GetLocationType: TJDWeatherLocationType;
-    procedure SetLocationType(const Value: TJDWeatherLocationType);
-    function GetLocationDetail1: WideString;
-    procedure SetLocationDetail1(const Value: WideString);
-    function GetLocationDetail2: WideString;
-    procedure SetLocationDetail2(const Value: WideString);
-    function GetUnits: TWeatherUnits;
-    procedure SetUnits(const Value: TWeatherUnits);
-
-    function GetInfo: IWeatherServiceInfo;
-
-    function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
-    function GetConditions: IWeatherConditions;
-    function GetAlerts: IWeatherAlerts;
-    function GetForecastSummary: IWeatherForecast;
-    function GetForecastHourly: IWeatherForecast;
-    function GetForecastDaily: IWeatherForecast;
-    function GetMaps: IWeatherMaps;
-
-    property Info: IWeatherServiceInfo read GetInfo;
-    //property Module: HMODULE read GetModule write SetModule;
-    property Key: WideString read GetKey write SetKey;
-    property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
-    property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
-    property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
-    property Units: TWeatherUnits read GetUnits write SetUnits;
-  end;
-
-  IWeatherServices = interface
-    function GetItem(const Index: Integer): IWeatherService;
-    function Count: Integer;
-    procedure LoadServices(const Dir: WideString);
-    property Items[const Index: Integer]: IWeatherService read GetItem; default;
-  end;
-
-  IJDWeather = interface
-    function GetServices: IWeatherServices;
-    procedure SetLocationType(const Value: TJDWeatherLocationType);
-    function GetLocationDetail1: WideString;
-    function GetLocationType: TJDWeatherLocationType;
-    procedure SetLocationDetail1(const Value: WideString);
-    function GetLocationDetail2: WideString;
-    procedure SetLocationDetail2(const Value: WideString);
-    function GetUnits: TWeatherUnits;
-    procedure SetUnits(const Value: TWeatherUnits);
-
-    property Services: IWeatherServices read GetServices;
-    property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
-    property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
-    property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
-    property Units: TWeatherUnits read GetUnits write SetUnits;
+    property Description: WideString read GetDescription;
+    property Details: WideString read GetDetails;
+    property URL: WideString read GetURL;
+    property Station: WideString read GetStation;
+    //property PropsMin: Boolean read GetPropsMin; //TODO
+    //property PropsMax: Boolean read GetPropsMax; //TODO
+    property Temp: Double read GetTemp;
+    property TempMax: Double read GetTempMax;
+    property TempMin: Double read GetTempMin;
+    property FeelsLike: Double read GetFeelsLike;
+    property FeelsLikeSun: Double read GetFeelsLikeSun;
+    property FeelsLikeShade: Double read GetFeelsLikeShade;
+    property WindDir: Double read GetWindDir;
+    property WindSpeed: Double read GetWindSpeed;
+    property WindGusts: Double read GetWindGusts;
+    property WindChill: Double read GetWindChill;
+    property HeatIndex: Double read GetHeatIndex;
+    property Pressure: Double read GetPressure;
+    property PressureGround: Double read GetPressureGround;
+    property PressureSea: Double read GetPressureSea;
+    property Humidity: Double read GetHumidity;
+    property DewPoint: Double read GetDewPoint;
+    property Visibility: Double read GetVisibility;
+    property SolarRad: Double read GetSolarRad;
+    property UVIndex: Double read GetUVIndex;
+    property CloudCover: Double read GetCloudCover;
+    property PrecipAmt: Double read GetPrecipAmt;
+    property RainAmt: Double read GetRainAmt;
+    property SnowAmt: Double read GetSnowAmt;
+    property IceAmt: Double read GetIceAmt;
+    property SleetAmt: Double read GetSleetAmt;
+    property FogAmt: Double read GetFogAmt;
+    property StormAmt: Double read GetStormAmt;
+    property PrecipPred: Double read GetPrecipPred;
+    property RainPred: Double read GetRainPred;
+    property SnowPred: Double read GetSnowPred;
+    property IcePred: Double read GetIcePred;
+    property SleetPred: Double read GetSleetProd;
+    property FogPred: Double read GetFogPred;
+    property StormPred: Double read GetStormPred;
+    property WetBulb: Double read GetWetBulb;
+    property Ceiling: Double read GetCeiling;
+    property Sunrise: TDateTime read GetSunrise;
+    property Sunset: TDateTime read GetSunset;
+    property Daylight: Double read GetDaylight;
   end;
 
   IWeatherGraphic = interface
@@ -394,83 +302,14 @@ type
     property ZipCode: WideString read GetZipCode;
   end;
 
-  IWeatherConditions = interface
-    {$IFDEF USE_VCL}
-    function GetPicture: TPicture;
-    {$ELSE}
-    function GetPicture: IWeatherGraphic;
-    {$ENDIF}
-    function GetLocation: IWeatherLocation;
-    function GetDateTime: TDateTime;
-    function GetTemp: Single;
-    function GetHumidity: Single;
-    function GetPressure: Single;
-    function GetCondition: WideString;
-    function GetDescription: WideString;
-    function GetWindDir: Single;
-    function GetWindSpeed: Single;
-    function GetVisibility: Single;
-    function GetDewPoint: Single;
-    //function SupportedProps: TWeatherConditionsProps;
-    {$IFDEF USE_VCL}
-    property Picture: TPicture read GetPicture;
-    {$ELSE}
-    property Picture: IWeatherGraphic read GetPicture;
-    {$ENDIF}
-    property Location: IWeatherLocation read GetLocation;
-    property DateTime: TDateTime read GetDateTime;
-    property Temp: Single read GetTemp;
-    property Humidity: Single read GetHumidity;
-    property Pressure: Single read GetPressure;
-    property Condition: WideString read GetCondition;
-    property Description: WideString read GetDescription;
-    property WindSpeed: Single read GetWindSpeed;
-    property WindDir: Single read GetWindDir;
-    property Visibility: Single read GetVisibility;
-    property DewPoint: Single read GetDewPoint;
-  end;
-
-  IWeatherForecastItem = interface
-    {$IFDEF USE_VCL}
-    function GetPicture: TPicture;
-    {$ENDIF}
-    function GetDateTime: TDateTime;
-    function GetTemp: Single;
-    function GetTempMax: Single;
-    function GetTempMin: Single;
-    function GetHumidity: Single;
-    function GetPressure: Single;
-    function GetCondition: WideString;
-    function GetDescription: WideString;
-    function GetWindDir: Single;
-    function GetWindSpeed: Single;
-    function GetVisibility: Single;
-    function GetDewPoint: Single;
-    {$IFDEF USE_VCL}
-    property Picture: TPicture read GetPicture;
-    {$ENDIF}
-    property DateTime: TDateTime read GetDateTime;
-    property Temp: Single read GetTemp;
-    property TempMin: Single read GetTempMin;
-    property TempMax: Single read GetTempMax;
-    property Humidity: Single read GetHumidity;
-    property Pressure: Single read GetPressure;
-    property Condition: WideString read GetCondition;
-    property Description: WideString read GetDescription;
-    property WindSpeed: Single read GetWindSpeed;
-    property WindDir: Single read GetWindDir;
-    property Visibility: Single read GetVisibility;
-    property DewPoint: Single read GetDewPoint;
-  end;
-
   IWeatherForecast = interface
     function GetLocation: IWeatherLocation;
-    function GetItem(const Index: Integer): IWeatherForecastItem;
+    function GetItem(const Index: Integer): IWeatherProps;
     function Count: Integer;
     function MinTemp: Single;
     function MaxTemp: Single;
     property Location: IWeatherLocation read GetLocation;
-    property Items[const Index: Integer]: IWeatherForecastItem read GetItem; default;
+    property Items[const Index: Integer]: IWeatherProps read GetItem; default;
   end;
 
   IWeatherAlertZone = interface
@@ -542,17 +381,9 @@ type
   end;
 
   IWeatherMaps = interface
-    {$IFDEF USE_VCL}
-    function GetMap(const MapType: TWeatherMapType): TPicture;
-    {$ELSE}
     function GetMap(const MapType: TWeatherMapType): IWeatherGraphic;
-    {$ENDIF}
 
-    {$IFDEF USE_VCL}
-    property Maps[const MapType: TWeatherMapType]: TPicture read GetMap;
-    {$ELSE}
     property Maps[const MapType: TWeatherMapType]: IWeatherGraphic read GetMap;
-    {$ENDIF}
   end;
 
 
@@ -560,7 +391,359 @@ type
 
 
 
+
+
+  //Service Interface Definitions
+
+  IWeatherSupport = interface
+    function GetSupportedLogos: TWeatherLogoTypes;
+    function GetSupportedUnits: TWeatherUnitsSet;
+    function GetSupportedInfo: TWeatherInfoTypes;
+    function GetSupportedLocations: TWeatherLocationTypes;
+    function GetSupportedAlerts: TWeatherAlertTypes;
+    function GetSupportedAlertProps: TWeatherAlertProps;
+    function GetSupportedConditionProps: TWeatherPropTypes;
+    function GetSupportedForecasts: TWeatherForecastTypes;
+    function GetSupportedForecastSummaryProps: TWeatherPropTypes;
+    function GetSupportedForecastHourlyProps: TWeatherPropTypes;
+    function GetSupportedForecastDailyProps: TWeatherPropTypes;
+    function GetSupportedMaps: TWeatherMapTypes;
+    function GetSupportedMapFormats: TWeatherMapFormats;
+
+    property SupportedLogos: TWeatherLogoTypes read GetSupportedLogos;
+    property SupportedUnits: TWeatherUnitsSet read GetSupportedUnits;
+    property SupportedInfo: TWeatherInfoTypes read GetSupportedInfo;
+    property SupportedLocations: TWeatherLocationTypes read GetSupportedLocations;
+    property SupportedAlerts: TWeatherAlertTypes read GetSupportedAlerts;
+    property SupportedAlertProps: TWeatherAlertProps read GetSupportedAlertProps;
+    property SupportedConditionProps: TWeatherPropTypes read GetSupportedConditionProps;
+    property SupportedForecasts: TWeatherForecastTypes read GetSupportedForecasts;
+    property SupportedForecastSummaryProps: TWeatherPropTypes read GetSupportedForecastSummaryProps;
+    property SupportedForecastHourlyProps: TWeatherPropTypes read GetSupportedForecastHourlyProps;
+    property SupportedForecastDailyProps: TWeatherPropTypes read GetSupportedForecastDailyProps;
+    property SupportedMaps: TWeatherMapTypes read GetSupportedMaps;
+    property SupportedMapFormats: TWeatherMapFormats read GetSupportedMapFormats;
+  end;
+
+  IWeatherURLs = interface
+    function GetMainURL: WideString;
+    function GetApiURL: WideString;
+    function GetLoginURL: WideString;
+    function GetRegisterURL: WideString;
+    function GetLegalURL: WideString;
+
+    property MainURL: WideString read GetMainURL;
+    property ApiURL: WideString read GetApiURL;
+    property LoginURL: WideString read GetLoginURL;
+    property RegisterURL: WideString read GetRegisterURL;
+    property LegalURL: WideString read GetLegalURL;
+  end;
+
+  IWeatherMultiInfo = interface
+    function GetConditions: IWeatherProps;
+    function GetAlerts: IWeatherAlerts;
+    function GetForecastSummary: IWeatherForecast;
+    function GetForecastHourly: IWeatherForecast;
+    function GetForecastDaily: IWeatherForecast;
+    function GetMaps: IWeatherMaps;
+
+    property Conditions: IWeatherProps read GetConditions;
+    property Alerts: IWeatherAlerts read GetAlerts;
+    property ForecastSummary: IWeatherForecast read GetForecastSummary;
+    property ForecastHourly: IWeatherForecast read GetForecastHourly;
+    property ForecastDaily: IWeatherForecast read GetForecastDaily;
+    property Maps: IWeatherMaps read GetMaps;
+  end;
+
+  IWeatherServiceInfo = interface
+    function GetCaption: WideString;
+    function GetName: WideString;
+    function GetUID: WideString;
+    function GetURLs: IWeatherURLs;
+    function GetSupport: IWeatherSupport;
+
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+
+    property Caption: WideString read GetCaption;
+    property Name: WideString read GetName;
+    property UID: WideString read GetUID;
+    property Support: IWeatherSupport read GetSupport;
+    property URLs: IWeatherURLs read GetURLs;
+  end;
+
+  IWeatherService = interface
+    function GetKey: WideString;
+    procedure SetKey(const Value: WideString);
+    function GetLocationType: TWeatherLocationType;
+    procedure SetLocationType(const Value: TWeatherLocationType);
+    function GetLocationDetail1: WideString;
+    procedure SetLocationDetail1(const Value: WideString);
+    function GetLocationDetail2: WideString;
+    procedure SetLocationDetail2(const Value: WideString);
+    function GetUnits: TWeatherUnits;
+    procedure SetUnits(const Value: TWeatherUnits);
+
+    function GetInfo: IWeatherServiceInfo;
+
+    function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
+    function GetLocation: IWeatherLocation;
+    function GetConditions: IWeatherProps;
+    function GetAlerts: IWeatherAlerts;
+    function GetForecastSummary: IWeatherForecast;
+    function GetForecastHourly: IWeatherForecast;
+    function GetForecastDaily: IWeatherForecast;
+    function GetMaps: IWeatherMaps;
+
+    property Info: IWeatherServiceInfo read GetInfo;
+    property Key: WideString read GetKey write SetKey;
+    property LocationType: TWeatherLocationType read GetLocationType write SetLocationType;
+    property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
+    property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
+    property Units: TWeatherUnits read GetUnits write SetUnits;
+  end;
+
+  IWeatherServices = interface
+    function GetItem(const Index: Integer): IWeatherService;
+
+    function Count: Integer;
+    procedure LoadServices(const Dir: WideString);
+    property Items[const Index: Integer]: IWeatherService read GetItem; default;
+  end;
+
+  IWeatherMultiService = interface
+    function GetItem(const Index: Integer): IWeatherService;
+
+    function GetCombinedConditions: IWeatherProps;
+    function GetCombinedAlerts: IWeatherAlerts;
+    function GetCombinedForecastSummary: IWeatherForecast;
+    function GetCombinedForecastHourly: IWeatherForecast;
+    function GetCombinedForecastDaily: IWeatherForecast;
+
+    procedure Add(const Svc: IWeatherService);
+    procedure Delete(const Index: Integer);
+    procedure Clear;
+    function Count: Integer;
+    property Items[const Index: Integer]: IWeatherService read GetItem; default;
+  end;
+
+  TWeatherMultiService = class(TInterfacedObject, IWeatherMultiService)
+  private
+    FItems: TList<IWeatherService>;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetItem(const Index: Integer): IWeatherService;
+
+    function GetCombinedConditions: IWeatherProps;
+    function GetCombinedAlerts: IWeatherAlerts;
+    function GetCombinedForecastSummary: IWeatherForecast;
+    function GetCombinedForecastHourly: IWeatherForecast;
+    function GetCombinedForecastDaily: IWeatherForecast;
+
+    procedure Add(const Svc: IWeatherService);
+    procedure Delete(const Index: Integer);
+    procedure Clear;
+    function Count: Integer;
+    property Items[const Index: Integer]: IWeatherService read GetItem; default;
+  end;
+
+  IJDWeather = interface
+    function GetServices: IWeatherServices;
+    procedure SetLocationType(const Value: TWeatherLocationType);
+    function GetLocationDetail1: WideString;
+    function GetLocationType: TWeatherLocationType;
+    procedure SetLocationDetail1(const Value: WideString);
+    function GetLocationDetail2: WideString;
+    procedure SetLocationDetail2(const Value: WideString);
+    function GetUnits: TWeatherUnits;
+    procedure SetUnits(const Value: TWeatherUnits);
+
+    property Services: IWeatherServices read GetServices;
+    property LocationType: TWeatherLocationType read GetLocationType write SetLocationType;
+    property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
+    property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
+    property Units: TWeatherUnits read GetUnits write SetUnits;
+  end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   { Interface Implementation Objects }
+
+  TWeatherProps = class(TInterfacedObject, IWeatherProps)
+  public
+    FCounts: Array[TWeatherPropType] of Integer;
+    FDateTime: TDateTime;
+    FIcon: TWeatherGraphic;
+    FCaption: WideString;
+    FDescription: WideString;
+    FDetails: WideString;
+    FURL: WideString;
+    FStation: WideString;
+    FTemp: Double;
+    FTempMax: Double;
+    FTempMin: Double;
+    FFeelsLike: Double;
+    FFeelsLikeSun: Double;
+    FFeelsLikeShade: Double;
+    FWindDir: Double;
+    FWindSpeed: Double;
+    FWindGusts: Double;
+    FWindChill: Double;
+    FHeatIndex: Double;
+    FPressure: Double;
+    FPressureGround: Double;
+    FPressureSea: Double;
+    FHumidity: Double;
+    FDewPoint: Double;
+    FVisibility: Double;
+    FSolarRad: Double;
+    FUVIndex: Double;
+    FCloudCover: Double;
+    FPrecipAmt: Double;
+    FRainAmt: Double;
+    FSnowAmt: Double;
+    FIceAmt: Double;
+    FSleetAmt: Double;
+    FFogAmt: Double;
+    FStormAmt: Double;
+    FPrecipPred: Double;
+    FRainPred: Double;
+    FSnowPred: Double;
+    FIcePred: Double;
+    FSleetPred: Double;
+    FFogPred: Double;
+    FStormPred: Double;
+    FWetBulb: Double;
+    FCeiling: Double;
+    FSunrise: TDateTime;
+    FSunset: TDateTime;
+    FDaylight: Double;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetDateTime: TDateTime;
+    function GetCaption: WideString;
+    function GetCeiling: Double;
+    function GetCloudCover: Double;
+    function GetDaylight: Double;
+    function GetDescription: WideString;
+    function GetDetails: WideString;
+    function GetDewPoint: Double;
+    function GetFeelsLike: Double;
+    function GetFeelsLikeShade: Double;
+    function GetFeelsLikeSun: Double;
+    function GetFogAmt: Double;
+    function GetFogPred: Double;
+    function GetHeatIndex: Double;
+    function GetHumidity: Double;
+    function GetIceAmt: Double;
+    function GetIcePred: Double;
+    function GetIcon: IWeatherGraphic;
+    function GetPrecipAmt: Double;
+    function GetPrecipPred: Double;
+    function GetPressure: Double;
+    function GetPressureGround: Double;
+    function GetPressureSea: Double;
+    function GetRainAmt: Double;
+    function GetRainPred: Double;
+    function GetSleetAmt: Double;
+    function GetSleetProd: Double;
+    function GetSnowAmt: Double;
+    function GetSnowPred: Double;
+    function GetSolarRad: Double;
+    function GetStation: WideString;
+    function GetStormAmt: Double;
+    function GetStormPred: Double;
+    function GetSunrise: TDateTime;
+    function GetSunset: TDateTime;
+    function GetTemp: Double;
+    function GetTempMax: Double;
+    function GetTempMin: Double;
+    function GetURL: WideString;
+    function GetUVIndex: Double;
+    function GetVisibility: Double;
+    function GetWetBulb: Double;
+    function GetWindChill: Double;
+    function GetWindDir: Double;
+    function GetWindGusts: Double;
+    function GetWindSpeed: Double;
+
+    procedure AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
+    procedure CalcAverages;
+
+    property DateTime: TDateTime read GetDateTime;
+    property Icon: IWeatherGraphic read GetIcon;
+    property Caption: WideString read GetCaption;
+    property Description: WideString read GetDescription;
+    property Details: WideString read GetDetails;
+    property URL: WideString read GetURL;
+    property Station: WideString read GetStation;
+    //property PropsMin: Boolean read GetPropsMin; //TODO
+    //property PropsMax: Boolean read GetPropsMax; //TODO
+    property Temp: Double read GetTemp;
+    property TempMax: Double read GetTempMax;
+    property TempMin: Double read GetTempMin;
+    property FeelsLike: Double read GetFeelsLike;
+    property FeelsLikeSun: Double read GetFeelsLikeSun;
+    property FeelsLikeShade: Double read GetFeelsLikeShade;
+    property WindDir: Double read GetWindDir;
+    property WindSpeed: Double read GetWindSpeed;
+    property WindGusts: Double read GetWindGusts;
+    property WindChill: Double read GetWindChill;
+    property HeatIndex: Double read GetHeatIndex;
+    property Pressure: Double read GetPressure;
+    property PressureGround: Double read GetPressureGround;
+    property PressureSea: Double read GetPressureSea;
+    property Humidity: Double read GetHumidity;
+    property DewPoint: Double read GetDewPoint;
+    property Visibility: Double read GetVisibility;
+    property SolarRad: Double read GetSolarRad;
+    property UVIndex: Double read GetUVIndex;
+    property CloudCover: Double read GetCloudCover;
+    property PrecipAmt: Double read GetPrecipAmt;
+    property RainAmt: Double read GetRainAmt;
+    property SnowAmt: Double read GetSnowAmt;
+    property IceAmt: Double read GetIceAmt;
+    property SleetAmt: Double read GetSleetAmt;
+    property FogAmt: Double read GetFogAmt;
+    property StormAmt: Double read GetStormAmt;
+    property PrecipPred: Double read GetPrecipPred;
+    property RainPred: Double read GetRainPred;
+    property SnowPred: Double read GetSnowPred;
+    property IcePred: Double read GetIcePred;
+    property SleetPred: Double read GetSleetProd;
+    property FogPred: Double read GetFogPred;
+    property StormPred: Double read GetStormPred;
+    property WetBulb: Double read GetWetBulb;
+    property Ceiling: Double read GetCeiling;
+    property Sunrise: TDateTime read GetSunrise;
+    property Sunset: TDateTime read GetSunset;
+    property Daylight: Double read GetDaylight;
+  end;
 
   TWeatherGraphic = class(TInterfacedObject, IWeatherGraphic)
   private
@@ -618,128 +801,9 @@ type
     property ZipCode: WideString read GetZipCode;
   end;
 
-  TWeatherConditions = class(TInterfacedObject, IWeatherConditions)
-  public
-    {$IFDEF USE_VCL}
-    FPicture: TPicture;
-    {$ELSE}
-    FPicture: TWeatherGraphic;
-    {$ENDIF}
-    //FOwner: TJDWeatherThread;
-    FLocation: TWeatherLocation;
-    FDateTime: TDateTime;
-    FTemp: Single;
-    FHumidity: Single;
-    FPressure: Single;
-    FCondition: WideString;
-    FDescription: WideString;
-    FWindSpeed: Single;
-    FWindDir: Single;
-    FVisibility: Single;
-    FDewPoint: Single;
-  public
-    constructor Create;
-    destructor Destroy; override;
-  public
-    {$IFDEF USE_VCL}
-    function GetPicture: TPicture;
-    {$ELSE}
-    function GetPicture: IWeatherGraphic;
-    {$ENDIF}
-    function GetLocation: IWeatherLocation;
-    function GetDateTime: TDateTime;
-    function GetTemp: Single;
-    function GetHumidity: Single;
-    function GetPressure: Single;
-    function GetCondition: WideString;
-    function GetDescription: WideString;
-    function GetWindDir: Single;
-    function GetWindSpeed: Single;
-    function GetVisibility: Single;
-    function GetDewPoint: Single;
-    {$IFDEF USE_VCL}
-    property Picture: TPicture read GetPicture;
-    {$ELSE}
-    property Picture: IWeatherGraphic read GetPicture;
-    {$ENDIF}
-    property Location: IWeatherLocation read GetLocation;
-    property DateTime: TDateTime read GetDateTime;
-    property Temp: Single read GetTemp;
-    property Humidity: Single read GetHumidity;
-    property Pressure: Single read GetPressure;
-    property Condition: WideString read GetCondition;
-    property Description: WideString read GetDescription;
-    property WindSpeed: Single read GetWindSpeed;
-    property WindDir: Single read GetWindDir;
-    property Visibility: Single read GetVisibility;
-    property DewPoint: Single read GetDewPoint;
-  end;
-
-  TWeatherForecast = class;
-
-  TWeatherForecastItem = class(TInterfacedObject, IWeatherForecastItem)
-  public
-    FOwner: TWeatherForecast;
-    {$IFDEF USE_VCL}
-    FPicture: TPicture;
-    {$ELSE}
-    FPicture: TWeatherGraphic;
-    {$ENDIF}
-    FDateTime: TDateTime;
-    FTemp: Single;
-    FTempMin: Single;
-    FTempMax: Single;
-    FHumidity: Single;
-    FPressure: Single;
-    FCondition: WideString;
-    FDescription: WideString;
-    FWindSpeed: Single;
-    FWindDir: Single;
-    FVisibility: Single;
-    FDewPoint: Single;
-  public
-    constructor Create(AOwner: TWeatherForecast);
-    destructor Destroy; override;
-  public
-    {$IFDEF USE_VCL}
-    function GetPicture: TPicture;
-    {$ELSE}
-    function GetPicture: IWeatherGraphic;
-    {$ENDIF}
-    function GetDateTime: TDateTime;
-    function GetTemp: Single;
-    function GetTempMax: Single;
-    function GetTempMin: Single;
-    function GetHumidity: Single;
-    function GetPressure: Single;
-    function GetCondition: WideString;
-    function GetDescription: WideString;
-    function GetWindDir: Single;
-    function GetWindSpeed: Single;
-    function GetVisibility: Single;
-    function GetDewPoint: Single;
-    {$IFDEF USE_VCL}
-    property Picture: TPicture read GetPicture;
-    {$ELSE}
-    property Picture: IWeatherGraphic read GetPicture;
-    {$ENDIF}
-    property DateTime: TDateTime read GetDateTime;
-    property Temp: Single read GetTemp;
-    property TempMin: Single read GetTempMin;
-    property TempMax: Single read GetTempMax;
-    property Humidity: Single read GetHumidity;
-    property Pressure: Single read GetPressure;
-    property Condition: WideString read GetCondition;
-    property Description: WideString read GetDescription;
-    property WindSpeed: Single read GetWindSpeed;
-    property WindDir: Single read GetWindDir;
-    property Visibility: Single read GetVisibility;
-    property DewPoint: Single read GetDewPoint;
-  end;
-
   TWeatherForecast = class(TInterfacedObject, IWeatherForecast)
   public
-    FItems: TList<IWeatherForecastItem>;
+    FItems: TList<IWeatherProps>;
     FLocation: TWeatherLocation;
     procedure Clear;
   public
@@ -747,12 +811,12 @@ type
     destructor Destroy; override;
   public
     function GetLocation: IWeatherLocation;
-    function GetItem(const Index: Integer): IWeatherForecastItem;
+    function GetItem(const Index: Integer): IWeatherProps;
     function Count: Integer;
     function MinTemp: Single;
     function MaxTemp: Single;
     property Location: IWeatherLocation read GetLocation;
-    property Items[const Index: Integer]: IWeatherForecastItem read GetItem; default;
+    property Items[const Index: Integer]: IWeatherProps read GetItem; default;
   end;
 
   TWeatherStormVertex = class(TInterfacedObject, IWeatherStormVertex)
@@ -884,27 +948,14 @@ type
     constructor Create;
     destructor Destroy; override;
   public
-    {$IFDEF USE_VCL}
-    function GetMap(const MapType: TWeatherMapType): TPicture;
-    {$ELSE}
     function GetMap(const MapType: TWeatherMapType): IWeatherGraphic;
-    {$ENDIF}
 
-    {$IFDEF USE_VCL}
-    property Maps[const MapType: TWeatherMapType]: TPicture read GetMap;
-    {$ELSE}
     property Maps[const MapType: TWeatherMapType]: IWeatherGraphic read GetMap;
-    {$ENDIF}
   end;
-
-
-
-
-
 
   TWeatherMultiInfo = class(TInterfacedObject, IWeatherMultiInfo)
   private
-    FConditions: TWeatherConditions;
+    FConditions: IWeatherProps;
     FAlerts: TWeatherAlerts;
     FForecastSummary: TWeatherForecast;
     FForecastHourly: TWeatherForecast;
@@ -913,17 +964,17 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    procedure SetAll(Con: TWeatherConditions; Alr: TWeatherAlerts;
+    procedure SetAll(Con: IWeatherProps; Alr: TWeatherAlerts;
       Fos, Foh, Fod: TWeatherForecast; Map: IWeatherMaps);
   public
-    function GetConditions: IWeatherConditions;
+    function GetConditions: IWeatherProps;
     function GetAlerts: IWeatherAlerts;
     function GetForecastSummary: IWeatherForecast;
     function GetForecastHourly: IWeatherForecast;
     function GetForecastDaily: IWeatherForecast;
     function GetMaps: IWeatherMaps;
 
-    property Conditions: IWeatherConditions read GetConditions;
+    property Conditions: IWeatherProps read GetConditions;
     property Alerts: IWeatherAlerts read GetAlerts;
     property ForecastSummary: IWeatherForecast read GetForecastSummary;
     property ForecastHourly: IWeatherForecast read GetForecastHourly;
@@ -931,14 +982,12 @@ type
     property Maps: IWeatherMaps read GetMaps;
   end;
 
-  TLogoArray = array[TWeatherLogoType] of IWeatherGraphic;
-
   TWeatherServiceBase = class(TInterfacedObject)
   private
     //FModule: HMODULE;
     FKey: WideString;
     FWeb: TIdHTTP;
-    FLocationType: TJDWeatherLocationType;
+    FLocationType: TWeatherLocationType;
     FLocationDetail1: WideString;
     FLocationDetail2: WideString;
     FUnits: TWeatherUnits;
@@ -951,8 +1000,8 @@ type
     //procedure SetModule(const Value: HMODULE);
     function GetKey: WideString;
     procedure SetKey(const Value: WideString);
-    function GetLocationType: TJDWeatherLocationType;
-    procedure SetLocationType(const Value: TJDWeatherLocationType);
+    function GetLocationType: TWeatherLocationType;
+    procedure SetLocationType(const Value: TWeatherLocationType);
     function GetLocationDetail1: WideString;
     procedure SetLocationDetail1(const Value: WideString);
     function GetLocationDetail2: WideString;
@@ -963,7 +1012,7 @@ type
 
     //property Module: HMODULE read GetModule write SetModule;
     property Key: WideString read GetKey write SetKey;
-    property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
+    property LocationType: TWeatherLocationType read GetLocationType write SetLocationType;
     property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
     property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
     property Units: TWeatherUnits read GetUnits write SetUnits;
@@ -996,6 +1045,7 @@ type
 
 
 
+function ResourceExists(const Name, ResType: String): Boolean;
 
 {$IFDEF USE_VCL}
 function TempColor(const Temp: Single): TColor;
@@ -1021,18 +1071,23 @@ function LocalDateTimeFromUTCDateTime(const UTCDateTime: TDateTime): TDateTime;
 function WeatherUnitsToStr(const Value: TWeatherUnits): String;
 function WeatherMapFormatToStr(const Value: TWeatherMapFormat): String;
 function WeatherMapTypeToStr(const Value: TWeatherMapType): String;
-function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
+//function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
 function WeatherForecastTypeToStr(const Value: TWeatherForecastType): String;
-function WeatherPropToStr(const Value: TWeatherProp): String;
+function WeatherPropToStr(const Value: TWeatherPropType): String;
 function WeatherAlertPropToStr(const Value: TWeatherAlertProp): String;
 function WeatherAlertTypeToStr(const Value: TWeatherAlertType): String;
-function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
+//function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
 function WeatherInfoTypeToStr(const Value: TWeatherInfoType): String;
-function WeatherLocationTypeToStr(const Value: TJDWeatherLocationType): String;
+function WeatherLocationTypeToStr(const Value: TWeatherLocationType): String;
 
 implementation
 
-function WeatherLocationTypeToStr(const Value: TJDWeatherLocationType): String;
+function ResourceExists(const Name, ResType: String): Boolean;
+begin
+  Result:= (FindResource(hInstance, PChar(Name), PChar(Name)) <> 0);
+end;
+
+function WeatherLocationTypeToStr(const Value: TWeatherLocationType): String;
 begin
   case Value of
     wlZip:          Result:= 'Zip Code';
@@ -1049,6 +1104,7 @@ end;
 function WeatherInfoTypeToStr(const Value: TWeatherInfoType): String;
 begin
   case Value of
+    wiLocation:         Result:= 'Location Info';
     wiConditions:       Result:= 'Current Conditions';
     wiAlerts:           Result:= 'Weather Alerts';
     wiForecastSummary:  Result:= 'Forecast Summary';
@@ -1061,38 +1117,6 @@ begin
     wiHistory:          Result:= 'History';
     wiPlanner:          Result:= 'Planner';
     wiStation:          Result:= 'Station';
-  end;
-end;
-
-function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
-begin
-  case Value of
-    cpPressureMB:   Result:= 'Pressure (Mb)';
-    cpPressureIn:   Result:= 'Pressure (In)';
-    cpWindDir:      Result:= 'Wind Direction';
-    cpWindSpeed:    Result:= 'Wind Speed';
-    cpHumidity:     Result:= 'Humidity';
-    cpVisibility:   Result:= 'Visibility';
-    cpDewPoint:     Result:= 'Dew Point';
-    cpHeatIndex:    Result:= 'Heat Index';
-    cpWindGust:     Result:= 'Wind Gusts';
-    cpWindChill:    Result:= 'Wind Chill';
-    cpFeelsLike:    Result:= 'Feels Like';
-    cpSolarRad:     Result:= 'Solar Radiation';
-    cpUV:           Result:= 'UV Index';
-    cpTemp:         Result:= 'Temperature';
-    cpTempMin:      Result:= 'Temp Min';
-    cpTempMax:      Result:= 'Temp Max';
-    cpPrecip:       Result:= 'Precipitation';
-    cpIcon:         Result:= 'Weather Icon';
-    cpCaption:      Result:= 'Caption';
-    cpDescription:  Result:= 'Description';
-    cpStation:      Result:= 'Station';
-    cpClouds:       Result:= 'Clouds';
-    cpRain:         Result:= 'Rain';
-    cpSnow:         Result:= 'Snow';
-    cpSunrise:      Result:= 'Sunrise';
-    cpSunset:       Result:= 'Sunset';
   end;
 end;
 
@@ -1146,90 +1170,56 @@ begin
   end;
 end;
 
-function WeatherPropToStr(const Value: TWeatherProp): String;
+function WeatherPropToStr(const Value: TWeatherPropType): String;
 begin
   case Value of
-    wpIcon: ;
-    wpCaption: ;
-    wpDescription: ;
-    wpDetails: ;
-    wpURL: ;
-    wpStation: ;
-    wpTemp: ;
-    wpTempMin: ;
-    wpTempMax: ;
-    wpFeelsLike: ;
-    wpFeelsLikeSun: ;
-    wpFeelsLikeShade: ;
-    wpWindDir: ;
-    wpWindSpeed: ;
-    wpWindGust: ;
-    wpWindChill: ;
-    wpHeatIndex: ;
-    wpPressure: ;
-    wpPressureGround: ;
-    wpPressureSea: ;
-    wpHumidity: ;
-    wpDewPoint: ;
-    wpVisibility: ;
-    wpSolarRad: ;
-    wpUVIndex: ;
-    wpCloudCover: ;
-    wpPrecipAmt: ;
-    wpRainAmt: ;
-    wpSnowAmt: ;
-    wpIceAmt: ;
-    wpSleetAmt: ;
-    wpStorm: ;
-    wpPrecipPred: ;
-    wpRainPred: ;
-    wpSnowPred: ;
-    wpIcePred: ;
-    wpSleetPred: ;
-    wpStormPred: ;
-    wpWetBulb: ;
-    wpCeiling: ;
-    wpSunrise: ;
-    wpSunset: ;
-    wpDaylight: ;
-  end;
-end;
-
-function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
-begin
-  case Value of
-    fpPressureMB:     Result:= 'Pressure (Mb)';
-    fpPressureIn:     Result:= 'Pressure (In)';
-    fpWindDir:        Result:= 'Wind Direction';
-    fpWindSpeed:      Result:= 'Wind Speed';
-    fpHumidity:       Result:= 'Humidity';
-    fpVisibility:     Result:= 'Visibility';
-    fpDewPoint:       Result:= 'Dew Point';
-    fpHeatIndex:      Result:= 'Heat Index';
-    fpWindGust:       Result:= 'Wind Gusts';
-    fpWindChill:      Result:= 'Wind Chill';
-    fpFeelsLike:      Result:= 'Feels Like';
-    fpSolarRad:       Result:= 'Solar Radiation';
-    fpUV:             Result:= 'UV Index';
-    fpTemp:           Result:= 'Temperature';
-    fpTempMin:        Result:= 'Temp Min';
-    fpTempMax:        Result:= 'Temp Max';
-    fpCaption:        Result:= 'Caption';
-    fpDescription:    Result:= 'Description';
-    fpIcon:           Result:= 'Weather Icon';
-    fpGroundPressure: Result:= 'Ground Pressure';
-    fpSeaPressure:    Result:= 'Sea Pressure';
-    fpPrecip:         Result:= 'Precipitation Amount';
-    fpURL:            Result:= 'URL';
-    fpDaylight:       Result:= 'Daylight';
-    fpSnow:           Result:= 'Snow Amount';
-    fpSleet:          Result:= 'Sleet Amount';
-    fpPrecipChance:   Result:= 'Chance of Precipitation';
-    fpClouds:         Result:= 'Cloud Cover';
-    fpRain:           Result:= 'Rain Amount';
-    fpWetBulb:        Result:= 'Wet Bulb';
-    fpIce:            Result:= 'Ice';
-    fpCeiling:        Result:= 'Ceiling';
+    wpIcon:           Result:= 'Weather Icon';
+    wpCaption:        Result:= 'Caption';
+    wpDescription:    Result:= 'Description';
+    wpDetails:        Result:= 'Details';
+    wpURL:            Result:= 'URL';
+    wpStation:        Result:= 'Station';
+    wpPropsMin:       Result:= 'Min of All Props';
+    wpPropsMax:       Result:= 'Max of All Props';
+    wpTemp:           Result:= 'Temperature';
+    wpTempMin:        Result:= 'Temp Min';
+    wpTempMax:        Result:= 'Temp Max';
+    wpFeelsLike:      Result:= 'Feels Like';
+    wpFeelsLikeSun:   Result:= 'Feels Like Sun';
+    wpFeelsLikeShade: Result:= 'Feels Like Shade';
+    wpWindDir:        Result:= 'Wind Direction';
+    wpWindSpeed:      Result:= 'Wind Speed';
+    wpWindGust:       Result:= 'Wind Gusts';
+    wpWindChill:      Result:= 'Wind Chill';
+    wpHeatIndex:      Result:= 'Heat Index';
+    wpPressure:       Result:= 'Air Pressure';
+    wpPressureGround: Result:= 'Pressure at Ground';
+    wpPressureSea:    Result:= 'Pressure at Sea';
+    wpHumidity:       Result:= 'Humidity';
+    wpDewPoint:       Result:= 'Dew Point';
+    wpVisibility:     Result:= 'Visibility';
+    wpSolarRad:       Result:= 'Solar Radiation';
+    wpUVIndex:        Result:= 'UV Index';
+    wpCloudCover:     Result:= 'Cloud Cover';
+    wpPrecipAmt:      Result:= 'Precipitation Amt';
+    wpRainAmt:        Result:= 'Rain Amount';
+    wpSnowAmt:        Result:= 'Snow Amount';
+    wpIceAmt:         Result:= 'Ice Amount';
+    wpSleetAmt:       Result:= 'Sleet Amount';
+    wpFogAmt:         Result:= 'Fog Amount';
+    wpStormAmt:       Result:= 'Storm Amount';
+    wpPrecipPred:     Result:= 'Chance of Precip';
+    wpRainPred:       Result:= 'Chance of Rain';
+    wpSnowPred:       Result:= 'Chance of Snow';
+    wpIcePred:        Result:= 'Chance of Ice';
+    wpSleetPred:      Result:= 'Chance of Sleet';
+    wpFogPred:        Result:= 'Chance of Fog';
+    wpStormPred:      Result:= 'Chance of Storm';
+    wpWetBulb:        Result:= 'Wet Bulb';
+    wpCeiling:        Result:= 'Ceiling';
+    wpSunrise:        Result:= 'Sunrise';
+    wpSunset:         Result:= 'Sunset';
+    wpDaylight:       Result:= 'Daylight Amount';
   end;
 end;
 
@@ -1652,222 +1642,11 @@ begin
   Result:= FZipCode;
 end;
 
-{ TWeatherConditions }
-
-//constructor TWeatherConditions.Create(AOwner: TJDWeatherThread);
-constructor TWeatherConditions.Create;
-begin
-  //FOwner:= AOwner;
-  FLocation:= TWeatherLocation.Create;
-  FLocation._AddRef;
-  {$IFDEF USE_VCL}
-  FPicture:= TPicture.Create;
-  {$ELSE}
-  FPicture:= TWeatherGraphic.Create;
-  FPicture._AddRef;
-  {$ENDIF}
-end;
-
-destructor TWeatherConditions.Destroy;
-begin
-  {$IFDEF USE_VCL}
-  FreeAndNil(FPicture);
-  {$ELSE}
-  FPicture._Release;
-  FPicture:= nil;
-  {$ENDIF}
-  FLocation._Release;
-  FLocation:= nil;
-  inherited;
-end;
-
-function TWeatherConditions.GetCondition: WideString;
-begin
-  Result:= FCondition;
-end;
-
-function TWeatherConditions.GetDateTime: TDateTime;
-begin
-  Result:= FDateTime;
-end;
-
-function TWeatherConditions.GetDescription: WideString;
-begin
-  Result:= FDescription;
-end;
-
-function TWeatherConditions.GetDewPoint: Single;
-begin
-  Result:= FDewPoint;
-end;
-
-function TWeatherConditions.GetHumidity: Single;
-begin
-  Result:= FHumidity;
-end;
-
-function TWeatherConditions.GetLocation: IWeatherLocation;
-begin
-  Result:= FLocation;
-end;
-
-{$IFDEF USE_VCL}
-function TWeatherConditions.GetPicture: TPicture;
-begin
-  Result:= FPicture;
-end;
-{$ELSE}
-function TWeatherConditions.GetPicture: IWeatherGraphic;
-begin
-  Result:= FPicture;
-end;
-{$ENDIF}
-
-function TWeatherConditions.GetPressure: Single;
-begin
-  Result:= FPressure;
-end;
-
-function TWeatherConditions.GetTemp: Single;
-begin
-  Result:= FTemp;
-end;
-
-function TWeatherConditions.GetVisibility: Single;
-begin
-  Result:= FVisibility;
-end;
-
-function TWeatherConditions.GetWindDir: Single;
-begin
-  Result:= FWindDir;
-end;
-
-function TWeatherConditions.GetWindSpeed: Single;
-begin
-  Result:= FWindSpeed;
-end;
-
-{
-function TWeatherConditions.SupportedProps: TWeatherConditionsProps;
-begin
-  case FOwner.FOwner.FService of
-    wsOpenWeatherMap: Result:= [cpPressureMb, cpWindDir, cpWindSpeed,
-      cpVisibility, cpHumidity, cpCaption, cpDescription, cpClouds,
-      cpRain, cpSnow, cpSunrise, cpSunset, cpTemp, cpTempMin, cpTempMax];
-    wsWUnderground: Result:= [cpPressureMB, cpPressureIn, cpWindDir,
-      cpWindSpeed, cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex,
-      cpWindGust, cpWindChill, cpFeelsLike, cpSolarRad, cpUV, cpTemp,
-      cpTempMin, cpTempMax, cpPrecip, cpIcon, cpCaption, cpDescription,
-      cpStation];
-    wsAccuWeather:      Result:= [
-      ];
-    wsNWS:              Result:= [
-      ];
-    wsNOAA:             Result:= [
-      ];
-  end;
-end;
-}
-
-{ TWeatherForecastItem }
-
-constructor TWeatherForecastItem.Create(AOwner: TWeatherForecast);
-begin
-  FOwner:= AOwner;
-  {$IFDEF USE_VCL}
-  FPicture:= TPicture.Create;
-  {$ELSE}
-  FPicture:= TWeatherGraphic.Create;
-  FPicture._AddRef;
-  {$ENDIF}
-end;
-
-destructor TWeatherForecastItem.Destroy;
-begin
-  {$IFDEF USE_VCL}
-  FreeAndNil(FPicture);
-  {$ELSE}
-  FPicture._Release;
-  FPicture:= nil;
-  {$ENDIF}
-  inherited;
-end;
-
-function TWeatherForecastItem.GetCondition: WideString;
-begin
-  Result:= FCondition;
-end;
-
-function TWeatherForecastItem.GetDateTime: TDateTime;
-begin
-  Result:= FDateTime;
-end;
-
-function TWeatherForecastItem.GetDescription: WideString;
-begin
-  Result:= FDescription;
-end;
-
-function TWeatherForecastItem.GetDewPoint: Single;
-begin
-  Result:= FDewPoint;
-end;
-
-function TWeatherForecastItem.GetHumidity: Single;
-begin
-  Result:= FHumidity;
-end;
-
-{$IFDEF USE_VCL}
-function TWeatherForecastItem.GetPicture: TPicture;
-{$ELSE}
-function TWeatherForecastItem.GetPicture: IWeatherGraphic;
-{$ENDIF}
-begin
-  Result:= FPicture;
-end;
-
-function TWeatherForecastItem.GetPressure: Single;
-begin
-  Result:= FPressure;
-end;
-
-function TWeatherForecastItem.GetTemp: Single;
-begin
-  Result:= FTemp;
-end;
-
-function TWeatherForecastItem.GetTempMax: Single;
-begin
-  Result:= FTempMax;
-end;
-
-function TWeatherForecastItem.GetTempMin: Single;
-begin
-  Result:= FTempMin;
-end;
-
-function TWeatherForecastItem.GetVisibility: Single;
-begin
-  Result:= FVisibility;
-end;
-
-function TWeatherForecastItem.GetWindDir: Single;
-begin
-  Result:= FWindDir;
-end;
-
-function TWeatherForecastItem.GetWindSpeed: Single;
-begin
-  Result:= FWindSpeed;
-end;
-
 { TWeatherForecast }
 
 constructor TWeatherForecast.Create;
 begin
-  FItems:= TList<IWeatherForecastItem>.Create;
+  FItems:= TList<IWeatherProps>.Create;
   FLocation:= TWeatherLocation.Create;
   FLocation._AddRef;
 end;
@@ -1896,7 +1675,7 @@ begin
   Result:= FItems.Count;
 end;
 
-function TWeatherForecast.GetItem(const Index: Integer): IWeatherForecastItem;
+function TWeatherForecast.GetItem(const Index: Integer): IWeatherProps;
 begin
   Result:= FItems[Index];
 end;
@@ -2205,15 +1984,12 @@ end;
 
 {$IFDEF USE_VCL}
 function TWeatherMaps.GetMap(const MapType: TWeatherMapType): TPicture;
-begin
-  Result:= FMaps[MapType];
-end;
 {$ELSE}
 function TWeatherMaps.GetMap(const MapType: TWeatherMapType): IWeatherGraphic;
+{$ENDIF}
 begin
   Result:= FMaps[MapType];
 end;
-{$ENDIF}
 
 { TWeatherMultiInfo }
 
@@ -2233,7 +2009,7 @@ begin
   Result:= FAlerts;
 end;
 
-function TWeatherMultiInfo.GetConditions: IWeatherConditions;
+function TWeatherMultiInfo.GetConditions: IWeatherProps;
 begin
   Result:= FConditions;
 end;
@@ -2258,7 +2034,7 @@ begin
   Result:= FMaps;
 end;
 
-procedure TWeatherMultiInfo.SetAll(Con: TWeatherConditions; Alr: TWeatherAlerts;
+procedure TWeatherMultiInfo.SetAll(Con: IWeatherProps; Alr: TWeatherAlerts;
   Fos, Foh, Fod: TWeatherForecast; Map: IWeatherMaps);
 begin
   FConditions:= Con;
@@ -2274,7 +2050,7 @@ end;
 constructor TWeatherServiceBase.Create;
 begin
   FWeb:= TIdHTTP.Create(nil);
-  FLocationType:= TJDWeatherLocationType.wlAutoIP;
+  FLocationType:= TWeatherLocationType.wlAutoIP;
 end;
 
 destructor TWeatherServiceBase.Destroy;
@@ -2282,13 +2058,6 @@ begin
   FreeAndNil(FWeb);
   inherited;
 end;
-
-{
-function TWeatherServiceBase.GetModule: HMODULE;
-begin
-  Result:= FModule;
-end;
-}
 
 function TWeatherServiceBase.GetKey: WideString;
 begin
@@ -2305,7 +2074,7 @@ begin
   Result:= FLocationDetail2;
 end;
 
-function TWeatherServiceBase.GetLocationType: TJDWeatherLocationType;
+function TWeatherServiceBase.GetLocationType: TWeatherLocationType;
 begin
   Result:= FLocationType;
 end;
@@ -2330,21 +2099,605 @@ begin
   FLocationDetail2:= Value;
 end;
 
-procedure TWeatherServiceBase.SetLocationType(const Value: TJDWeatherLocationType);
+procedure TWeatherServiceBase.SetLocationType(const Value: TWeatherLocationType);
 begin
   FLocationType:= Value;
 end;
 
-{
-procedure TWeatherServiceBase.SetModule(const Value: HMODULE);
-begin
-  FModule:= Value;
-end;
-}
-
 procedure TWeatherServiceBase.SetUnits(const Value: TWeatherUnits);
 begin
   FUnits:= Value;
+end;
+
+{ TWeatherMultiService }
+
+constructor TWeatherMultiService.Create;
+begin
+  FItems:= TList<IWeatherService>.Create;
+
+end;
+
+destructor TWeatherMultiService.Destroy;
+begin
+  Clear;
+  FreeAndNil(FItems);
+  inherited;
+end;
+
+procedure TWeatherMultiService.Add(const Svc: IWeatherService);
+begin
+  FItems.Add(Svc);
+  Svc._AddRef;
+end;
+
+procedure TWeatherMultiService.Clear;
+begin
+  while Count > 0 do
+    Delete(0);
+end;
+
+function TWeatherMultiService.Count: Integer;
+begin
+  Result:= FItems.Count;
+end;
+
+procedure TWeatherMultiService.Delete(const Index: Integer);
+begin
+  FItems[Index]._Release;
+  FItems.Delete(Index);
+end;
+
+function TWeatherMultiService.GetItem(const Index: Integer): IWeatherService;
+begin
+  Result:= FItems[Index];
+end;
+
+function TWeatherMultiService.GetCombinedConditions: IWeatherProps;
+var
+  R: TWeatherProps;
+  T: IWeatherProps;
+  X: Integer;
+  P: TWeatherPropType;
+  S: IWeatherService;
+  U: Array[TWeatherPropType] of Integer;
+  procedure Chk(const Prop: TWeatherPropType; const Val: Double; var Dest: Double);
+  begin
+    if Prop in S.Info.Support.SupportedConditionProps then begin
+      Dest:= Dest + Val;
+      U[Prop]:= U[Prop] + 1;
+    end;
+  end;
+begin
+  //Merge multiple services into one data set, averaging each property
+  R:= TWeatherProps.Create;
+  try
+    for P := Low(U) to High(U) do begin
+      U[P]:= 0;
+    end;
+    if FItems.Count > 0 then begin
+      for X := 0 to FItems.Count-1 do begin
+        S:= FItems[X];
+        T:= S.GetConditions;
+
+        //TODO: Is there a better way to do these unmergable ones?
+        R.FDateTime:= T.DateTime;
+        R.FIcon.Base64:= T.Icon.Base64;
+        R.FCaption:= T.Caption;
+        R.FDescription:= T.Description;
+        R.FDetails:= T.Details;
+        R.FURL:= T.URL;
+        R.FStation:= T.Station;
+
+        Chk(wpTemp, T.Temp, R.FTemp);
+        Chk(wpTempMin, T.TempMin, R.FTempMin);
+        Chk(wpTempMax, T.TempMax, R.FTempMax);
+        Chk(wpFeelsLike, T.FeelsLike, R.FFeelsLike);
+        Chk(wpFeelsLikeSun, T.FeelsLikeSun, R.FFeelsLikeSun);
+        Chk(wpFeelsLikeShade, T.FeelsLikeShade, R.FFeelsLikeShade);
+        Chk(wpWindDir, T.WindDir, R.FWindDir);
+        Chk(wpWindSpeed, T.WindSpeed, R.FWindSpeed);
+        Chk(wpWindGust, T.WindGusts, R.FWindGusts);
+        Chk(wpWindChill, T.WindChill, R.FWindChill);
+        Chk(wpHeatIndex, T.HeatIndex, R.FHeatIndex);
+        Chk(wpPressure, T.Pressure, R.FPressure);
+        Chk(wpPressureGround, T.PressureGround, R.FPressureGround);
+        Chk(wpPressureSea, T.PressureSea, R.FPressureSea);
+        Chk(wpHumidity, T.Humidity, R.FHumidity);
+        Chk(wpDewPoint, T.DewPoint, R.FDewPoint);
+        Chk(wpVisibility, T.Visibility, R.FVisibility);
+        Chk(wpSolarRad, T.SolarRad, R.FSolarRad);
+        Chk(wpUVIndex, T.UVIndex, R.FUVIndex);
+        Chk(wpCloudCover, T.CloudCover, R.FCloudCover);
+        Chk(wpPrecipAmt, T.PrecipAmt, R.FPrecipAmt);
+        Chk(wpRainAmt, T.RainAmt, R.FRainAmt);
+        Chk(wpSnowAmt, T.SnowAmt, R.FSnowAmt);
+        Chk(wpIceAmt, T.IceAmt, R.FIceAmt);
+        Chk(wpSleetAmt, T.SleetAmt, R.FSleetAmt);
+        Chk(wpFogAmt, T.FogAmt, R.FFogAmt);
+        Chk(wpStormAmt, T.StormAmt, R.FStormAmt);
+        Chk(wpPrecipPred, T.PrecipPred, R.FPrecipPred);
+        Chk(wpRainPred, T.RainPred, R.FRainPred);
+        Chk(wpSnowPred, T.SnowPred, R.FSnowPred);
+        Chk(wpIcePred, T.IcePred, R.FIcePred);
+        Chk(wpSleetPred, T.SleetPred, R.FSleetPred);
+        Chk(wpFogPred, T.FogPred, R.FFogPred);
+        Chk(wpStormPred, T.StormPred, R.FStormPred);
+        Chk(wpWetBulb, T.WetBulb, R.FWetBulb);
+        Chk(wpCeiling, T.Ceiling, R.FCeiling);
+        if wpSunrise in S.Info.Support.SupportedConditionProps then begin
+          R.FSunrise:= R.FSunrise + T.Sunrise;
+          U[wpSunrise]:= U[wpSunrise] + 1;
+        end;
+        if wpSunset in S.Info.Support.SupportedConditionProps then begin
+          R.FSunset:= R.FSunset + T.Sunset;
+          U[wpSunset]:= U[wpSunset] + 1;
+        end;
+        Chk(wpDaylight, T.Daylight, R.FDaylight);
+      end;
+      R.FTemp:= R.FTemp / U[wpTemp];
+      R.FTempMin:= R.FTempMin / U[wpTempMin];
+      R.FTempMax:= R.FTempMax / U[wpTempMax];
+      R.FFeelsLike:= R.FFeelsLike / U[wpFeelsLike];
+      R.FFeelsLikeSun:= R.FFeelsLikeSun / U[wpFeelsLikeSun];
+      R.FFeelsLikeShade:= R.FFeelsLikeShade / U[wpFeelsLikeShade];
+      R.FWindDir:= R.FWindDir / U[wpWindDir];
+      R.FWindSpeed:= R.FWindSpeed / U[wpWindSpeed];
+      R.FWindGusts:= R.FWindGusts / U[wpWindGust];
+      R.FWindChill:= R.FWindChill / U[wpWindChill];
+      R.FHeatIndex:= R.FHeatIndex / U[wpHeatIndex];
+      R.FPressure:= R.FPressure / U[wpPressure];
+      R.FPressureGround:= R.FPressureGround / U[wpPressureGround];
+      R.FPressureSea:= R.FPressureSea / U[wpPressureSea];
+      R.FHumidity:= R.FHumidity / U[wpHumidity];
+      R.FDewPoint:= R.FDewPoint / U[wpDewPoint];
+      R.FVisibility:= R.FVisibility / U[wpVisibility];
+      R.FSolarRad:= R.FSolarRad / U[wpSolarRad];
+      R.FUVIndex:= R.FUVIndex / U[wpUVIndex];
+      R.FCloudCover:= R.FCloudCover / U[wpCloudCover];
+      R.FPrecipAmt:= R.FPrecipAmt / U[wpPrecipAmt];
+      R.FRainAmt:= R.FRainAmt / U[wpRainAmt];
+      R.FSnowAmt:= R.FSnowAmt / U[wpSnowAmt];
+      R.FIceAmt:= R.FIceAmt / U[wpIceAmt];
+      R.FSleetAmt:= R.FSleetAmt / U[wpSleetAmt];
+      R.FFogAmt:= R.FFogAmt / U[wpFogAmt];
+      R.FStormAmt:= R.FStormAmt / U[wpStormAmt];
+      R.FPrecipPred:= R.FPrecipPred / U[wpPrecipPred];
+      R.FRainPred:= R.FRainPred / U[wpRainPred];
+      R.FSnowPred:= R.FSnowPred / U[wpSnowPred];
+      R.FIcePred:= R.FIcePred / U[wpIcePred];
+      R.FSleetPred:= R.FSleetPred / U[wpSleetPred];
+      R.FFogPred:= R.FFogPred / U[wpFogPred];
+      R.FStormPred:= R.FStormPred / U[wpStormPred];
+      R.FWetBulb:= R.FWetBulb / U[wpWetBulb];
+      R.FCeiling:= R.FCeiling / U[wpCeiling];
+      R.FSunrise:= R.FSunrise / U[wpSunrise];
+      R.FSunset:= R.FSunset / U[wpSunset];
+      R.FDaylight:= R.FDaylight / U[wpDaylight];
+    end;
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherMultiService.GetCombinedForecastDaily: IWeatherForecast;
+var
+  R: TWeatherForecast;
+begin
+  R:= TWeatherForecast.Create;
+  try
+    //TODO: How to merge forecasts???
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherMultiService.GetCombinedForecastHourly: IWeatherForecast;
+var
+  R: TWeatherForecast;
+begin
+  R:= TWeatherForecast.Create;
+  try
+    //TODO: How to merge forecasts???
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherMultiService.GetCombinedForecastSummary: IWeatherForecast;
+var
+  R: TWeatherForecast;
+begin
+  R:= TWeatherForecast.Create;
+  try
+    //TODO: How to merge forecasts???
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherMultiService.GetCombinedAlerts: IWeatherAlerts;
+var
+  R: TWeatherAlerts;
+begin
+  R:= TWeatherAlerts.Create;
+  try
+    //TODO: How to merge alerts???
+
+  finally
+    Result:= R;
+  end;
+end;
+
+{ TWeatherProps }
+
+constructor TWeatherProps.Create;
+var
+  X: TWeatherPropType;
+begin
+  FIcon:= TWeatherGraphic.Create;
+  FIcon._AddRef;
+  FCaption:= '';
+  FDescription:= '';
+  FDetails:= '';
+  FTemp:= 0;
+  FHumidity:= 0;
+  FPressure:= 0;
+  FWindSpeed:= 0;
+  FWindDir:= 0;
+  FVisibility:= 0;
+  FDewPoint:= 0;
+
+  for X := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+    FCounts[X]:= 0;
+  end;
+end;
+
+destructor TWeatherProps.Destroy;
+begin
+  FIcon._Release;
+  FIcon:= nil;
+  inherited;
+end;
+
+function TWeatherProps.GetCaption: WideString;
+begin
+  Result:= FCaption;
+end;
+
+function TWeatherProps.GetCeiling: Double;
+begin
+  Result:= FCeiling;
+end;
+
+function TWeatherProps.GetCloudCover: Double;
+begin
+  Result:= FCloudCover;
+end;
+
+function TWeatherProps.GetDateTime: TDateTime;
+begin
+  Result:= FDateTime;
+end;
+
+function TWeatherProps.GetDaylight: Double;
+begin
+  Result:= FDaylight;
+end;
+
+function TWeatherProps.GetDescription: WideString;
+begin
+  Result:= FDescription;
+end;
+
+function TWeatherProps.GetDetails: WideString;
+begin
+  Result:= FDetails;
+end;
+
+function TWeatherProps.GetDewPoint: Double;
+begin
+  Result:= FDewPoint;
+end;
+
+function TWeatherProps.GetFeelsLike: Double;
+begin
+  Result:= FFeelsLike;
+end;
+
+function TWeatherProps.GetFeelsLikeShade: Double;
+begin
+  Result:= FFeelsLikeShade;
+end;
+
+function TWeatherProps.GetFeelsLikeSun: Double;
+begin
+  Result:= FFeelsLikeSun;
+end;
+
+function TWeatherProps.GetFogAmt: Double;
+begin
+  Result:= FFogAmt;
+end;
+
+function TWeatherProps.GetFogPred: Double;
+begin
+  Result:= FFogPred;
+end;
+
+function TWeatherProps.GetHeatIndex: Double;
+begin
+  Result:= FHeatIndex;
+end;
+
+function TWeatherProps.GetHumidity: Double;
+begin
+  Result:= FHumidity;
+end;
+
+function TWeatherProps.GetIceAmt: Double;
+begin
+  Result:= FIceAmt;
+end;
+
+function TWeatherProps.GetIcePred: Double;
+begin
+  Result:= FIcePred;
+end;
+
+function TWeatherProps.GetIcon: IWeatherGraphic;
+begin
+  Result:= FIcon;
+end;
+
+function TWeatherProps.GetPrecipAmt: Double;
+begin
+  Result:= FPrecipAmt;
+end;
+
+function TWeatherProps.GetPrecipPred: Double;
+begin
+  Result:= FPrecipPred;
+end;
+
+function TWeatherProps.GetPressure: Double;
+begin
+  Result:= FPressure;
+end;
+
+function TWeatherProps.GetPressureGround: Double;
+begin
+  Result:= FPressureGround;
+end;
+
+function TWeatherProps.GetPressureSea: Double;
+begin
+  Result:= FPressureSea;
+end;
+
+function TWeatherProps.GetRainAmt: Double;
+begin
+  Result:= FRainAmt;
+end;
+
+function TWeatherProps.GetRainPred: Double;
+begin
+  Result:= FRainPred;
+end;
+
+function TWeatherProps.GetSleetAmt: Double;
+begin
+  Result:= FSleetAmt;
+end;
+
+function TWeatherProps.GetSleetProd: Double;
+begin
+  Result:= FSleetPred;
+end;
+
+function TWeatherProps.GetSnowAmt: Double;
+begin
+  Result:= FSnowAmt;
+end;
+
+function TWeatherProps.GetSnowPred: Double;
+begin
+  Result:= FSnowPred;
+end;
+
+function TWeatherProps.GetSolarRad: Double;
+begin
+  Result:= FSolarRad;
+end;
+
+function TWeatherProps.GetStation: WideString;
+begin
+  Result:= FStation;
+end;
+
+function TWeatherProps.GetStormAmt: Double;
+begin
+  Result:= FStormAmt;
+end;
+
+function TWeatherProps.GetStormPred: Double;
+begin
+  Result:= FStormPred;
+end;
+
+function TWeatherProps.GetSunrise: TDateTime;
+begin
+  Result:= FSunrise;
+end;
+
+function TWeatherProps.GetSunset: TDateTime;
+begin
+  Result:= FSunset;
+end;
+
+function TWeatherProps.GetTemp: Double;
+begin
+  Result:= FTemp;
+end;
+
+function TWeatherProps.GetTempMax: Double;
+begin
+  Result:= FTempMax;
+end;
+
+function TWeatherProps.GetTempMin: Double;
+begin
+  Result:= FTempMin;
+end;
+
+function TWeatherProps.GetURL: WideString;
+begin
+  Result:= FURL;
+end;
+
+function TWeatherProps.GetUVIndex: Double;
+begin
+  Result:= FUVIndex;
+end;
+
+function TWeatherProps.GetVisibility: Double;
+begin
+  Result:= FVisibility;
+end;
+
+function TWeatherProps.GetWetBulb: Double;
+begin
+  Result:= FWetBulb;
+end;
+
+function TWeatherProps.GetWindChill: Double;
+begin
+  Result:= FWindChill;
+end;
+
+function TWeatherProps.GetWindDir: Double;
+begin
+  Result:= FWindDir;
+end;
+
+function TWeatherProps.GetWindGusts: Double;
+begin
+  Result:= FWindGusts;
+end;
+
+function TWeatherProps.GetWindSpeed: Double;
+begin
+  Result:= FWindSpeed;
+end;
+
+procedure TWeatherProps.AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
+var
+  T: TWeatherPropType;
+begin
+  //Add values of specified props to this prop
+  for T := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+    if T in ASupport then begin
+      FCounts[T]:= FCounts[T] + 1;
+    end;
+  end;
+  FTemp:= FTemp + AProps.Temp;
+  FTempMin:= FTempMin + AProps.TempMin;
+  FTempMax:= FTempMax + AProps.TempMax;
+  FFeelsLike:= FFeelsLike + AProps.FeelsLike;
+  FFeelsLikeSun:= FFeelsLikeSun + AProps.FeelsLikeSun;
+  FFeelsLikeShade:= FFeelsLikeShade + AProps.FeelsLikeShade;
+  FWindDir:= FWindDir + AProps.WindDir;
+  FWindSpeed:= FWindSpeed + AProps.WindSpeed;
+  FWindGusts:= FWindGusts + AProps.WindGusts;
+  FWindChill:= FWindChill + AProps.WindChill;
+  FHeatIndex:= FHeatIndex + AProps.HeatIndex;
+  FPressure:= FPressure + AProps.Pressure;
+  FPressureGround:= FPressureGround + AProps.PressureGround;
+  FPressureSea:= FPressureSea + AProps.PressureSea;
+  FHumidity:= FHumidity + AProps.Humidity;
+  FDewPoint:= FDewPoint + AProps.DewPoint;
+  FVisibility:= FVisibility + AProps.Visibility;
+  FSolarRad:= FSolarRad + AProps.SolarRad;
+  FUVIndex:= FUVIndex + AProps.UVIndex;
+  FCloudCover:= FCloudCover + AProps.CloudCover;
+  FPrecipAmt:= FPrecipAmt + AProps.PrecipAmt;
+  FRainAmt:= FRainAmt + AProps.RainAmt;
+  FSnowAmt:= FSnowAmt + AProps.SnowAmt;
+  FIceAmt:= FIceAmt + AProps.IceAmt;
+  FSleetAmt:= FSleetAmt + AProps.SleetAmt;
+  FFogAmt:= FFogAmt + AProps.FogAmt;
+  FStormAmt:= FStormAmt + AProps.StormAmt;
+  FPrecipPred:= FPrecipPred + AProps.PrecipPred;
+  FRainPred:= FRainPred + AProps.RainPred;
+  FSnowPred:= FSnowPred + AProps.SnowPred;
+  FIcePred:= FIcePred + AProps.IceAmt;
+  FSleetPred:= FSleetPred + AProps.SleetPred;
+  FFogPred:= FFogPred + AProps.FogPred;
+  FStormPred:= FStormPred + AProps.StormPred;
+  FWetBulb:= FWetBulb + AProps.WetBulb;
+  FCeiling:= FCeiling + AProps.Ceiling;
+  FSunrise:= FSunrise + AProps.Sunrise;
+  FSunset:= FSunset + AProps.Sunset;
+  FDaylight:= FDaylight + AProps.Daylight;
+end;
+
+procedure TWeatherProps.CalcAverages;
+  procedure Chk(const T: TWeatherPropType; var V: Double);
+  begin
+    if FCounts[T] > 1 then begin
+      V:= V / FCounts[T];
+      FCounts[T]:= 1;
+    end;
+  end;
+begin
+  //Calculate all averages based on totals
+  Chk(wpTemp, FTemp);
+  Chk(wpTempMin, FTempMin);
+  Chk(wpTempMax, FTempMax);
+  Chk(wpFeelsLike, FFeelsLike);
+  Chk(wpFeelsLikeSun, FFeelsLikeSun);
+  Chk(wpFeelsLikeShade, FFeelsLikeShade);
+  Chk(wpWindDir, FWindDir);
+  Chk(wpWindSpeed, FWindSpeed);
+  Chk(wpWindGust, FWindGusts);
+  Chk(wpWindChill, FWindChill);
+  Chk(wpHeatIndex, FHeatIndex);
+  Chk(wpPressure, FPressure);
+  Chk(wpPressureGround, FPressureGround);
+  Chk(wpPressureSea, FPressureSea);
+  Chk(wpHumidity, FHumidity);
+  Chk(wpDewPoint, FDewPoint);
+  Chk(wpVisibility, FVisibility);
+  Chk(wpSolarRad, FSolarRad);
+  Chk(wpUVIndex, FUVIndex);
+  Chk(wpCloudCover, FCloudCover);
+  Chk(wpPrecipAmt, FPrecipAmt);
+  Chk(wpRainAmt, FRainAmt);
+  Chk(wpSnowAmt, FSnowAmt);
+  Chk(wpIceAmt, FIceAmt);
+  Chk(wpSleetAmt, FSleetAmt);
+  Chk(wpFogAmt, FFogAmt);
+  Chk(wpStormAmt, FStormAmt);
+  Chk(wpPrecipPred, FPrecipPred);
+  Chk(wpRainPred, FRainPred);
+  Chk(wpSnowPred, FSnowPred);
+  Chk(wpIcePred, FIcePred);
+  Chk(wpSleetPred, FSleetPred);
+  Chk(wpFogPred, FFogPred);
+  Chk(wpStormPred, FStormPred);
+  Chk(wpWetBulb, FWetBulb);
+  Chk(wpCeiling, FCeiling);
+  if FCounts[wpSunrise] > 1 then begin
+    FSunrise:= FSunrise / FCounts[wpSunrise];
+    FCounts[wpSunrise]:= 1;
+  end;
+  if FCounts[wpSunset] > 1 then begin
+    FSunset:= FSunset / FCounts[wpSunset];
+    FCounts[wpSunset]:= 1;
+  end;
+  Chk(wpDaylight, FDaylight);
 end;
 
 end.

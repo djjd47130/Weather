@@ -168,12 +168,12 @@ procedure TJDWeatherApiSvrThread.HandleServiceSupport(AContext: TWeatherContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
   O, O2: ISuperObject;
-  Loc: TJDWeatherLocationType;
+  Loc: TWeatherLocationType;
   Inf: TWeatherInfoType;
   Uni: TWeatherUnits;
   Alt: TWeatherAlertType;
   Alp: TWeatherAlertProp;
-  Fop: TWeatherForecastProp;
+  Fop: TWeatherPropType;
   Map: TWeatherMapType;
 begin
   O:= SO;
@@ -183,9 +183,9 @@ begin
 
     O2:= SA([]);
     try
-      for Loc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
+      for Loc := Low(TWeatherLocationType) to High(TWeatherLocationType) do begin
         if Loc in AContext.FService.Info.Support.SupportedLocations then
-          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TJDWeatherLocationType), Ord(Loc))));
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherLocationType), Ord(Loc))));
       end;
     finally
       O.O['supported_locations']:= O2;
@@ -233,9 +233,9 @@ begin
 
     O2:= SA([]);
     try
-      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
         if Fop in AContext.FService.Info.Support.SupportedForecastSummaryProps then
-          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
       end;
     finally
       O.O['supported_forecast_summary_props']:= O2;
@@ -243,9 +243,9 @@ begin
 
     O2:= SA([]);
     try
-      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
         if Fop in AContext.FService.Info.Support.SupportedForecastHourlyProps then
-          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
       end;
     finally
       O.O['supported_forecast_hourly_props']:= O2;
@@ -253,9 +253,9 @@ begin
 
     O2:= SA([]);
     try
-      for Fop := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+      for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
         if Fop in AContext.FService.Info.Support.SupportedForecastDailyProps then
-          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastProp), Ord(Fop))));
+          O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
       end;
     finally
       O.O['supported_forecast_daily_props']:= O2;

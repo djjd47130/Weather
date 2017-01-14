@@ -17,17 +17,22 @@ const
   SVC_NAME = 'WUnderground';
   SVC_UID = '{87940B1A-0435-4E2D-8DE8-6DE3BDCD43BB}';
 
-  SUP_INFO = [wiConditions, wiAlerts, wiForecastSummary,
+  URL_MAIN = 'http://www.wunderground.com';
+  URL_API = 'https://www.wunderground.com/weather/api/';
+  URL_REGISTER = 'https://www.wunderground.com/member/registration';
+  URL_LOGIN = 'https://www.wunderground.com/login.asp';
+  URL_LEGAL = 'https://www.wunderground.com/weather/api/d/terms.html';
+
+  SUP_INFO = [wiLocation, wiConditions, wiAlerts, wiForecastSummary,
     wiForecastHourly, wiForecastDaily, wiMaps];
+  SUP_UNITS = [wuImperial, wuMetric];
   SUP_LOC = [wlZip, wlCityState, wlCoords, wlAutoIP,
     wlCountryCity, wlAirportCode, wlPWS];
   SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
     ltColorLeft, ltColorRight];
-  SUP_COND_PROP = [cpPressureMB, cpPressureIn, cpWindDir,
-    cpWindSpeed, cpHumidity, cpVisibility, cpDewPoint, cpHeatIndex,
-    cpWindGust, cpWindChill, cpFeelsLike, cpSolarRad, cpUV, cpTemp, cpTempMin,
-    cpTempMax, cpPrecip, cpIcon, cpCaption, cpDescription, cpStation,
-    cpClouds, cpRain, cpSnow, cpSunrise, cpSunset];
+  SUP_COND_PROP = [wpIcon, wpCaption, wpURL, wpStation, wpTemp,
+    wpFeelsLike, wpWindDir, wpWindSpeed, wpWindGust, wpHeatIndex, wpPressure,
+    wpHumidity, wpDewPoint, wpVisibility, wpSolarRad, wpUVIndex, wpPrecipAmt];
   SUP_ALERT_TYPE = [waNone, waHurricaneStat, waTornadoWarn,
     waTornadoWatch, waSevThundWarn, waSevThundWatch, waWinterAdv,
     waFloodWarn, waFloodWatch, waHighWind, waSevStat, waHeatAdv, waFogAdv,
@@ -36,42 +41,38 @@ const
   SUP_ALERT_PROP = [apZones, apVerticies, apStorm, apType,
     apDescription, apExpires, apMessage, apPhenomena, apSignificance];
   SUP_FOR = [ftSummary, ftHourly, ftDaily];
-  SUP_FOR_SUM = [fpCaption,
-    fpDescription,
-    fpIcon,
-    fpPrecipChance];
-  SUP_FOR_HOUR = [fpPressureMB,
-    fpPressureIn,
-    fpWindDir,
-    fpWindSpeed,
-    fpHumidity,
-    fpDewPoint,
-    fpHeatIndex,
-    fpWindChill,
-    fpFeelsLike,
-    fpUV,
-    fpTemp,
-    fpCaption,
-    fpIcon,
-    fpPrecip,
-    fpSnow,
-    fpPrecipChance];
-  SUP_FOR_DAY = [fpWindDir,
-    fpWindSpeed,
-    fpHumidity,
-    fpTemp,
-    fpTempMin,
-    fpTempMax,
-    fpCaption,
-    fpIcon,
-    fpPrecip,
-    fpSnow,
-    fpPrecipChance];
-  SUP_UNITS = [wuImperial, wuMetric];
+  SUP_FOR_SUM = [wpCaption, wpDescription, wpIcon, wpPrecipPred];
+  SUP_FOR_HOUR = [wpIcon,
+    wpCaption,
+    wpDescription,
+    wpTemp,
+    wpFeelsLike,
+    wpWindDir,
+    wpWindSpeed,
+    wpWindChill,
+    wpHeatIndex,
+    wpPressure,
+    wpHumidity,
+    wpDewPoint,
+    wpUVIndex,
+    wpPrecipAmt,
+    wpSnowAmt,
+    wpPrecipPred];
+  SUP_FOR_DAY = [wpIcon,
+    wpCaption,
+    wpDescription,
+    wpTemp,
+    wpTempMin,
+    wpTempMax,
+    wpWindDir,
+    wpWindSpeed,
+    wpHumidity,
+    wpPrecipAmt,
+    wpSnowAmt,
+    wpPrecipPred];
   SUP_MAP = [mpSatellite, mpRadar, mpSatelliteRadar,
     mpAniSatellite, mpAniRadar, mpAniSatelliteRadar];
   SUP_MAP_FOR = [wfPng, wfGif, wfFlash];
-
 
 type
   TWUEndpoint = (weAll, weAlerts, weAlmanac, weAstronomy, weConditions,
@@ -81,38 +82,40 @@ type
     weAniRadar, weAniSatellite, weAniRadarSatellite);
   TWUEndpoints = set of TWUEndpoint;
 
-  TWUWeatherSupport = class(TInterfacedObject, IWeatherSupport)
+////////////////////////////////////////////////////////////////////////////////
+
+  TWeatherSupport = class(TInterfacedObject, IWeatherSupport)
   public
     function GetSupportedLogos: TWeatherLogoTypes;
     function GetSupportedUnits: TWeatherUnitsSet;
     function GetSupportedInfo: TWeatherInfoTypes;
-    function GetSupportedLocations: TJDWeatherLocationTypes;
+    function GetSupportedLocations: TWeatherLocationTypes;
     function GetSupportedAlerts: TWeatherAlertTypes;
     function GetSupportedAlertProps: TWeatherAlertProps;
-    function GetSupportedConditionProps: TWeatherConditionsProps;
+    function GetSupportedConditionProps: TWeatherPropTypes;
     function GetSupportedForecasts: TWeatherForecastTypes;
-    function GetSupportedForecastSummaryProps: TWeatherForecastProps;
-    function GetSupportedForecastHourlyProps: TWeatherForecastProps;
-    function GetSupportedForecastDailyProps: TWeatherForecastProps;
+    function GetSupportedForecastSummaryProps: TWeatherPropTypes;
+    function GetSupportedForecastHourlyProps: TWeatherPropTypes;
+    function GetSupportedForecastDailyProps: TWeatherPropTypes;
     function GetSupportedMaps: TWeatherMapTypes;
     function GetSupportedMapFormats: TWeatherMapFormats;
 
     property SupportedLogos: TWeatherLogoTypes read GetSupportedLogos;
     property SupportedUnits: TWeatherUnitsSet read GetSupportedUnits;
     property SupportedInfo: TWeatherInfoTypes read GetSupportedInfo;
-    property SupportedLocations: TJDWeatherLocationTypes read GetSupportedLocations;
+    property SupportedLocations: TWeatherLocationTypes read GetSupportedLocations;
     property SupportedAlerts: TWeatherAlertTypes read GetSupportedAlerts;
     property SupportedAlertProps: TWeatherAlertProps read GetSupportedAlertProps;
-    property SupportedConditionProps: TWeatherConditionsProps read GetSupportedConditionProps;
+    property SupportedConditionProps: TWeatherPropTypes read GetSupportedConditionProps;
     property SupportedForecasts: TWeatherForecastTypes read GetSupportedForecasts;
-    property SupportedForecastSummaryProps: TWeatherForecastProps read GetSupportedForecastSummaryProps;
-    property SupportedForecastHourlyProps: TWeatherForecastProps read GetSupportedForecastHourlyProps;
-    property SupportedForecastDailyProps: TWeatherForecastProps read GetSupportedForecastDailyProps;
+    property SupportedForecastSummaryProps: TWeatherPropTypes read GetSupportedForecastSummaryProps;
+    property SupportedForecastHourlyProps: TWeatherPropTypes read GetSupportedForecastHourlyProps;
+    property SupportedForecastDailyProps: TWeatherPropTypes read GetSupportedForecastDailyProps;
     property SupportedMaps: TWeatherMapTypes read GetSupportedMaps;
     property SupportedMapFormats: TWeatherMapFormats read GetSupportedMapFormats;
   end;
 
-  TWUWeatherURLs = class(TInterfacedObject, IWeatherURLs)
+  TWeatherURLs = class(TInterfacedObject, IWeatherURLs)
   public
     function GetMainURL: WideString;
     function GetApiURL: WideString;
@@ -127,10 +130,10 @@ type
     property LegalURL: WideString read GetLegalURL;
   end;
 
-  TWUServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
+  TWeatherServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
   private
-    FSupport: TWUWeatherSupport;
-    FURLs: TWUWeatherURLs;
+    FSupport: TWeatherSupport;
+    FURLs: IWeatherURLs;
     FLogos: TLogoArray;
     procedure SetLogo(const LT: TWeatherLogoType; const Value: IWeatherGraphic);
     procedure LoadLogos;
@@ -154,16 +157,19 @@ type
     property URLs: IWeatherURLs read GetURLs;
   end;
 
-  TWUService = class(TWeatherServiceBase, IWeatherService)
+////////////////////////////////////////////////////////////////////////////////
+
+  TWeatherService = class(TWeatherServiceBase, IWeatherService)
   private
-    FInfo: TWUServiceInfo;
+    FInfo: TWeatherServiceInfo;
+    FLocation: TWeatherLocation;
     function GetEndpointUrl(const Endpoint: TWUEndpoint): String;
     function GetMultiEndpointUrl(const Endpoints: TWUEndpoints; const Ext: String): String;
     function GetEndpoint(const Endpoint: TWUEndpoint): ISuperObject;
     function GetMultiEndpoints(const Endpoints: TWUEndpoints; const Ext: String): ISuperObject;
     function StrToAlertType(const S: String): TWeatherAlertType;
     procedure FillConditions(const O: ISuperObject;
-      Conditions: TWeatherConditions);
+      Conditions: TWeatherProps);
     procedure FillAlerts(const O: ISuperObject; Alerts: TWeatherAlerts);
     procedure FillForecastDaily(const O: ISuperObject;
       Forecast: TWeatherForecast);
@@ -178,7 +184,8 @@ type
     function GetInfo: IWeatherServiceInfo;
 
     function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
-    function GetConditions: IWeatherConditions;
+    function GetLocation: IWeatherLocation;
+    function GetConditions: IWeatherProps;
     function GetAlerts: IWeatherAlerts;
     function GetForecastSummary: IWeatherForecast;
     function GetForecastHourly: IWeatherForecast;
@@ -190,109 +197,111 @@ type
 
 implementation
 
-{ TWUWeatherSupport }
+////////////////////////////////////////////////////////////////////////////////
 
-function TWUWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
+{ TWeatherSupport }
+
+function TWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
 begin
   Result:= SUP_UNITS;
 end;
 
-function TWUWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
+function TWeatherSupport.GetSupportedLocations: TWeatherLocationTypes;
 begin
   Result:= SUP_LOC;
 end;
 
-function TWUWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
+function TWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
 begin
   Result:= SUP_LOGO;
 end;
 
-function TWUWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
+function TWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
 begin
   Result:= SUP_ALERT_PROP;
 end;
 
-function TWUWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
+function TWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
 begin
   Result:= SUP_ALERT_TYPE;
 end;
 
-function TWUWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
+function TWeatherSupport.GetSupportedConditionProps: TWeatherPropTypes;
 begin
   Result:= SUP_COND_PROP;
 end;
 
-function TWUWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
+function TWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
 begin
   Result:= SUP_FOR;
 end;
 
-function TWUWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
+function TWeatherSupport.GetSupportedForecastDailyProps: TWeatherPropTypes;
 begin
   Result:= SUP_FOR_DAY;
 end;
 
-function TWUWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
+function TWeatherSupport.GetSupportedForecastHourlyProps: TWeatherPropTypes;
 begin
   Result:= SUP_FOR_HOUR;
 end;
 
-function TWUWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
+function TWeatherSupport.GetSupportedForecastSummaryProps: TWeatherPropTypes;
 begin
   Result:= SUP_FOR_SUM;
 end;
 
-function TWUWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
+function TWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
 begin
   Result:= SUP_INFO;
 end;
 
-function TWUWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
+function TWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
 begin
   Result:= SUP_MAP_FOR;
 end;
 
-function TWUWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
+function TWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
 begin
   Result:= SUP_MAP;
 end;
 
-{ TWUWeatherURLs }
+{ TWeatherURLs }
 
-function TWUWeatherURLs.GetApiURL: WideString;
+function TWeatherURLs.GetApiURL: WideString;
 begin
-  Result:= 'https://www.wunderground.com/weather/api/';
+  Result:= URL_API;
 end;
 
-function TWUWeatherURLs.GetLegalURL: WideString;
+function TWeatherURLs.GetLegalURL: WideString;
 begin
-  Result:= 'https://www.wunderground.com/weather/api/d/terms.html';
+  Result:= URL_LEGAL;
 end;
 
-function TWUWeatherURLs.GetLoginURL: WideString;
+function TWeatherURLs.GetLoginURL: WideString;
 begin
-  Result:= 'https://www.wunderground.com/login.asp';
+  Result:= URL_LOGIN;
 end;
 
-function TWUWeatherURLs.GetMainURL: WideString;
+function TWeatherURLs.GetMainURL: WideString;
 begin
-  Result:= 'http://www.wunderground.com';
+  Result:= URL_MAIN;
 end;
 
-function TWUWeatherURLs.GetRegisterURL: WideString;
+function TWeatherURLs.GetRegisterURL: WideString;
 begin
-  Result:= 'https://www.wunderground.com/member/registration';
+  Result:= URL_REGISTER;
 end;
 
-{ TWUServiceInfo }
+{ TWeatherServiceInfo }
 
-constructor TWUServiceInfo.Create;
+constructor TWeatherServiceInfo.Create;
 var
   LT: TWeatherLogoType;
 begin
-  FSupport:= TWUWeatherSupport.Create;
+  FSupport:= TWeatherSupport.Create;
   FSupport._AddRef;
-  FURLs:= TWUWeatherURLs.Create;
+  FURLs:= TWeatherURLs.Create;
   FURLs._AddRef;
   for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
     FLogos[LT]:= TWeatherGraphic.Create;
@@ -301,7 +310,7 @@ begin
   LoadLogos;
 end;
 
-destructor TWUServiceInfo.Destroy;
+destructor TWeatherServiceInfo.Destroy;
 var
   LT: TWeatherLogoType;
 begin
@@ -315,88 +324,95 @@ begin
   inherited;
 end;
 
-function TWUServiceInfo.GetCaption: WideString;
+function TWeatherServiceInfo.GetCaption: WideString;
 begin
   Result:= SVC_CAPTION;
 end;
 
-function TWUServiceInfo.GetName: WideString;
+function TWeatherServiceInfo.GetName: WideString;
 begin
   Result:= SVC_NAME;
 end;
 
-function TWUServiceInfo.GetSupport: IWeatherSupport;
+function TWeatherServiceInfo.GetSupport: IWeatherSupport;
 begin
   Result:= FSupport;
 end;
 
-function TWUServiceInfo.GetUID: WideString;
+function TWeatherServiceInfo.GetUID: WideString;
 begin
   Result:= SVC_UID;
 end;
 
-function TWUServiceInfo.GetURLs: IWeatherURLs;
+function TWeatherServiceInfo.GetURLs: IWeatherURLs;
 begin
   Result:= FURLs;
 end;
 
-function TWUServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+function TWeatherServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
 begin
   Result:= FLogos[LT];
 end;
 
-procedure TWUServiceInfo.LoadLogos;
-  function Get(const N: String): IWeatherGraphic;
-  var
-    S: TResourceStream;
-    R: TStringStream;
-  begin
-    Result:= TWeatherGraphic.Create;
-    S:= TResourceStream.Create(HInstance, N, 'JPG');
-    try
-      R:= TStringStream.Create;
-      try
-        S.Position:= 0;
-        R.LoadFromStream(S);
-        R.Position:= 0;
-        Result.Base64:= R.DataString;
-      finally
-        R.Free;
-      end;
-    finally
-      S.Free;
-    end;
-  end;
-begin
-  //TODO: Load Logos from Resources
-  SetLogo(TWeatherLogoType.ltColor, Get('LOGO_COLOR'));
-
-
-end;
-
-procedure TWUServiceInfo.SetLogo(const LT: TWeatherLogoType;
+procedure TWeatherServiceInfo.SetLogo(const LT: TWeatherLogoType;
   const Value: IWeatherGraphic);
 begin
   FLogos[LT].Base64:= Value.Base64;
 end;
 
-{ TWUService }
+procedure TWeatherServiceInfo.LoadLogos;
+  function Get(const N, T: String): IWeatherGraphic;
+  var
+    S: TResourceStream;
+    R: TStringStream;
+  begin
+    Result:= TWeatherGraphic.Create;
+    if ResourceExists(N, T) then begin
+      raise Exception.Create('TEST!');
+      S:= TResourceStream.Create(HInstance, N, PChar(T));
+      try
+        R:= TStringStream.Create;
+        try
+          S.Position:= 0;
+          R.LoadFromStream(S);
+          R.Position:= 0;
+          Result.Base64:= R.DataString;
+        finally
+          FreeAndNil(R);
+        end;
+      finally
+        FreeAndNil(S);
+      end;
+    end;
+  end;
+begin
+  SetLogo(ltColor, Get('LOGO_COLOR', 'JPG'));
+  SetLogo(ltColorInvert, Get('LOGO_COLOR_INVERT', 'JPG'));
+  SetLogo(ltColorWide, Get('LOGO_COLOR_WIDE', 'JPG'));
+  SetLogo(ltColorInvertWide, Get('LOGO_COLOR_INVERT_WIDE', 'JPG'));
+  SetLogo(ltColorLeft, Get('LOGO_COLOR_LEFT', 'JPG'));
+  SetLogo(ltColorRight, Get('LOGO_COLOR_RIGHT', 'JPG'));
+end;
 
-constructor TWUService.Create;
+////////////////////////////////////////////////////////////////////////////////
+
+{ TWeatherService }
+
+constructor TWeatherService.Create;
 begin
   inherited;
-  FInfo:= TWUServiceInfo.Create;
+  FInfo:= TWeatherServiceInfo.Create;
   FInfo._AddRef;
 end;
 
-destructor TWUService.Destroy;
+destructor TWeatherService.Destroy;
 begin
   FInfo._Release;
   FInfo:= nil;
   inherited;
 end;
 
-function TWUService.GetEndpointUrl(const Endpoint: TWUEndpoint): String;
+function TWeatherService.GetEndpointUrl(const Endpoint: TWUEndpoint): String;
 var
   S: String;
 begin
@@ -447,7 +463,7 @@ begin
   end;
 end;
 
-function TWUService.GetMultiEndpointUrl(const Endpoints: TWUEndpoints; const Ext: String): String;
+function TWeatherService.GetMultiEndpointUrl(const Endpoints: TWUEndpoints; const Ext: String): String;
 var
   S: String;
   procedure Chk(const E: TWUEndpoint; const V: String);
@@ -494,7 +510,7 @@ begin
   Result:= Result + Ext;
 end;
 
-function TWUService.GetEndpoint(const Endpoint: TWUEndpoint): ISuperObject;
+function TWeatherService.GetEndpoint(const Endpoint: TWUEndpoint): ISuperObject;
 var
   U: String;
   S: String;
@@ -504,7 +520,7 @@ begin
   Result:= SO(S);
 end;
 
-function TWUService.GetMultiEndpoints(const Endpoints: TWUEndpoints; const Ext: String): ISuperObject;
+function TWeatherService.GetMultiEndpoints(const Endpoints: TWUEndpoints; const Ext: String): ISuperObject;
 var
   U: String;
   S: String;
@@ -514,11 +530,11 @@ begin
   Result:= SO(S);
 end;
 
-function TWUService.GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
+function TWeatherService.GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
 var
   O: ISuperObject;
   R: TWeatherMultiInfo;
-  Con: TWeatherConditions;
+  Con: TWeatherProps;
   Alr: TWeatherAlerts;
   Fos: TWeatherForecast;
   Foh: TWeatherForecast;
@@ -528,7 +544,7 @@ var
 begin
   R:= TWeatherMultiInfo.Create;
   try
-    Con:= TWeatherConditions.Create;
+    Con:= TWeatherProps.Create;
     Alr:= TWeatherAlerts.Create;
     Fos:= TWeatherForecast.Create;
     Foh:= TWeatherForecast.Create;
@@ -582,12 +598,12 @@ begin
   end;
 end;
 
-function TWUService.GetConditions: IWeatherConditions;
+function TWeatherService.GetConditions: IWeatherProps;
 var
   O: ISuperObject;
-  R: TWeatherConditions;
+  R: TWeatherProps;
 begin
-  R:= TWeatherConditions.Create;
+  R:= TWeatherProps.Create;
   try
     O:= GetEndpoint(TWUEndpoint.weConditions);
     FillConditions(O, R);
@@ -596,7 +612,7 @@ begin
   end;
 end;
 
-function TWUService.GetAlerts: IWeatherAlerts;
+function TWeatherService.GetAlerts: IWeatherAlerts;
 var
   O: ISuperObject;
   R: TWeatherAlerts;
@@ -610,7 +626,7 @@ begin
   end;
 end;
 
-function TWUService.GetForecastDaily: IWeatherForecast;
+function TWeatherService.GetForecastDaily: IWeatherForecast;
 var
   O: ISuperObject;
   R: TWeatherForecast;
@@ -624,7 +640,7 @@ begin
   end;
 end;
 
-function TWUService.GetForecastHourly: IWeatherForecast;
+function TWeatherService.GetForecastHourly: IWeatherForecast;
 var
   O: ISuperObject;
   R: TWeatherForecast;
@@ -638,7 +654,7 @@ begin
   end;
 end;
 
-function TWUService.GetForecastSummary: IWeatherForecast;
+function TWeatherService.GetForecastSummary: IWeatherForecast;
 var
   O: ISuperObject;
   R: TWeatherForecast;
@@ -652,9 +668,14 @@ begin
   end;
 end;
 
-function TWUService.GetInfo: IWeatherServiceInfo;
+function TWeatherService.GetInfo: IWeatherServiceInfo;
 begin
   Result:= FInfo;
+end;
+
+function TWeatherService.GetLocation: IWeatherLocation;
+begin
+  Result:= FLocation;
 end;
 
 function MapOptions(
@@ -686,7 +707,7 @@ begin
   end;
 end;
 
-function TWUService.GetMaps: IWeatherMaps;
+function TWeatherService.GetMaps: IWeatherMaps;
 var
   {$IFDEF USE_VCL}
   I: TGifImage;
@@ -729,14 +750,19 @@ begin
   end;
 end;
 
-procedure TWUService.FillConditions(const O: ISuperObject; Conditions: TWeatherConditions);
+procedure TWeatherService.FillConditions(const O: ISuperObject; Conditions: TWeatherProps);
 var
   OB, L: ISuperObject;
   function LD(const O: ISuperObject; const N: String): Double;
   var
     T: String;
+    I: Integer;
   begin
     T:= O.S[N];
+    for I := Length(T) downto 1 do begin
+      if not CharInSet(T[I], ['0'..'9', '.', ',']) then
+        Delete(T, I, 1);
+    end;
     Result:= StrToFloatDef(T, 0);
   end;
 begin
@@ -746,49 +772,67 @@ begin
   L:= OB.O['display_location'];
   if not Assigned(L) then Exit;
 
-  Conditions.FLocation.FDisplayName:= L.S['full'];
-  Conditions.FLocation.FCity:= L.S['city'];
-  Conditions.FLocation.FState:= L.S['state_name'];
-  Conditions.FLocation.FStateAbbr:= L.S['state'];
-  Conditions.FLocation.FCountry:= L.S['country'];
-  Conditions.FLocation.FCountryAbbr:= L.S['country_iso3166'];
-  Conditions.FLocation.FLongitude:= LD(L, 'longitude');
-  Conditions.FLocation.FLatitude:= LD(L, 'latitude');
-  Conditions.FLocation.FElevation:= LD(L, 'elevation');
-  Conditions.FLocation.FZipCode:= L.S['zip'];
+  IWeatherLocation(FLocation)._Release;
+  FLocation:= TWeatherLocation.Create;
+
+  FLocation.FDisplayName:= L.S['full'];
+  FLocation.FCity:= L.S['city'];
+  FLocation.FState:= L.S['state_name'];
+  FLocation.FStateAbbr:= L.S['state'];
+  FLocation.FCountry:= L.S['country'];
+  FLocation.FCountryAbbr:= L.S['country_iso3166'];
+  FLocation.FLongitude:= LD(L, 'longitude');
+  FLocation.FLatitude:= LD(L, 'latitude');
+  FLocation.FElevation:= LD(L, 'elevation');
+  FLocation.FZipCode:= L.S['zip'];
+  //TODO: Trigger event for location.....
+
+
+  Conditions.FDateTime:= EpochLocal(StrToIntDef(OB.S['observation_epoch'], 0)); // Now; //TODO
+  Conditions.FCaption:= OB.S['weather'];
+  Conditions.FURL:= OB.S['ob_url'];
+  Conditions.FStation:= OB.S['station_id'];
+  Conditions.FHumidity:= LD(OB, 'relative_humidity');
+  Conditions.FWindDir:= OB.D['wind_degrees'];
+  Conditions.FSolarRad:= LD(OB, 'solarradiation');
+  Conditions.FUVIndex:= LD(OB, 'UV');
 
   case Units of
     wuKelvin: begin
       //Not Supported
+      //TODO: Convert so that it can be supported
     end;
     wuImperial: begin
       Conditions.FTemp:= OB.D['temp_f'];
       Conditions.FVisibility:= LD(OB, 'visibility_mi');
       Conditions.FDewPoint:= OB.D['dewpoint_f'];
+      Conditions.FPressure:= LD(OB, 'pressure_in');
+      Conditions.FWindSpeed:= LD(OB, 'wind_mph');
+      Conditions.FWindGusts:= LD(OB, 'wind_gust_mph');
+      Conditions.FWindChill:= LD(OB, 'windchill_f');
+      Conditions.FFeelsLike:= LD(OB, 'feelslike_f');
+      Conditions.FHeatIndex:= LD(OB, 'heat_index_f');
+      Conditions.FPrecipAmt:= LD(OB, 'precip_today_in');
     end;
     wuMetric: begin
       Conditions.FTemp:= OB.D['temp_c'];
       Conditions.FVisibility:= LD(OB, 'visibility_km');
       Conditions.FDewPoint:= OB.D['dewpoint_c'];
+      Conditions.FPressure:= LD(OB, 'pressure_mb');
+      Conditions.FWindSpeed:= LD(OB, 'wind_kph');
+      Conditions.FWindGusts:= LD(OB, 'wind_gust_kph');
+      Conditions.FWindChill:= LD(OB, 'windchill_c');
+      Conditions.FFeelsLike:= LD(OB, 'feelslike_c');
+      Conditions.FHeatIndex:= LD(OB, 'heat_index_c');
+      Conditions.FPrecipAmt:= LD(OB, 'precip_today_metric');
     end;
   end;
 
-  Conditions.FDateTime:= Now; //TODO
-  Conditions.FHumidity:= LD(OB, 'relative_humidity');
-  Conditions.FPressure:= LD(OB, 'pressure_mb');
-  Conditions.FCondition:= OB.S['weather'];
-  Conditions.FDescription:= OB.S['weather'];
-  Conditions.FWindSpeed:= OB.D['wind_mph'];
-  Conditions.FWindDir:= OB.D['wind_degrees'];
-
-  {$IFDEF USE_VCL}
   //LoadPicture(OB.S['icon_url'], Conditions.FPicture);
-  {$ELSE}
-  {$ENDIF}
 
 end;
 
-function TWUService.StrToAlertType(const S: String): TWeatherAlertType;
+function TWeatherService.StrToAlertType(const S: String): TWeatherAlertType;
   procedure Chk(const Val: String; const T: TWeatherAlertType);
   begin
     if SameText(S, Val) then begin
@@ -796,7 +840,7 @@ function TWUService.StrToAlertType(const S: String): TWeatherAlertType;
     end;
   end;
 begin
-  Chk('', TWeatherAlertType.waNone);
+  Chk('',    TWeatherAlertType.waNone);
   Chk('HUR', TWeatherAlertType.waHurricaneStat);
   Chk('TOR', TWeatherAlertType.waTornadoWarn);
   Chk('TOW', TWeatherAlertType.waTornadoWatch);
@@ -818,8 +862,7 @@ begin
   Chk('PUB', TWeatherAlertType.waPublicStat);
 end;
 
-procedure TWUService.FillAlerts(const O: ISuperObject;
-  Alerts: TWeatherAlerts);
+procedure TWeatherService.FillAlerts(const O: ISuperObject; Alerts: TWeatherAlerts);
 var
   A: TSuperArray;
   Tmp: Int64;
@@ -858,11 +901,11 @@ begin
   end;
 end;
 
-procedure TWUService.FillForecastSummary(const O: ISuperObject; Forecast: TWeatherForecast);
+procedure TWeatherService.FillForecastSummary(const O: ISuperObject; Forecast: TWeatherForecast);
 var
   OB: ISuperObject;
   A: TSuperArray;
-  I: TWeatherForecastItem;
+  I: TWeatherProps;
   X: Integer;
   function LD(const O: ISuperObject; const N: String): Double;
   var
@@ -872,14 +915,20 @@ var
     Result:= StrToFloatDef(T, 0);
   end;
 begin
-  A:= O.A['hourly_forecast'];
+  OB:= O.O['forecast'];
+  if not Assigned(OB) then Exit;
+
+  OB:= OB.O['txt_forecast'];
+  if not Assigned(OB) then Exit;
+
+  A:= OB.A['forecastday'];
   if not Assigned(A) then begin
     Exit;
   end;
 
   for X := 0 to A.Length-1 do begin
     OB:= A.O[X];
-    I:= TWeatherForecastItem.Create(Forecast);
+    I:= TWeatherProps.Create;
     try
       case Units of
         wuKelvin: begin
@@ -907,7 +956,7 @@ begin
       I.FTemp:= I.FTempMax; //TODO
       I.FHumidity:= StrToFloatDef(OB.S['humidity'], 0);
       I.FPressure:= 0;
-      I.FCondition:= OB.S['condition'];
+      I.FCaption:= OB.S['condition'];
       I.FDescription:= OB.S['condition'];
       I.FWindDir:= StrToFloatDef(OB.O['wdir'].S['degrees'], 0);
       I.FVisibility:= 0;
@@ -920,12 +969,11 @@ begin
   end;
 end;
 
-procedure TWUService.FillForecastDaily(const O: ISuperObject;
-  Forecast: TWeatherForecast);
+procedure TWeatherService.FillForecastDaily(const O: ISuperObject; Forecast: TWeatherForecast);
 var
   OB: ISuperObject;
   A: TSuperArray;
-  I: TWeatherForecastItem;
+  I: TWeatherProps;
   X: Integer;
   function LD(const O: ISuperObject; const N: String): Double;
   var
@@ -952,7 +1000,7 @@ begin
 
   for X := 0 to A.Length-1 do begin
     OB:= A.O[X];
-    I:= TWeatherForecastItem.Create(Forecast);
+    I:= TWeatherProps.Create;
     try
       case Units of
         wuKelvin: begin
@@ -979,7 +1027,7 @@ begin
       I.FTemp:= I.FTempMax; //TODO
       I.FHumidity:= StrToFloatDef(OB.S['avehumidity'], 0);
       I.FPressure:= 0;
-      I.FCondition:= OB.S['conditions'];
+      I.FCaption:= OB.S['conditions'];
       I.FDescription:= OB.S['conditions'];
       I.FWindDir:= StrToFloatDef(OB.O['avewind'].S['degrees'], 0);
       I.FVisibility:= 0; //Not Supported
@@ -992,12 +1040,11 @@ begin
   end;
 end;
 
-procedure TWUService.FillForecastHourly(const O: ISuperObject;
-  Forecast: TWeatherForecast);
+procedure TWeatherService.FillForecastHourly(const O: ISuperObject; Forecast: TWeatherForecast);
 var
   OB: ISuperObject;
   A: TSuperArray;
-  I: TWeatherForecastItem;
+  I: TWeatherProps;
   X: Integer;
   function LD(const O: ISuperObject; const N: String): Double;
   var
@@ -1014,7 +1061,7 @@ begin
 
   for X := 0 to A.Length-1 do begin
     OB:= A.O[X];
-    I:= TWeatherForecastItem.Create(Forecast);
+    I:= TWeatherProps.Create;
     try
       case Units of
         wuKelvin: begin
@@ -1022,7 +1069,6 @@ begin
           I.FTempMin:= StrToFloatDef(OB.O['temp'].S['metric'], 0);
           I.FTempMax:= StrToFloatDef(OB.O['temp'].S['metric'], 0);
           I.FDewPoint:= StrToFloatDef(OB.O['dewpoint'].S['metric'], 0);
-
           I.FWindSpeed:= OB.O['wspd'].D['metric'];
         end;
         wuImperial: begin
@@ -1042,12 +1088,14 @@ begin
       I.FTemp:= I.FTempMax; //TODO
       I.FHumidity:= StrToFloatDef(OB.S['humidity'], 0);
       I.FPressure:= 0;
-      I.FCondition:= OB.S['condition'];
+      I.FCaption:= OB.S['condition'];
       I.FDescription:= OB.S['condition'];
       I.FWindDir:= StrToFloatDef(OB.O['wdir'].S['degrees'], 0);
       I.FVisibility:= 0;
       {$IFDEF USE_VCL}
       LoadPicture(OB.S['icon_url'], I.FPicture);
+      {$ELSE}
+      I.FIcon.SetBase64(''); //TODO
       {$ENDIF}
     finally
       Forecast.FItems.Add(I);

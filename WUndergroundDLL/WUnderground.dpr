@@ -9,9 +9,9 @@ uses
 
 function CreateWeatherService: IWeatherService; stdcall;
 var
-  R: TWUService;
+  R: TWeatherService;
 begin
-  R:= TWUService.Create;
+  R:= TWeatherService.Create;
   try
 
   finally
@@ -21,9 +21,9 @@ end;
 
 function GetServiceInfo: IWeatherServiceInfo; stdcall;
 var
-  R: TWUServiceInfo;
+  R: TWeatherServiceInfo;
 begin
-  R:= TWUServiceInfo.Create;
+  R:= TWeatherServiceInfo.Create;
   try
 
   finally

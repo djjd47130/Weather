@@ -227,9 +227,8 @@ var
   PInfo, PCond, PLoc, PAlert, PAlertProp, PForSum, PForHour, PForDay, PMaps, PUnits: Single;
   TP: Single;
   WInfo: TWeatherInfoType;
-  WLoc: TJDWeatherLocationType;
-  WCond: TWeatherConditionsProp;
-  WFor: TWeatherForecastProp;
+  WLoc: TWeatherLocationType;
+  WCond: TWeatherPropType;
   WAlt: TWeatherAlertType;
   WAlp: TWeatherAlertProp;
   WMap: TWeatherMapType;
@@ -291,7 +290,7 @@ begin
       //Show supported location lookup types
       lstSupportedLocationTypes.Items.BeginUpdate;
       try
-        for WLoc := Low(TJDWeatherLocationType) to High(TJDWeatherLocationType) do begin
+        for WLoc := Low(TWeatherLocationType) to High(TWeatherLocationType) do begin
           I:= lstSupportedLocationTypes.Items.Add;
           I.Caption:= WeatherLocationTypeToStr(WLoc);
           if WLoc in S.Info.Support.SupportedLocations then begin
@@ -308,9 +307,9 @@ begin
       //Show supported condition properties
       lstSupportedConditionProps.Items.BeginUpdate;
       try
-        for WCond := Low(TWeatherConditionsProp) to High(TWeatherConditionsProp) do begin
+        for WCond := Low(TWeatherPropType) to High(TWeatherPropType) do begin
           I:= lstSupportedConditionProps.Items.Add;
-          I.Caption:= WeatherConditionPropToStr(WCond);
+          I.Caption:= WeatherPropToStr(WCond);
           if WCond in S.Info.Support.SupportedConditionProps then begin
             Inc(TCond);
             I.ImageIndex:= IMG_CHECK;
@@ -325,10 +324,10 @@ begin
       //Display supported forecast summary properties
       lstSupportedForecastSummaryProps.Items.BeginUpdate;
       try
-        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        for WCond := Low(TWeatherPropType) to High(TWeatherPropType) do begin
           I:= lstSupportedForecastSummaryProps.Items.Add;
-          I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Info.Support.SupportedForecastSummaryProps then begin
+          I.Caption:= WeatherPropToStr(WCond);
+          if WCond in S.Info.Support.SupportedForecastSummaryProps then begin
             Inc(TForSum);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -342,10 +341,10 @@ begin
       //Display supported forecast hourly properties
       lstSupportedForecastHourlyProps.Items.BeginUpdate;
       try
-        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        for WCond := Low(TWeatherPropType) to High(TWeatherPropType) do begin
           I:= lstSupportedForecastHourlyProps.Items.Add;
-          I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Info.Support.SupportedForecastHourlyProps then begin
+          I.Caption:= WeatherPropToStr(WCond);
+          if WCond in S.Info.Support.SupportedForecastHourlyProps then begin
             Inc(TForHour);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -359,10 +358,10 @@ begin
       //Display supported forecast daily properties
       lstSupportedForecastDailyProps.Items.BeginUpdate;
       try
-        for WFor := Low(TWeatherForecastProp) to High(TWeatherForecastProp) do begin
+        for WCond := Low(TWeatherPropType) to High(TWeatherPropType) do begin
           I:= lstSupportedForecastDailyProps.Items.Add;
-          I.Caption:= WeatherForecastPropToStr(WFor);
-          if WFor in S.Info.Support.SupportedForecastDailyProps then begin
+          I.Caption:= WeatherPropToStr(WCond);
+          if WCond in S.Info.Support.SupportedForecastDailyProps then begin
             Inc(TForDay);
             I.ImageIndex:= IMG_CHECK;
           end else begin
@@ -460,13 +459,13 @@ begin
 
       //Calculate percentage of support for each type of info
       PInfo:= TInfo / (Integer(High(TWeatherInfoType))+1);
-      PLoc:= TLoc / (Integer(High(TJDWeatherLocationType))+1);
-      PCond:= TCond / (Integer(High(TWeatherConditionsProp))+1);
+      PLoc:= TLoc / (Integer(High(TWeatherLocationType))+1);
+      PCond:= TCond / (Integer(High(TWeatherPropType))+1);
       PAlert:= TAlert / (Integer(High(TWeatherAlertType))+1);
       PAlertProp:= TAlertProp / (Integer(High(TWeatherAlertProp))+1);
-      PForSum:= TForSum / (Integer(High(TWeatherForecastProp))+1);
-      PForHour:= TForHour / (Integer(High(TWeatherForecastProp))+1);
-      PForDay:= TForDay / (Integer(High(TWeatherForecastProp))+1);
+      PForSum:= TForSum / (Integer(High(TWeatherPropType))+1);
+      PForHour:= TForHour / (Integer(High(TWeatherPropType))+1);
+      PForDay:= TForDay / (Integer(High(TWeatherPropType))+1);
       PMaps:= TMaps / ((Integer(High(TWeatherMapType))+1) + (Integer(High(TWeatherMapFormat))+1));
       PUnits:= TUnits / (Integer(High(TWeatherUnits))+1);
 

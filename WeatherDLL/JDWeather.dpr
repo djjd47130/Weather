@@ -36,7 +36,7 @@ type
   TJDWeather = class(TInterfacedObject, IJDWeather)
   private
     FServices: TWeatherServices;
-    FLocationType: TJDWeatherLocationType;
+    FLocationType: TWeatherLocationType;
     FLocationDetail1: WideString;
     FLocationDetail2: WideString;
     FUnits: TWeatherUnits;
@@ -45,9 +45,9 @@ type
     destructor Destroy; override;
   public
     function GetServices: IWeatherServices;
-    procedure SetLocationType(const Value: TJDWeatherLocationType);
+    procedure SetLocationType(const Value: TWeatherLocationType);
     function GetLocationDetail1: WideString;
-    function GetLocationType: TJDWeatherLocationType;
+    function GetLocationType: TWeatherLocationType;
     procedure SetLocationDetail1(const Value: WideString);
     function GetLocationDetail2: WideString;
     procedure SetLocationDetail2(const Value: WideString);
@@ -55,7 +55,7 @@ type
     procedure SetUnits(const Value: TWeatherUnits);
 
     property Services: IWeatherServices read GetServices;
-    property LocationType: TJDWeatherLocationType read GetLocationType write SetLocationType;
+    property LocationType: TWeatherLocationType read GetLocationType write SetLocationType;
     property LocationDetail1: WideString read GetLocationDetail1 write SetLocationDetail1;
     property LocationDetail2: WideString read GetLocationDetail2 write SetLocationDetail2;
     property Units: TWeatherUnits read GetUnits write SetUnits;
@@ -125,7 +125,7 @@ begin
         S:= Svc;
         if Assigned(S) then begin
           S._AddRef;
-          S.Module:= L;
+          //S.Module:= L;
 
           //TODO...
 
@@ -171,7 +171,7 @@ begin
   Result:= FLocationDetail2;
 end;
 
-function TJDWeather.GetLocationType: TJDWeatherLocationType;
+function TJDWeather.GetLocationType: TWeatherLocationType;
 begin
   Result:= FLocationType;
 end;
@@ -188,7 +188,7 @@ begin
   //Invalidate;
 end;
 
-procedure TJDWeather.SetLocationType(const Value: TJDWeatherLocationType);
+procedure TJDWeather.SetLocationType(const Value: TWeatherLocationType);
 begin
   FLocationType := Value;
   //Invalidate...
