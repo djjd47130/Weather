@@ -81,13 +81,22 @@ The test application is not actually utilizing the service APIs themselves, but 
 3. Logo to represent the selected service.
 4. All the properties which are supported for different info types.
 
+### Current State
+
+This project is currently in massive development, and is not yet ready for production use. The whole concept of the project is still up in the air, but slowly becoming established.
+
+The most complete service implemented so far is Weather Underground. Originall, OpenWeatherMap was the first. But the project was started over again in favor for the differences of Weather Underground, and that's when support was added for multiple services. Since then, more services have been added.
+
+There was a nearly complete version of the entire library before this project. However, it was not scalable. Everything was hard-coded in a single unit. This project aims to separate the services, and add support for new services in the future. It also aims to create a new web API which can dynamically integrate with any of the given services - but be converted into the same standard as this library accomplishes with its interfaces.
+
 ### Future Plans
 
 In the end, this entire system will be encapsulated inside a single component which can be installed into the Delphi IDE. It provides a multi-threaded environment which in turn automatically fetches weather data on a schedule.
 
-Another major idea is to merge multiple weather data sources into one, averaging out each data point. This helps accomplish the following:
+Another major concept (already in the works) is to merge multiple weather data sources into one, averaging out each data point. This helps accomplish the following:
 
 1. More realistic weather data based on averages.
 2. Fill in pieces of weather data which are only supported by certain services.
 
+Another project, started but put on the side, is to create a new Web API which allows developers to get weather data in the same standard format as this library's interfaces - but in JSON format. 
 
