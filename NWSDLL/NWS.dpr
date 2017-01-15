@@ -14,9 +14,21 @@ uses
 
 function CreateWeatherService: IWeatherService; stdcall;
 var
-  R: TNWSService;
+  R: TWeatherService;
 begin
-  R:= TNWSService.Create;
+  R:= TWeatherService.Create;
+  try
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function GetServiceInfo: IWeatherServiceInfo; stdcall;
+var
+  R: TWeatherServiceInfo;
+begin
+  R:= TWeatherServiceInfo.Create;
   try
 
   finally
@@ -25,7 +37,8 @@ begin
 end;
 
 exports
-  CreateWeatherService;
+  CreateWeatherService,
+  GetServiceInfo;
 
 begin
 end.

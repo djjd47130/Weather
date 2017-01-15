@@ -22,59 +22,23 @@ const
   URL_LOGIN = 'https://home.openweathermap.org/users/sign_in';
   URL_LEGAL = 'http://openweathermap.org/terms';
 
+  //Supported Pieces of Information
   SUP_INFO = [wiConditions, wiForecastSummary, wiForecastDaily, wiMaps];
   SUP_LOC = [wlZip, wlCityState, wlCoords, wlCityCode];
   SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
-  SUP_COND_PROP = [wpIcon,
-    wpCaption,
-    wpDescription,
-    wpTemp,
-    wpTempMin,
-    wpTempMax,
-    wpWindDir,
-    wpWindSpeed,
-    wpPressure,
-    wpHumidity,
-    wpCloudCover,
-    wpRainAmt,
-    wpSnowAmt,
-    wpSunrise,
-    wpSunset];
+  SUP_COND_PROP = [wpIcon, wpCaption, wpDescription, wpTemp, wpTempMin,
+    wpTempMax, wpWindDir, wpWindSpeed, wpPressure, wpHumidity, wpCloudCover,
+    wpRainAmt, wpSnowAmt, wpSunrise, wpSunset];
   SUP_ALERT_TYPE = [];
   SUP_ALERT_PROP = [];
   SUP_FOR = [ftSummary, ftDaily];
-  SUP_FOR_SUM = [wpIcon,
-    wpCaption,
-    wpDescription,
-    wpTemp,
-    wpTempMin,
-    wpTempMax,
-    wpWindDir,
-    wpWindSpeed,
-    wpPressure,
-    wpPressureGround,
-    wpPressureSea,
-    wpHumidity,
-    wpCloudCover,
-    wpRainAmt,
-    wpSnowAmt,
-    wpPrecipPred];
+  SUP_FOR_SUM = [wpIcon, wpCaption, wpDescription, wpTemp, wpTempMin, wpTempMax,
+    wpWindDir, wpWindSpeed, wpPressure, wpPressureGround, wpPressureSea,
+    wpHumidity, wpCloudCover, wpRainAmt, wpSnowAmt, wpPrecipPred];
   SUP_FOR_HOUR = [];
-  SUP_FOR_DAY = [wpIcon,
-    wpCaption,
-    wpDescription,
-    wpTemp,
-    wpTempMin,
-    wpTempMax,
-    wpWindDir,
-    wpWindSpeed,
-    wpPressure,
-    wpPressureGround,
-    wpPressureSea,
-    wpHumidity,
-    wpCloudCover,
-    wpRainAmt,
-    wpSnowAmt];
+  SUP_FOR_DAY = [wpIcon, wpCaption, wpDescription, wpTemp, wpTempMin, wpTempMax,
+    wpWindDir, wpWindSpeed, wpPressure, wpPressureGround, wpPressureSea,
+    wpHumidity, wpCloudCover, wpRainAmt, wpSnowAmt];
   SUP_UNITS = [wuKelvin, wuImperial, wuMetric];
   SUP_MAP = [mpClouds, mpPrecip, mpPressureSea,
     mpWind, mpTemp, mpSnowCover];

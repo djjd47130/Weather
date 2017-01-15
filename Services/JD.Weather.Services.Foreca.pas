@@ -13,41 +13,64 @@ uses
 
 const
   SVC_CAPTION = 'Foreca';
+  SVC_NAME = 'Foreca';
   SVC_UID = '{54B2BD21-1BDB-413B-B7ED-D1BBBB18FBA8}';
 
+  URL_MAIN = 'http://corporate.foreca.com/en/';
+  URL_API = 'http://corporate.foreca.com/en/weather-api';
+  URL_REGISTER = 'http://corporate.foreca.com/en/en/products-services/weather-api/try-it';
+  URL_LOGIN = '';
+  URL_LEGAL = '';
+
+  //Supported Pieces of Information
+  SUP_INFO = [wiConditions, wiForecastHourly, wiForecastDaily];
+  SUP_LOC = [wlCoords];
+  SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
+  SUP_COND_PROP = [{cpPressureMB, cpWindDir, cpWindSpeed, cpHumidity, cpVisibility,
+    cpDewPoint, cpFeelsLike, cpUV, cpTemp, cpPrecip, cpIcon, cpStation}];
+  SUP_ALERT_TYPE = [];
+  SUP_ALERT_PROP = [];
+  SUP_FOR = [ftHourly, ftDaily];
+  SUP_FOR_SUM = [];
+  SUP_FOR_HOUR = [];
+  SUP_FOR_DAY = [];
+  SUP_UNITS = [wuKelvin, wuImperial, wuMetric];
+  SUP_MAP = [];
+  SUP_MAP_FOR = [];
+
 type
-  TForecaWeatherSupport = class(TInterfacedObject, IWeatherSupport)
+  TWeatherSupport = class(TInterfacedObject, IWeatherSupport)
   public
     function GetSupportedLogos: TWeatherLogoTypes;
     function GetSupportedUnits: TWeatherUnitsSet;
     function GetSupportedInfo: TWeatherInfoTypes;
-    function GetSupportedLocations: TJDWeatherLocationTypes;
+    function GetSupportedLocations: TWeatherLocationTypes;
     function GetSupportedAlerts: TWeatherAlertTypes;
     function GetSupportedAlertProps: TWeatherAlertProps;
-    function GetSupportedConditionProps: TWeatherConditionsProps;
+    function GetSupportedConditionProps: TWeatherPropTypes;
     function GetSupportedForecasts: TWeatherForecastTypes;
-    function GetSupportedForecastSummaryProps: TWeatherForecastProps;
-    function GetSupportedForecastHourlyProps: TWeatherForecastProps;
-    function GetSupportedForecastDailyProps: TWeatherForecastProps;
+    function GetSupportedForecastSummaryProps: TWeatherPropTypes;
+    function GetSupportedForecastHourlyProps: TWeatherPropTypes;
+    function GetSupportedForecastDailyProps: TWeatherPropTypes;
     function GetSupportedMaps: TWeatherMapTypes;
     function GetSupportedMapFormats: TWeatherMapFormats;
 
     property SupportedLogos: TWeatherLogoTypes read GetSupportedLogos;
     property SupportedUnits: TWeatherUnitsSet read GetSupportedUnits;
     property SupportedInfo: TWeatherInfoTypes read GetSupportedInfo;
-    property SupportedLocations: TJDWeatherLocationTypes read GetSupportedLocations;
+    property SupportedLocations: TWeatherLocationTypes read GetSupportedLocations;
     property SupportedAlerts: TWeatherAlertTypes read GetSupportedAlerts;
     property SupportedAlertProps: TWeatherAlertProps read GetSupportedAlertProps;
-    property SupportedConditionProps: TWeatherConditionsProps read GetSupportedConditionProps;
+    property SupportedConditionProps: TWeatherPropTypes read GetSupportedConditionProps;
     property SupportedForecasts: TWeatherForecastTypes read GetSupportedForecasts;
-    property SupportedForecastSummaryProps: TWeatherForecastProps read GetSupportedForecastSummaryProps;
-    property SupportedForecastHourlyProps: TWeatherForecastProps read GetSupportedForecastHourlyProps;
-    property SupportedForecastDailyProps: TWeatherForecastProps read GetSupportedForecastDailyProps;
+    property SupportedForecastSummaryProps: TWeatherPropTypes read GetSupportedForecastSummaryProps;
+    property SupportedForecastHourlyProps: TWeatherPropTypes read GetSupportedForecastHourlyProps;
+    property SupportedForecastDailyProps: TWeatherPropTypes read GetSupportedForecastDailyProps;
     property SupportedMaps: TWeatherMapTypes read GetSupportedMaps;
     property SupportedMapFormats: TWeatherMapFormats read GetSupportedMapFormats;
   end;
 
-  TForecaWeatherURLs = class(TInterfacedObject, IWeatherURLs)
+  TWeatherURLs = class(TInterfacedObject, IWeatherURLs)
   public
     function GetMainURL: WideString;
     function GetApiURL: WideString;
@@ -62,50 +85,174 @@ type
     property LegalURL: WideString read GetLegalURL;
   end;
 
-  TForecaService = class(TWeatherServiceBase, IWeatherService)
+  TWeatherServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
   private
-    FSupport: TForecaWeatherSupport;
-    FURLs: TForecaWeatherURLs;
+    FSupport: TWeatherSupport;
+    FURLs: TWeatherURLs;
+    FLogos: TLogoArray;
+    procedure SetLogo(const LT: TWeatherLogoType; const Value: IWeatherGraphic);
     procedure LoadLogos;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetCaption: WideString;
+    function GetName: WideString;
+    function GetUID: WideString;
+    function GetURLs: IWeatherURLs;
+    function GetSupport: IWeatherSupport;
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+
+    property Logos[const LT: TWeatherLogoType]: IWeatherGraphic read GetLogo write SetLogo;
+
+    property Caption: WideString read GetCaption;
+    property Name: WideString read GetName;
+    property UID: WideString read GetUID;
+    property Support: IWeatherSupport read GetSupport;
+    property URLs: IWeatherURLs read GetURLs;
+  end;
+
+  TWeatherService = class(TWeatherServiceBase, IWeatherService)
+  private
+    FInfo: TWeatherServiceInfo;
   public
     constructor Create; override;
     destructor Destroy; override;
   public
-    function GetUID: WideString;
-    function GetCaption: WideString;
-    function GetURLs: IWeatherURLs;
-
-    function Support: IWeatherSupport;
+    function GetInfo: IWeatherServiceInfo;
 
     function GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
-    function GetConditions: IWeatherConditions;
+    function GetLocation: IWeatherLocation;
+    function GetConditions: IWeatherProps;
     function GetAlerts: IWeatherAlerts;
     function GetForecastSummary: IWeatherForecast;
     function GetForecastHourly: IWeatherForecast;
     function GetForecastDaily: IWeatherForecast;
     function GetMaps: IWeatherMaps;
 
-    property UID: WideString read GetUID;
-    property Caption: WideString read GetCaption;
-    property URLs: IWeatherURLs read GetURLs;
+    property Info: IWeatherServiceInfo read GetInfo;
   end;
 
 implementation
 
-{ TForecaService }
+{ TWeatherSupport }
 
-constructor TForecaService.Create;
+function TWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
 begin
-  inherited;
-  FSupport:= TForecaWeatherSupport.Create;
+  Result:= SUP_UNITS;
+end;
+
+function TWeatherSupport.GetSupportedLocations: TWeatherLocationTypes;
+begin
+  Result:= SUP_LOC;
+end;
+
+function TWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
+begin
+  Result:= SUP_LOGO;
+end;
+
+function TWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
+begin
+  Result:= SUP_ALERT_PROP;
+end;
+
+function TWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
+begin
+  Result:= SUP_ALERT_TYPE;
+end;
+
+function TWeatherSupport.GetSupportedConditionProps: TWeatherPropTypes;
+begin
+  Result:= SUP_COND_PROP;
+end;
+
+function TWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
+begin
+  Result:= SUP_FOR;
+end;
+
+function TWeatherSupport.GetSupportedForecastSummaryProps: TWeatherPropTypes;
+begin
+  Result:= SUP_FOR_SUM;
+end;
+
+function TWeatherSupport.GetSupportedForecastHourlyProps: TWeatherPropTypes;
+begin
+  Result:= SUP_FOR_HOUR;
+end;
+
+function TWeatherSupport.GetSupportedForecastDailyProps: TWeatherPropTypes;
+begin
+  Result:= SUP_FOR_DAY;
+end;
+
+function TWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
+begin
+  Result:= SUP_INFO;
+end;
+
+function TWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
+begin
+  Result:= SUP_MAP;
+end;
+
+function TWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
+begin
+  Result:= SUP_MAP_FOR;
+end;
+
+{ TWeatherURLs }
+
+function TWeatherURLs.GetApiURL: WideString;
+begin
+  Result:= URL_API;
+end;
+
+function TWeatherURLs.GetLegalURL: WideString;
+begin
+  Result:= URL_LEGAL;
+end;
+
+function TWeatherURLs.GetLoginURL: WideString;
+begin
+  Result:= URL_LOGIN;
+end;
+
+function TWeatherURLs.GetMainURL: WideString;
+begin
+  Result:= URL_MAIN;
+end;
+
+function TWeatherURLs.GetRegisterURL: WideString;
+begin
+  Result:= URL_REGISTER;
+end;
+
+{ TWeatherServiceInfo }
+
+constructor TWeatherServiceInfo.Create;
+var
+  LT: TWeatherLogoType;
+begin
+  FSupport:= TWeatherSupport.Create;
   FSupport._AddRef;
-  FURLs:= TForecaWeatherURLs.Create;
+  FURLs:= TWeatherURLs.Create;
   FURLs._AddRef;
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]:= TWeatherGraphic.Create;
+    FLogos[LT]._AddRef;
+  end;
   LoadLogos;
 end;
 
-destructor TForecaService.Destroy;
+destructor TWeatherServiceInfo.Destroy;
+var
+  LT: TWeatherLogoType;
 begin
+  for LT:= Low(TWeatherLogoType) to High(TWeatherLogoType) do begin
+    FLogos[LT]._Release;
+  end;
   FURLs._Release;
   FURLs:= nil;
   FSupport._Release;
@@ -113,184 +260,135 @@ begin
   inherited;
 end;
 
-function TForecaService.GetCaption: WideString;
+function TWeatherServiceInfo.GetCaption: WideString;
 begin
   Result:= SVC_CAPTION;
 end;
 
-function TForecaService.GetUID: WideString;
+function TWeatherServiceInfo.GetName: WideString;
+begin
+  Result:= SVC_NAME;
+end;
+
+function TWeatherServiceInfo.GetSupport: IWeatherSupport;
+begin
+  Result:= FSupport;
+end;
+
+function TWeatherServiceInfo.GetUID: WideString;
 begin
   Result:= SVC_UID;
 end;
 
-function TForecaService.GetURLs: IWeatherURLs;
+function TWeatherServiceInfo.GetURLs: IWeatherURLs;
 begin
   Result:= FURLs;
 end;
 
-procedure TForecaService.LoadLogos;
-  function Get(const N: String): IWeatherGraphic;
+function TWeatherServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+begin
+  Result:= FLogos[LT];
+end;
+
+procedure TWeatherServiceInfo.SetLogo(const LT: TWeatherLogoType;
+  const Value: IWeatherGraphic);
+begin
+  FLogos[LT].Base64:= Value.Base64;
+end;
+
+procedure TWeatherServiceInfo.LoadLogos;
+  function Get(const N, T: String): IWeatherGraphic;
   var
     S: TResourceStream;
     R: TStringStream;
   begin
     Result:= TWeatherGraphic.Create;
-    S:= TResourceStream.Create(HInstance, N, 'PNG');
-    try
-      R:= TStringStream.Create;
+    if ResourceExists(N, T) then begin
+      S:= TResourceStream.Create(HInstance, N, PChar(T));
       try
-        S.Position:= 0;
-        R.LoadFromStream(S);
-        R.Position:= 0;
-        Result.Base64:= R.DataString;
+        R:= TStringStream.Create;
+        try
+          S.Position:= 0;
+          R.LoadFromStream(S);
+          R.Position:= 0;
+          Result.Base64:= R.DataString;
+        finally
+          FreeAndNil(R);
+        end;
       finally
-        R.Free;
+        FreeAndNil(S);
       end;
-    finally
-      S.Free;
     end;
   end;
 begin
-  //TODO: Load Logos from Resources
-  SetLogo(TWeatherLogoType.ltColor, Get('LOGO_COLOR'));
-
-
+  SetLogo(ltColor, Get('LOGO_COLOR', 'PNG'));
+  SetLogo(ltColorInvert, Get('LOGO_COLOR_INVERT', 'PNG'));
+  SetLogo(ltColorWide, Get('LOGO_COLOR_WIDE', 'PNG'));
+  SetLogo(ltColorInvertWide, Get('LOGO_COLOR_INVERT_WIDE', 'PNG'));
+  SetLogo(ltColorLeft, Get('LOGO_COLOR_LEFT', 'PNG'));
+  SetLogo(ltColorRight, Get('LOGO_COLOR_RIGHT', 'PNG'));
 end;
 
-function TForecaService.Support: IWeatherSupport;
+{ TWeatherService }
+
+constructor TWeatherService.Create;
 begin
-  Result:= FSupport;
+  inherited;
+  FInfo:= TWeatherServiceInfo.Create;
+  FInfo._AddRef;
 end;
 
-function TForecaService.GetMultiple(
+destructor TWeatherService.Destroy;
+begin
+  FInfo._Release;
+  FInfo:= nil;
+  inherited;
+end;
+
+function TWeatherService.GetInfo: IWeatherServiceInfo;
+begin
+  Result:= FInfo;
+end;
+
+function TWeatherService.GetMultiple(
   const Info: TWeatherInfoTypes): IWeatherMultiInfo;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetConditions: IWeatherConditions;
+function TWeatherService.GetConditions: IWeatherProps;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetAlerts: IWeatherAlerts;
+function TWeatherService.GetAlerts: IWeatherAlerts;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetForecastDaily: IWeatherForecast;
+function TWeatherService.GetForecastDaily: IWeatherForecast;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetForecastHourly: IWeatherForecast;
+function TWeatherService.GetForecastHourly: IWeatherForecast;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetForecastSummary: IWeatherForecast;
+function TWeatherService.GetForecastSummary: IWeatherForecast;
 begin
-
+  //TODO
 end;
 
-function TForecaService.GetMaps: IWeatherMaps;
+function TWeatherService.GetLocation: IWeatherLocation;
 begin
-
+  //TODO
 end;
 
-{ TForecaWeatherSupport }
-
-function TForecaWeatherSupport.GetSupportedUnits: TWeatherUnitsSet;
+function TWeatherService.GetMaps: IWeatherMaps;
 begin
-  Result:= [wuKelvin, wuImperial, wuMetric];
-end;
-
-function TForecaWeatherSupport.GetSupportedLocations: TJDWeatherLocationTypes;
-begin
-  Result:= [wlCoords];
-end;
-
-function TForecaWeatherSupport.GetSupportedLogos: TWeatherLogoTypes;
-begin
-  Result:= [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
-end;
-
-function TForecaWeatherSupport.GetSupportedAlertProps: TWeatherAlertProps;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedAlerts: TWeatherAlertTypes;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedConditionProps: TWeatherConditionsProps;
-begin
-  Result:= [cpPressureMB, cpWindDir, cpWindSpeed, cpHumidity, cpVisibility,
-    cpDewPoint, cpFeelsLike, cpUV, cpTemp, cpPrecip, cpIcon, cpStation];
-end;
-
-function TForecaWeatherSupport.GetSupportedForecasts: TWeatherForecastTypes;
-begin
-  Result:= [ftHourly, ftDaily];
-end;
-
-function TForecaWeatherSupport.GetSupportedForecastSummaryProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedForecastHourlyProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedForecastDailyProps: TWeatherForecastProps;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedInfo: TWeatherInfoTypes;
-begin
-  Result:= [wiConditions, wiForecastHourly, wiForecastDaily];
-end;
-
-function TForecaWeatherSupport.GetSupportedMaps: TWeatherMapTypes;
-begin
-  Result:= [];
-end;
-
-function TForecaWeatherSupport.GetSupportedMapFormats: TWeatherMapFormats;
-begin
-  Result:= [];
-end;
-
-{ TForecaWeatherURLs }
-
-function TForecaWeatherURLs.GetApiURL: WideString;
-begin
-  Result:= 'http://corporate.foreca.com/en/weather-api';
-end;
-
-function TForecaWeatherURLs.GetLegalURL: WideString;
-begin
-  Result:= '';
-end;
-
-function TForecaWeatherURLs.GetLoginURL: WideString;
-begin
-  Result:= '';
-end;
-
-function TForecaWeatherURLs.GetMainURL: WideString;
-begin
-  Result:= 'http://corporate.foreca.com/en/';
-end;
-
-function TForecaWeatherURLs.GetRegisterURL: WideString;
-begin
-  Result:= 'http://corporate.foreca.com/en/en/products-services/weather-api/try-it';
+  //TODO
 end;
 
 end.
