@@ -40,6 +40,8 @@ The following are the different values you may pass for a request:
 The following are the different query parameters you may pass with a request:
 
 1. `s` [REQUIRED] - Name of service or comma-separated list of service names.
+  1. Example of single service: `wunderground`
+  2. Example of multiple services: `wunderground,accuweather,foreca`
 2. `l` [OPTIONAL] - Method of location lookup
   1. `ip` [DEFAULT] - Automatically by IP Address
   2. `zip` - Lookup by Zip / Postal Code
