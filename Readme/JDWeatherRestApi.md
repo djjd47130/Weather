@@ -47,5 +47,12 @@ The following are the different query parameters you may pass with a request:
   3. `coords` - Lookup by Coordinates
     1. Pass Latitude in `l1` parameter
     2. Pass Longitude in `l2` parameter
-    
+  4. `citystate` - City and State
+    1. Pass City in `l1` parameter
+    2. Pass State in `l2` parameter
+  5. `citycountry` - City and Country
+    1. Pass City in `l1` parameter
+    2. Pass Country in `l2` parameter
+  6. `airport` - Airport Code
+    1. Pass Airport Code in `l1` parameter
 
