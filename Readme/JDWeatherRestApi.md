@@ -41,7 +41,7 @@ The following are the different query parameters you may pass with a request:
 
 1. `s` [REQUIRED] - Name of service or comma-separated list of service names.
 2. `l` [OPTIONAL] - Method of location lookup
-  1. `ip` - Automatically by IP Address
+  1. `ip` [DEFAULT] - Automatically by IP Address
   2. `zip` - Lookup by Zip / Postal Code
     1. Pass zip code in `l1` parameter
   3. `coords` - Lookup by Coordinates
@@ -55,4 +55,11 @@ The following are the different query parameters you may pass with a request:
     2. Pass Country in `l2` parameter
   6. `airport` - Airport Code
     1. Pass Airport Code in `l1` parameter
+3. `l1` - Location Detail 1
+4. `l2` - Location Detail 2
+5. `units` - Unit of Measurement
+  1. `imperial` - Imperial System (Farenheit, Miles, Feet...)
+  2. `metric` - Metric System (Celcius, Kilometers, Meters...)
+  3. `kelvin` - Kelvin System (Kelvin, Kilometers, Meters...)
+
 
