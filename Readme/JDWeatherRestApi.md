@@ -55,10 +55,10 @@ The following are the different query parameters you may pass with a request:
     2. Pass Country in `l2` parameter
   6. `airport` - Airport Code
     1. Pass Airport Code in `l1` parameter
-3. `l1` - Location Detail 1
-4. `l2` - Location Detail 2
-5. `units` - Unit of Measurement
-  1. `imperial` - Imperial System (Farenheit, Miles, Feet...)
+3. `l1` [CONDITIONAL] - Location Detail 1
+4. `l2` [CONDITIONAL] - Location Detail 2
+5. `units` [OPTIONAL] - Unit of Measurement
+  1. `imperial` [DEFAULT] - Imperial System (Farenheit, Miles, Feet...)
   2. `metric` - Metric System (Celcius, Kilometers, Meters...)
   3. `kelvin` - Kelvin System (Kelvin, Kilometers, Meters...)
 
