@@ -117,11 +117,11 @@ type
   TWeatherService = class(TWeatherServiceBase, IWeatherService)
   private
     FInfo: TWeatherServiceInfo;
-    function GetEndpointUrl(const Endpoint: TNWSEndpoint): String;
-    function ParseDateTime(const S: String): TDateTime;
   public
     constructor Create; override;
     destructor Destroy; override;
+    function GetEndpointUrl(const Endpoint: TNWSEndpoint): String;
+    function ParseDateTime(const S: String): TDateTime;
   public
     function GetInfo: IWeatherServiceInfo;
 

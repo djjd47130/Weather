@@ -772,7 +772,8 @@ begin
   L:= OB.O['display_location'];
   if not Assigned(L) then Exit;
 
-  IWeatherLocation(FLocation)._Release;
+  if Assigned(FLocation) then
+    IWeatherLocation(FLocation)._Release;
   FLocation:= TWeatherLocation.Create;
 
   FLocation.FDisplayName:= L.S['full'];
@@ -787,6 +788,7 @@ begin
   FLocation.FZipCode:= L.S['zip'];
   //TODO: Trigger event for location.....
 
+  Conditions.FSupport:= Self.Info.Support.SupportedConditionProps;
 
   Conditions.FDateTime:= EpochLocal(StrToIntDef(OB.S['observation_epoch'], 0)); // Now; //TODO
   Conditions.FCaption:= OB.S['weather'];

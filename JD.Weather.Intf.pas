@@ -219,6 +219,8 @@ type
 
     procedure AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
     procedure CalcAverages;
+    function Support: TWeatherPropTypes;
+    function PropCount(const Prop: TWeatherPropType): Integer;
 
     property DateTime: TDateTime read GetDateTime;
     property Icon: IWeatherGraphic read GetIcon;
@@ -594,6 +596,7 @@ type
 
   TWeatherProps = class(TInterfacedObject, IWeatherProps)
   public
+    FSupport: TWeatherPropTypes;
     FCounts: Array[TWeatherPropType] of Integer;
     FDateTime: TDateTime;
     FIcon: TWeatherGraphic;
@@ -694,6 +697,8 @@ type
 
     procedure AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
     procedure CalcAverages;
+    function Support: TWeatherPropTypes;
+    function PropCount(const Prop: TWeatherPropType): Integer;
 
     property DateTime: TDateTime read GetDateTime;
     property Icon: IWeatherGraphic read GetIcon;
@@ -2160,13 +2165,6 @@ var
   P: TWeatherPropType;
   S: IWeatherService;
   U: Array[TWeatherPropType] of Integer;
-  procedure Chk(const Prop: TWeatherPropType; const Val: Double; var Dest: Double);
-  begin
-    if Prop in S.Info.Support.SupportedConditionProps then begin
-      Dest:= Dest + Val;
-      U[Prop]:= U[Prop] + 1;
-    end;
-  end;
 begin
   //Merge multiple services into one data set, averaging each property
   R:= TWeatherProps.Create;
@@ -2179,6 +2177,8 @@ begin
         S:= FItems[X];
         T:= S.GetConditions;
 
+        R.AddTo(T, S.Info.Support.SupportedConditionProps);
+
         //TODO: Is there a better way to do these unmergable ones?
         R.FDateTime:= T.DateTime;
         R.FIcon.Base64:= T.Icon.Base64;
@@ -2188,91 +2188,9 @@ begin
         R.FURL:= T.URL;
         R.FStation:= T.Station;
 
-        Chk(wpTemp, T.Temp, R.FTemp);
-        Chk(wpTempMin, T.TempMin, R.FTempMin);
-        Chk(wpTempMax, T.TempMax, R.FTempMax);
-        Chk(wpFeelsLike, T.FeelsLike, R.FFeelsLike);
-        Chk(wpFeelsLikeSun, T.FeelsLikeSun, R.FFeelsLikeSun);
-        Chk(wpFeelsLikeShade, T.FeelsLikeShade, R.FFeelsLikeShade);
-        Chk(wpWindDir, T.WindDir, R.FWindDir);
-        Chk(wpWindSpeed, T.WindSpeed, R.FWindSpeed);
-        Chk(wpWindGust, T.WindGusts, R.FWindGusts);
-        Chk(wpWindChill, T.WindChill, R.FWindChill);
-        Chk(wpHeatIndex, T.HeatIndex, R.FHeatIndex);
-        Chk(wpPressure, T.Pressure, R.FPressure);
-        Chk(wpPressureGround, T.PressureGround, R.FPressureGround);
-        Chk(wpPressureSea, T.PressureSea, R.FPressureSea);
-        Chk(wpHumidity, T.Humidity, R.FHumidity);
-        Chk(wpDewPoint, T.DewPoint, R.FDewPoint);
-        Chk(wpVisibility, T.Visibility, R.FVisibility);
-        Chk(wpSolarRad, T.SolarRad, R.FSolarRad);
-        Chk(wpUVIndex, T.UVIndex, R.FUVIndex);
-        Chk(wpCloudCover, T.CloudCover, R.FCloudCover);
-        Chk(wpPrecipAmt, T.PrecipAmt, R.FPrecipAmt);
-        Chk(wpRainAmt, T.RainAmt, R.FRainAmt);
-        Chk(wpSnowAmt, T.SnowAmt, R.FSnowAmt);
-        Chk(wpIceAmt, T.IceAmt, R.FIceAmt);
-        Chk(wpSleetAmt, T.SleetAmt, R.FSleetAmt);
-        Chk(wpFogAmt, T.FogAmt, R.FFogAmt);
-        Chk(wpStormAmt, T.StormAmt, R.FStormAmt);
-        Chk(wpPrecipPred, T.PrecipPred, R.FPrecipPred);
-        Chk(wpRainPred, T.RainPred, R.FRainPred);
-        Chk(wpSnowPred, T.SnowPred, R.FSnowPred);
-        Chk(wpIcePred, T.IcePred, R.FIcePred);
-        Chk(wpSleetPred, T.SleetPred, R.FSleetPred);
-        Chk(wpFogPred, T.FogPred, R.FFogPred);
-        Chk(wpStormPred, T.StormPred, R.FStormPred);
-        Chk(wpWetBulb, T.WetBulb, R.FWetBulb);
-        Chk(wpCeiling, T.Ceiling, R.FCeiling);
-        if wpSunrise in S.Info.Support.SupportedConditionProps then begin
-          R.FSunrise:= R.FSunrise + T.Sunrise;
-          U[wpSunrise]:= U[wpSunrise] + 1;
-        end;
-        if wpSunset in S.Info.Support.SupportedConditionProps then begin
-          R.FSunset:= R.FSunset + T.Sunset;
-          U[wpSunset]:= U[wpSunset] + 1;
-        end;
-        Chk(wpDaylight, T.Daylight, R.FDaylight);
       end;
-      R.FTemp:= R.FTemp / U[wpTemp];
-      R.FTempMin:= R.FTempMin / U[wpTempMin];
-      R.FTempMax:= R.FTempMax / U[wpTempMax];
-      R.FFeelsLike:= R.FFeelsLike / U[wpFeelsLike];
-      R.FFeelsLikeSun:= R.FFeelsLikeSun / U[wpFeelsLikeSun];
-      R.FFeelsLikeShade:= R.FFeelsLikeShade / U[wpFeelsLikeShade];
-      R.FWindDir:= R.FWindDir / U[wpWindDir];
-      R.FWindSpeed:= R.FWindSpeed / U[wpWindSpeed];
-      R.FWindGusts:= R.FWindGusts / U[wpWindGust];
-      R.FWindChill:= R.FWindChill / U[wpWindChill];
-      R.FHeatIndex:= R.FHeatIndex / U[wpHeatIndex];
-      R.FPressure:= R.FPressure / U[wpPressure];
-      R.FPressureGround:= R.FPressureGround / U[wpPressureGround];
-      R.FPressureSea:= R.FPressureSea / U[wpPressureSea];
-      R.FHumidity:= R.FHumidity / U[wpHumidity];
-      R.FDewPoint:= R.FDewPoint / U[wpDewPoint];
-      R.FVisibility:= R.FVisibility / U[wpVisibility];
-      R.FSolarRad:= R.FSolarRad / U[wpSolarRad];
-      R.FUVIndex:= R.FUVIndex / U[wpUVIndex];
-      R.FCloudCover:= R.FCloudCover / U[wpCloudCover];
-      R.FPrecipAmt:= R.FPrecipAmt / U[wpPrecipAmt];
-      R.FRainAmt:= R.FRainAmt / U[wpRainAmt];
-      R.FSnowAmt:= R.FSnowAmt / U[wpSnowAmt];
-      R.FIceAmt:= R.FIceAmt / U[wpIceAmt];
-      R.FSleetAmt:= R.FSleetAmt / U[wpSleetAmt];
-      R.FFogAmt:= R.FFogAmt / U[wpFogAmt];
-      R.FStormAmt:= R.FStormAmt / U[wpStormAmt];
-      R.FPrecipPred:= R.FPrecipPred / U[wpPrecipPred];
-      R.FRainPred:= R.FRainPred / U[wpRainPred];
-      R.FSnowPred:= R.FSnowPred / U[wpSnowPred];
-      R.FIcePred:= R.FIcePred / U[wpIcePred];
-      R.FSleetPred:= R.FSleetPred / U[wpSleetPred];
-      R.FFogPred:= R.FFogPred / U[wpFogPred];
-      R.FStormPred:= R.FStormPred / U[wpStormPred];
-      R.FWetBulb:= R.FWetBulb / U[wpWetBulb];
-      R.FCeiling:= R.FCeiling / U[wpCeiling];
-      R.FSunrise:= R.FSunrise / U[wpSunrise];
-      R.FSunset:= R.FSunset / U[wpSunset];
-      R.FDaylight:= R.FDaylight / U[wpDaylight];
+
+      R.CalcAverages;
     end;
   finally
     Result:= R;
@@ -2592,6 +2510,16 @@ begin
   Result:= FWindSpeed;
 end;
 
+function TWeatherProps.PropCount(const Prop: TWeatherPropType): Integer;
+begin
+  Result:= FCounts[Prop];
+end;
+
+function TWeatherProps.Support: TWeatherPropTypes;
+begin
+  Result:= FSupport;
+end;
+
 procedure TWeatherProps.AddTo(const AProps: IWeatherProps; const ASupport: TWeatherPropTypes);
 var
   T: TWeatherPropType;
@@ -2602,6 +2530,7 @@ begin
       FCounts[T]:= FCounts[T] + 1;
     end;
   end;
+  FSupport:= FSupport + ASupport;
   FTemp:= FTemp + AProps.Temp;
   FTempMin:= FTempMin + AProps.TempMin;
   FTempMax:= FTempMax + AProps.TempMax;

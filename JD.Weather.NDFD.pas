@@ -209,11 +209,13 @@ type
     FItems: TObjectList<TNDFDParameter>;
     FTimeLayout: TNDFDTimeLayout;
     function GetItem(const Index: Integer): TNDFDParameter;
+    procedure SetTimeLayout(const Value: TNDFDTimeLayout);
   public
     constructor Create;
     destructor Destroy; override;
     function Count: Integer;
     property Items[const Index: Integer]: TNDFDParameter read GetItem; default;
+    property TimeLayout: TNDFDTimeLayout read FTimeLayout write SetTimeLayout;
   end;
 
   TNDFDParameterList = class(TObject)
@@ -244,7 +246,6 @@ var
   Y, D, M, H, N, C: Integer;
   function CopyTo(const D: String): Integer;
   var
-    V: String;
     P: Integer;
   begin
     P:= Pos(D, T);
@@ -252,7 +253,6 @@ var
     Delete(T, 1, P);
   end;
 begin
-  Result:= 0;
   try
     //2017-01-12T19:00:00-05:00
     T:= S;
@@ -565,10 +565,12 @@ end;
 constructor TNDFDParameters.Create;
 begin
   FItems:= TObjectList<TNDFDParameter>.Create(True);
+
 end;
 
 destructor TNDFDParameters.Destroy;
 begin
+
   FItems.Clear;
   FreeAndNil(FItems);
   inherited;
@@ -577,6 +579,11 @@ end;
 function TNDFDParameters.GetItem(const Index: Integer): TNDFDParameter;
 begin
   Result:= FItems[Index];
+end;
+
+procedure TNDFDParameters.SetTimeLayout(const Value: TNDFDTimeLayout);
+begin
+  FTimeLayout := Value;
 end;
 
 { TNDFDParameterList }

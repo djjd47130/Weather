@@ -21,6 +21,7 @@ type
     constructor Create(AOwner: TWeatherMap); overload;
     constructor Create(AOwner: TWeatherMap; const Image: IWeatherGraphic); overload;
     destructor Destroy; override;
+    property Timestamp: TDateTime read FTimestamp;
   end;
 
   TWeatherMap = class(TComponent)
@@ -63,12 +64,12 @@ end;
 constructor TWeatherMap.Create(AOwner: TComponent);
 begin
   inherited;
-
+  FItems:= TObjectList<TWeatherMapItem>.Create(True);
 end;
 
 destructor TWeatherMap.Destroy;
 begin
-
+  FItems.Free;
   inherited;
 end;
 
