@@ -18,7 +18,7 @@
 
 
 
-## How to Use
+# How to Use API
 
 ### URL Format
 
@@ -74,7 +74,7 @@ The following are the different query parameters you may pass with a request:
 
 
 
-## Requests
+# Request Specifications
 
 ### Request: Services
 
