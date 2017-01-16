@@ -98,3 +98,7 @@ The following are the different query parameters you may pass with a request:
 
 ### Request: Maps
 
+Returns maps containing the desired map layers.
+
+**NOTE**: This request **CANNOT** be combined with other types of requests, as it does not return JSON or XML data.
+
