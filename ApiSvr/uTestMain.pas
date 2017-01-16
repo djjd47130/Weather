@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
-  JD.Weather.ApiSvr, Data.DB, Data.Win.ADODB;
+  JD.Weather.ApiSvr, Data.DB, Data.Win.ADODB,
+  JD.Weather.SuperObject;
 
 type
   TForm1 = class(TForm)
@@ -18,8 +19,10 @@ type
     procedure btnStopClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     FSvr: TJDWeatherApiSvrThread;
+    FObj: ISuperObject;
     procedure ThreadLog(Sender: TObject; const Timestamp: TDateTime;
       const Msg: String);
   public
@@ -38,7 +41,7 @@ begin
   btnStart.Enabled:= False;
   btnStop.Enabled:= True;
   FSvr:= TJDWeatherApiSvrThread.Create;
-  FSvr.ConnStr:= 'Provider=SQLOLEDB.1;Persist Security Info=True;Data Source=LocalHost\JD;Initial Catalog=JDWeather;User ID=sa;Password=';
+  FSvr.ConnStr:= FObj.S['connstr'];
   FSvr.OnLog:= ThreadLog;
   FSvr.Start;
 end;
@@ -60,6 +63,23 @@ begin
     FSvr.Terminate;
     FSvr.WaitFor;
     FreeAndNil(FSvr);
+  end;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+var
+  FN: String;
+  L: TStringList;
+begin
+  Log.Align:= alClient;
+  FN:= ExtractFilePath(ParamStr(0));
+  FN:= IncludeTrailingPathDelimiter(FN)+'ApiSvr.json';
+  L:= TStringList.Create;
+  try
+    L.LoadFromFile(FN);
+    FObj:= SO(L.Text);
+  finally
+    FreeAndNil(L);
   end;
 end;
 
