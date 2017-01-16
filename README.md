@@ -89,6 +89,8 @@ The most complete service implemented so far is Weather Underground. Originall, 
 
 There was a nearly complete version of the entire library before this project. However, it was not scalable. Everything was hard-coded in a single unit. This project aims to separate the services, and add support for new services in the future. It also aims to create a new web API which can dynamically integrate with any of the given services - but be converted into the same standard as this library accomplishes with its interfaces.
 
+This library is also being encapsulated inside its own REST API which allows remote developers access to the same standardized weather data. This will in turn end up to be the final actual goal of the entire project - introduce a new weather service which combines weather data from multiple services. This also already includes its own database for users to register their own keys.
+
 ### Future Plans
 
 In the end, this entire system will be encapsulated inside a single component which can be installed into the Delphi IDE. It provides a multi-threaded environment which in turn automatically fetches weather data on a schedule.
@@ -97,6 +99,4 @@ Another major concept (already in the works) is to merge multiple weather data s
 
 1. More realistic weather data based on averages.
 2. Fill in pieces of weather data which are only supported by certain services.
-
-Another project, started but put on the side, is to create a new Web API which allows developers to get weather data in the same standard format as this library's interfaces - but in JSON format. 
 
