@@ -95,7 +95,20 @@ Returns an array of all the available weather services.
 
 ### Request: Support
 
+Returns multiple arrays of each information type and which properties are supported for each.
+
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Support/?s=[SERVICE]`
+
+| Property               | Type         | Meaning                         |
+| -----------------------|--------------| --------------------------------|
+| caption                | string array | User-friendly name of service   |
+| name                   | string array | Internal name of service        |
+| uid                    | string array | Unique identifier of service    |
+| supported_units        | string array | Supported Units of Measure      |
+| supported_locations    | string array | Supported Location Lookup Types |
+| supported_info         | string array | Supported Information Types     |
+| supported_conditions   | string array | Supported Condition Properties  |
+
 
 ### Request: Conditions
 
