@@ -127,6 +127,11 @@ Returns the current weather conditions for a given location.
 | timestamp     | datetime | The date / time of observation          |
 | caption       | string   | Short description of weather conditions |
 | station       | string   | Specific station of observation         |
+| description   | string   | Longer description of conditions        |
+| url           | string   | URL to view detailed conditions         |
+| temp          | float    | Current temperature                     |
+| temp_min      | float    | Minimum Temperature                     |
+| temp_max      | float    | Maximum Temperature                     |
 
 ### Request: Alerts
 
