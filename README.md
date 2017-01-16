@@ -90,7 +90,7 @@ The most complete service implemented so far is Weather Underground. Originall, 
 
 There was a nearly complete version of the entire library before this project. However, it was not scalable. Everything was hard-coded in a single unit. This project aims to separate the services, and add support for new services in the future. It also aims to create a new web API which can dynamically integrate with any of the given services - but be converted into the same standard as this library accomplishes with its interfaces.
 
-This library is also being encapsulated inside its own REST API which allows remote developers access to the same standardized weather data. This will in turn end up to be the final actual goal of the entire project - introduce a new weather service which combines weather data from multiple services. This also already includes its own database for users to register their own keys.
+This library is also being encapsulated inside its own [REST API](Readme/JDWeatherRestApi.md) which allows remote developers access to the same standardized weather data. This will in turn end up to be the final actual goal of the entire project - introduce a new weather service which combines weather data from multiple services. This also already includes its own database for users to register their own keys.
 
 ### Future Plans
 
