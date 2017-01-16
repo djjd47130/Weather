@@ -34,6 +34,10 @@ The following are the different values you may pass for a request:
 2. `Support` - Returns detailed supported properties for given service.
 3. `Conditions` - Returns the current observed conditions.
 4. `Alerts` - Returns the current weather alerts.
+5. `ForecastSummary` - Returns a summarized forecast.
+6. `ForecastHourly` - Returns an hourly forecast.
+7. `ForecastDaily` - Returns a daily forecast.
+8. `Maps` - Returns map layer data
 
 ### Query Parameters
 
@@ -64,4 +68,33 @@ The following are the different query parameters you may pass with a request:
   2. `metric` - Metric System (Celcius, Kilometers, Meters...)
   3. `kelvin` - Kelvin System (Kelvin, Kilometers, Meters...)
 
+### Request: Services
+
+
+
+### Request: Support
+
+
+
+### Request: Conditions
+
+
+
+### Request: Alerts
+
+
+
+### Request: ForecastSummary
+
+
+
+### Request: ForecastHourly
+
+
+
+### Request: ForecastDaily
+
+
+
+### Request: Maps
 
