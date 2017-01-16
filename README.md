@@ -8,6 +8,7 @@
 4. Lookup weather data by any given number of location information.
 5. Each weather service encapsulated in a DLL (Source Included).
 6. Add support for new services by writing a new DLL.
+7. [REST API](Readme/JDWeatherRestApi.md) for web access to weather library
 
 ### IMPORTANT NOTE
 
