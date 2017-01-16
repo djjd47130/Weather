@@ -99,15 +99,21 @@ Returns multiple arrays of each information type and which properties are suppor
 
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Support/?s=[SERVICE]`
 
-| Property               | Type         | Meaning                         |
-| -----------------------|--------------| --------------------------------|
-| caption                | string array | User-friendly name of service   |
-| name                   | string array | Internal name of service        |
-| uid                    | string array | Unique identifier of service    |
-| supported_units        | string array | Supported Units of Measure      |
-| supported_locations    | string array | Supported Location Lookup Types |
-| supported_info         | string array | Supported Information Types     |
-| supported_conditions   | string array | Supported Condition Properties  |
+| Property                         | Type         | Meaning                               |
+| ---------------------------------|--------------| --------------------------------------|
+| caption                          | string       | User-friendly name of service         |
+| name                             | string       | Internal name of service              |
+| uid                              | string       | Unique identifier of service          |
+| supported_units                  | string array | Supported Units of Measure            |
+| supported_locations              | string array | Supported Location Lookup Types       |
+| supported_info                   | string array | Supported Information Types           |
+| supported_conditions             | string array | Supported Condition Properties        |
+| supported_alert_types            | string array | Supported Alert Types                 |
+| supported_alert_props            | string array | Supported Alert Peroperties           |
+| supported_forecasts              | string array | Supported Forecast Types              |
+| supported_forecast_summary_props | string array | Supported Forecast Summary Properties |
+| supported_forecast_hourly_props  | string array | Supported Forecast Hourly Properties  |
+| supported_forecast_daily_props   | string array | Supported Forecast Daily Properties   |
 
 
 ### Request: Conditions
