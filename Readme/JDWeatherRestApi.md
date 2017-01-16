@@ -122,6 +122,12 @@ Returns the current weather conditions for a given location.
 
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Conditions/?s=[SERVICE]&l=[LOC]&l1=[LOC1]&l2=[LOC2]`
 
+| Property      | Type     | Meaning                                 |
+| ------------- |----------| --------------------------------------- |
+| timestamp     | datetime | The date / time of observation          |
+| caption       | string   | Short description of weather conditions |
+| station       | string   | Specific station of observation         |
+
 ### Request: Alerts
 
 
