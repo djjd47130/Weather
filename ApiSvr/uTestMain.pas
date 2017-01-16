@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   JD.Weather.ApiSvr, Data.DB, Data.Win.ADODB,
-  JD.Weather.SuperObject;
+  JD.Weather.SuperObject, IdBaseComponent, IdComponent, IdCustomTCPServer,
+  IdCustomHTTPServer, IdHTTPServer;
 
 type
   TForm1 = class(TForm)
@@ -15,6 +16,7 @@ type
     btnStart: TBitBtn;
     Log: TMemo;
     DB: TADOConnection;
+    IdHTTPServer1: TIdHTTPServer;
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

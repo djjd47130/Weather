@@ -7,7 +7,7 @@ uses
   System.Classes, System.SysUtils, System.TypInfo,
   JD.Weather.Intf, JD.Weather.SuperObject,
   IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
-  IdHTTPServer, IdContext, IdTCPConnection, IdYarn,
+  IdHTTPServer, IdContext, IdTCPConnection, IdYarn, IdSocketHandle,
   Data.DB, Data.Win.ADODB;
 
 type
@@ -45,6 +45,8 @@ type
     procedure HandleInvalidKey(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleRequest(ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleUI(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
   public
     constructor Create(AConnection: TIdTCPConnection; AYarn: TIdYarn;
@@ -122,6 +124,7 @@ end;
 procedure TJDWeatherApiSvrThread.Init;
 var
   E: Integer;
+  B: TIdSocketHandle;
 begin
   CoInitialize(nil);
   FServer:= TIdHTTPServer.Create(nil);
@@ -252,7 +255,7 @@ begin
   FServices:= nil;
   FreeAndNil(FDoc);
   FDB.Connected:= False;
-  FDB.Free;
+  FreeAndNil(FDB);
   CoUninitialize;
   inherited;
 end;
@@ -309,7 +312,7 @@ begin
     end;
 
   finally
-    Q.Free;
+    FreeAndNil(Q);
   end;
 end;
 
@@ -343,31 +346,37 @@ begin
     FDoc.Append(T);
   end;
 
+  AResponseInfo.CustomHeaders.Values['Access-Control-Allow-Origin']:= '*';
+
   FServices.Clear;
 
   Q:= NewQuery;
   try
     if FDoc.Count > 0 then begin
-      if FDoc.Count > 1 then begin
-        FKey:= FDoc[0];
-        Q.SQL.Text:= 'select * from ApiKeys where ApiKey = :key and Status = 1';
-        Q.Parameters.ParamValues['key']:= FKey;
-        Q.Open;
-        try
-          if not Q.IsEmpty then begin
-            FUserID:= Q.FieldByName('UserID').AsInteger;
-            HandleRequest(ARequestInfo, AResponseInfo);
-          end else begin
-            HandleInvalidKey(ARequestInfo, AResponseInfo);
-          end;
-        finally
-          Q.Close;
-        end;
+      if SameText(FDoc[0], 'ui') then begin
+        HandleUI(ARequestInfo, AResponseInfo);
       end else begin
-        if SameText(FDoc[0], 'favicon.ico') then begin
-          //TODO: Return favicon
+        if FDoc.Count > 1 then begin
+          FKey:= FDoc[0];
+          Q.SQL.Text:= 'select * from ApiKeys where ApiKey = :key and Status = 1';
+          Q.Parameters.ParamValues['key']:= FKey;
+          Q.Open;
+          try
+            if not Q.IsEmpty then begin
+              FUserID:= Q.FieldByName('UserID').AsInteger;
+              HandleRequest(ARequestInfo, AResponseInfo);
+            end else begin
+              HandleInvalidKey(ARequestInfo, AResponseInfo);
+            end;
+          finally
+            Q.Close;
+          end;
         end else begin
-          HandleNoKey(ARequestInfo, AResponseInfo);
+          if SameText(FDoc[0], 'favicon.ico') then begin
+            //TODO: Return favicon
+          end else begin
+            HandleNoKey(ARequestInfo, AResponseInfo);
+          end;
         end;
       end;
     end else begin
@@ -375,7 +384,7 @@ begin
     end;
 
   finally
-    Q.Free;
+    FreeAndNil(Q);
   end;
 end;
 
@@ -666,6 +675,99 @@ begin
   finally
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TWeatherContext.HandleUI(
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  L: TStringList;
+  R: TResourceStream;
+  procedure DoScript;
+  begin
+    R:= TResourceStream.Create(HInstance, 'SCRIPT_JS', 'JS');
+    try
+      R.Position:= 0;
+      L.LoadFromStream(R);
+    finally
+      FreeAndNil(R);
+    end;
+  end;
+  procedure DoStyles;
+  begin
+    R:= TResourceStream.Create(HInstance, 'STYLES_CSS', 'CSS');
+    try
+      R.Position:= 0;
+      L.LoadFromStream(R);
+    finally
+      FreeAndNil(R);
+    end;
+  end;
+  procedure DoHome;
+  begin
+    R:= TResourceStream.Create(HInstance, 'HOME_HTML', 'HTML');
+    try
+      R.Position:= 0;
+      L.LoadFromStream(R);
+    finally
+      FreeAndNil(R);
+    end;
+  end;
+  procedure DoLogin;
+  begin
+    //TODO: Return Login Page
+
+  end;
+  procedure DoRegister;
+  begin
+    //TODO: Return Register Page
+
+  end;
+  procedure DoService;
+  begin
+    R:= TResourceStream.Create(HInstance, 'SERVICE_HTML', 'HTML');
+    try
+      R.Position:= 0;
+      L.LoadFromStream(R);
+    finally
+      FreeAndNil(R);
+    end;
+  end;
+begin
+  L:= TStringList.Create;
+  try
+    try
+      if (FDoc.Count = 1) then begin
+        DoHome;
+      end else begin
+        //Respond with requested page
+        if FDoc[1] = '' then begin
+          DoHome;
+        end else
+        if SameText(FDoc[1], 'JDWeatherScript.js') then begin
+          DoScript;
+        end else
+        if SameText(FDoc[1], 'JDWeatherStyles.css') then begin
+          DoStyles;
+        end else
+        if SameText(FDoc[1], 'login') then begin
+          DoLogin;
+        end else
+        if SameText(FDoc[1], 'register') then begin
+          DoRegister;
+        end else
+        if SameText(FDoc[1], 'service') then begin
+          DoService;
+        end else begin
+          DoHome;
+        end;
+      end;
+    finally
+      AResponseInfo.ContentText:= L.Text;
+      AResponseInfo.ContentType:= 'text/html';
+    end;
+  finally
+    FreeAndNil(L);
   end;
 end;
 

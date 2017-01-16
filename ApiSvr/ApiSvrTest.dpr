@@ -1,5 +1,7 @@
 program ApiSvrTest;
 
+{$R 'ApiSvrRes.res' 'ApiSvrRes.rc'}
+
 uses
   Vcl.Forms,
   uTestMain in 'uTestMain.pas' {Form1},

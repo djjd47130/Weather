@@ -67,4 +67,13 @@ object Form1: TForm1
     Left = 168
     Top = 312
   end
+  object IdHTTPServer1: TIdHTTPServer
+    Bindings = <
+      item
+        IP = '0.0.0.0'
+        Port = 80
+      end>
+    Left = 304
+    Top = 304
+  end
 end

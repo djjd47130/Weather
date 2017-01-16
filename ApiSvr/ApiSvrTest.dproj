@@ -122,6 +122,9 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <RcCompile Include="ApiSvrRes.rc">
+            <Form>ApiSvrRes.res</Form>
+        </RcCompile>
         <DCCReference Include="uTestMain.pas">
             <Form>Form1</Form>
             <FormType>dfm</FormType>
@@ -151,7 +154,7 @@
                 </Source>
             </Delphi.Personality>
             <Deployment Version="2">
-                <DeployFile LocalName="Win32\Debug\ApiSvrTest.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\bin\ApiSvrTest.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>ApiSvrTest.exe</RemoteName>
                         <Overwrite>true</Overwrite>

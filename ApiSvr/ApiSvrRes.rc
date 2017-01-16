@@ -1,0 +1,4 @@
+HOME_HTML HTML Src\Home.html
+SERVICE_HTML HTML Src\Service.html
+SCRIPT_JS JS Src\JDWeatherScript.js
+STYLES_CSS CSS Src\JDWeatherStyles.css

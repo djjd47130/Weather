@@ -1,0 +1,23 @@
+body {
+  margin: 0px;
+  font-family: Verdana;
+}
+code {
+  background-color: #E7F2F7;
+  font-size: 18px;
+}
+#divTitle {
+  font-size: 42px;
+  background-color: Navy;
+  color: White;
+  height: 50px;
+  padding: 3px;
+}
+#divContent {
+  margin: 20px;
+}
+.headBtn {
+  font-size: 20px;
+  float: right;
+  margin: 10px;
+}
