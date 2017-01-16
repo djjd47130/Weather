@@ -38,7 +38,7 @@ begin
   btnStart.Enabled:= False;
   btnStop.Enabled:= True;
   FSvr:= TJDWeatherApiSvrThread.Create;
-  FSvr.ConnStr:= 'Provider=SQLOLEDB.1;Persist Security Info=True;Data Source=LocalHost\JD;Initial Catalog=JDWeather;User ID=sa;Password=Iloveu23';
+  FSvr.ConnStr:= 'Provider=SQLOLEDB.1;Persist Security Info=True;Data Source=LocalHost\JD;Initial Catalog=JDWeather;User ID=sa;Password=';
   FSvr.OnLog:= ThreadLog;
   FSvr.Start;
 end;
