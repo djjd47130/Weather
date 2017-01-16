@@ -78,15 +78,20 @@ The following are the different query parameters you may pass with a request:
 
 ### Request: Services
 
-Returns a list of all the available weather services.
+Returns an array of all the available weather services.
 
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Services`
 
-| Property      | Type    | Meaning                       |
-| ------------- |---------| ------------------------------|
-| caption       | string  | User-friendly name of service |
-| name          | string  | Internal name of service      |
-| uid           | string  | Unique identifier of service  |
+| Property      | Type   | Meaning                       |
+| ------------- |--------| ------------------------------|
+| caption       | string | User-friendly name of service |
+| name          | string | Internal name of service      |
+| uid           | string | Unique identifier of service  |
+| url_main      | string | Main URL of service website   |
+| url_api       | string | URL of Service API Docs       |
+| url_register  | string | URL of Service Registration   |
+| url_login     | string | URL of Service Login          |
+| url_legal     | string | URL of Service Legal Info     |
 
 ### Request: Support
 
