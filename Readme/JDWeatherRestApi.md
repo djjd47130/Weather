@@ -22,4 +22,30 @@ All API calls are made to the following endpoint:
 
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/`
 
+This is followed by one or more specific request(s). The response can include the result of multiple requests at once:
+
+`api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/[REQUEST_ONE]/[REQUEST_TWO]/?s=[SERVICES]`
+
+### Requests
+
+The following are the different values you may pass for a request:
+
+1. `Services` - Returns a list of all available weather services.
+2. `Support` - Returns detailed supported properties for given service.
+3. `Conditions` - Returns the current observed conditions.
+4. `Alerts` - Returns the current weather alerts.
+
+### Query Parameters
+
+The following are the different query parameters you may pass with a request:
+
+1. `s` [REQUIRED] - Name of service or comma-separated list of service names.
+2. `l` [OPTIONAL] - Method of location lookup
+  1. `ip` - Automatically by IP Address
+  2. `zip` - Lookup by Zip / Postal Code
+    1. Pass zip code in `l1` parameter
+  3. `coords` - Lookup by Coordinates
+    1. Pass Latitude in `l1` parameter
+    2. Pass Longitude in `l2` parameter
+    
 
