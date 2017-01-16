@@ -70,11 +70,19 @@ The following are the different query parameters you may pass with a request:
 
 ### Request: Services
 
+Returns a list of all the available weather services.
 
+`api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Services`
+
+| Property      | Type    | Meaning                       |
+| ------------- |---------| ------------------------------|
+| caption       | string  | User-friendly name of service |
+| name          | string  | Internal name of service      |
+| uid           | string  | Unique identifier of service  |
 
 ### Request: Support
 
-
+`api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Support/?s=[SERVICE]`
 
 ### Request: Conditions
 
