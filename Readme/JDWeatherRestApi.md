@@ -122,16 +122,21 @@ Returns the current weather conditions for a given location.
 
 `api.weather.jdsoftwareinc.com:8664/[YOUR_API_KEY]/Conditions/?s=[SERVICES]&l=[LOC]&l1=[LOC1]&l2=[LOC2]&u=[UNITS]`
 
-| Property      | Type     | Meaning                                 |
-| ------------- |----------| --------------------------------------- |
-| timestamp     | datetime | The date / time of observation          |
-| caption       | string   | Short description of weather conditions |
-| station       | string   | Specific station of observation         |
-| description   | string   | Longer description of conditions        |
-| url           | string   | URL to view detailed conditions         |
-| temp          | float    | Current temperature                     |
-| temp_min      | float    | Minimum Temperature                     |
-| temp_max      | float    | Maximum Temperature                     |
+| Property            | Type     | Meaning                                 |
+| ------------------- |----------| --------------------------------------- |
+| timestamp           | datetime | The date / time of observation          |
+| caption             | string   | Short description of weather conditions |
+| station             | string   | Specific station of observation         |
+| description         | string   | Longer description of conditions        |
+| url                 | string   | URL to view detailed conditions         |
+| temp                | float    | Current temperature                     |
+| temp_min            | float    | Minimum Temperature                     |
+| temp_max            | float    | Maximum Temperature                     |
+| feels_like          | float    | Feels Like Temperature                  |
+| feels_like_sun      | float    | Feels Like Temperature in the Sun       |
+| feels_like_shade    | float    | Feels Like Temperature in the Shade     |
+| humidity            | float    | Relative Humidity                       |
+| dew_point           | float    | Dew Point                               |
 
 ### Request: Alerts
 
