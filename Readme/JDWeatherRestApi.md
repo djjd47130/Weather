@@ -16,6 +16,8 @@
 
 **NOTE** There is currently no ability for a developer to register keys. Please contact the owner of this repository if you wish to gain access.
 
+
+
 ## How to Use
 
 ### URL Format
@@ -69,6 +71,8 @@ The following are the different query parameters you may pass with a request:
   1. `imperial` [DEFAULT] - Imperial System (Farenheit, Miles, Feet...)
   2. `metric` - Metric System (Celcius, Kilometers, Meters...)
   3. `kelvin` - Kelvin System (Kelvin, Kilometers, Meters...)
+
+
 
 ## Requests
 
