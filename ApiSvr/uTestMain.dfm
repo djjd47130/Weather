@@ -23,9 +23,6 @@ object Form1: TForm1
     Height = 73
     Align = alTop
     TabOrder = 0
-    ExplicitLeft = 24
-    ExplicitTop = 16
-    ExplicitWidth = 497
     object btnStop: TBitBtn
       Left = 8
       Top = 40
@@ -62,18 +59,5 @@ object Form1: TForm1
     ScrollBars = ssBoth
     TabOrder = 1
     WordWrap = False
-  end
-  object DB: TADOConnection
-    Left = 168
-    Top = 312
-  end
-  object IdHTTPServer1: TIdHTTPServer
-    Bindings = <
-      item
-        IP = '0.0.0.0'
-        Port = 80
-      end>
-    Left = 304
-    Top = 304
   end
 end

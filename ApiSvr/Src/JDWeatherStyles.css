@@ -1,23 +1,81 @@
 body {
-  margin: 0px;
-  font-family: Verdana;
+    margin: 0px;
+    font-family: Verdana;
 }
+
 code {
-  background-color: #E7F2F7;
-  font-size: 18px;
+    background-color: #E7F2F7;
+    font-size: 18px;
 }
+
 #divTitle {
-  font-size: 42px;
-  background-color: Navy;
-  color: White;
-  height: 50px;
-  padding: 3px;
+    font-size: 42px;
+    background-color: Navy;
+    color: White;
+    height: 50px;
+    padding: 3px;
 }
+
 #divContent {
-  margin: 20px;
+    margin: 20px;
 }
+
 .headBtn {
-  font-size: 20px;
-  float: right;
-  margin: 10px;
+    font-size: 20px;
+    float: right;
+    margin: 10px;
+    visibility: hidden;
+}
+
+.headBtn a:link {
+    color: white;
+}
+
+.headBtn a:visited {
+    color: white;
+}
+
+.headBtn a:hover {
+    color: cornflowerblue;
+}
+
+.headBtn a:active {
+    color: yellow;
+}
+
+
+
+
+#serviceList {
+    list-style-type: none;
+}
+
+.serviceList {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+.serviceListItem {
+    margin: 0px;
+    padding: 0px;
+    width: 300px;
+    height: 30px;
+}
+
+.tableHead {
+    font-weight: bold;
+    background-color: SkyBlue;
+}
+
+.tableColName {
+    width: 200px;
+}
+
+.tableColType {
+    width: 120px;
+}
+
+.tableColDesc {
+    width: 600px;
 }

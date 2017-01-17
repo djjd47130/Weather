@@ -8,7 +8,8 @@ uses
   JD.Weather.Intf, JD.Weather.SuperObject,
   IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
   IdHTTPServer, IdContext, IdTCPConnection, IdYarn, IdSocketHandle,
-  Data.DB, Data.Win.ADODB;
+  Data.DB, Data.Win.ADODB,
+  JD.Weather.Logger;
 
 type
   TJDWeatherApiSvrThread = class;
@@ -48,6 +49,7 @@ type
       AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleUI(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
+    function GetConditions: ISuperObject;
   public
     constructor Create(AConnection: TIdTCPConnection; AYarn: TIdYarn;
       AList: TIdContextThreadList = nil); override;
@@ -61,10 +63,11 @@ type
     FLib: HMODULE;
     FCreateLib: TCreateJDWeather;
     FServer: TIdHTTPServer;
-    FOnLog: TLogEvent;
     FLogTime: TDateTime;
     FLogMsg: String;
     FConnStr: String;
+    FPort: Integer;
+    FOnLog: TLogEvent;
     procedure Init;
     procedure UnInit;
     procedure Process;
@@ -72,6 +75,7 @@ type
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure SvrContextCreated(AContext: TIdContext);
     procedure SetConnStr(const Value: String);
+    procedure SetPort(const Value: Integer);
   protected
     procedure Execute; override;
     procedure SYNC_OnLog;
@@ -79,8 +83,10 @@ type
     constructor Create; reintroduce;
     destructor Destroy; override;
     procedure Log(const Msg: String);
-    property OnLog: TLogEvent read FOnLog write FOnLog;
+  public
     property ConnStr: String read FConnStr write SetConnStr;
+    property Port: Integer read FPort write SetPort;
+    property OnLog: TLogEvent read FOnLog write FOnLog;
   end;
 
 implementation
@@ -112,7 +118,7 @@ end;
 constructor TJDWeatherApiSvrThread.Create;
 begin
   inherited Create(True);
-
+  FPort:= 8664;
 end;
 
 destructor TJDWeatherApiSvrThread.Destroy;
@@ -129,7 +135,7 @@ begin
   CoInitialize(nil);
   FServer:= TIdHTTPServer.Create(nil);
   FServer.ContextClass:= TWeatherContext;
-  FServer.DefaultPort:= 8664;
+  FServer.DefaultPort:= FPort;
   FServer.OnCommandGet:= Self.SvrCommandGet;
   FServer.OnContextCreated:= Self.SvrContextCreated;
 
@@ -158,9 +164,12 @@ end;
 
 procedure TJDWeatherApiSvrThread.Log(const Msg: String);
 begin
+  //PostLog(0, Msg);
+  {
   FLogTime:= Now;
   FLogMsg:= Msg;
   Synchronize(SYNC_OnLog);
+  }
 end;
 
 procedure TJDWeatherApiSvrThread.UnInit;
@@ -219,6 +228,11 @@ end;
 procedure TJDWeatherApiSvrThread.SetConnStr(const Value: String);
 begin
   FConnStr := Value;
+end;
+
+procedure TJDWeatherApiSvrThread.SetPort(const Value: Integer);
+begin
+  FPort := Value;
 end;
 
 procedure TJDWeatherApiSvrThread.SvrCommandGet(AContext: TIdContext;
@@ -554,82 +568,91 @@ begin
   end;
 end;
 
+function TWeatherContext.GetConditions: ISuperObject;
+var
+  C: IWeatherProps;
+  procedure ChkD(const N: String; Prop: TWeatherPropType; const V: Double);
+  begin
+    if Prop in C.Support then
+      Result.D[N]:= V;
+  end;
+begin
+  Result:= SO;
+  C:= FServices.GetCombinedConditions;
+  if Assigned(C) then begin
+    {
+      wpIcon: ;
+      wpCaption: ;
+      wpDescription: ;
+      wpDetails: ;
+      wpURL: ;
+      wpStation: ;
+      wpPropsMin: ;
+      wpPropsMax: ;
+    }
+    Result.S['timestamp']:= FormatDateTime('mm-dd-yyyy hh:nn AMPM', C.DateTime);
+    Result.S['caption']:= C.Caption;
+    Result.S['description']:= C.Description;
+    Result.S['details']:= C.Details;
+    Result.S['url']:= C.URL;
+    Result.S['station']:= C.Station;
+    Result.S['icon_url']:= ''; //TODO
+    ChkD('temp', wpTemp, C.Temp);
+    ChkD('temp_min', wpTempMin, C.TempMin);
+    ChkD('temp_max', wpTempMax, C.TempMax);
+    ChkD('feels_like', wpFeelsLike, C.FeelsLike);
+    ChkD('feels_like_sun', wpFeelsLikeSun, C.FeelsLikeSun);
+    ChkD('feels_like_shade', wpFeelsLikeShade, C.FeelsLikeShade);
+    ChkD('rel_humidity', wpHumidity, C.Humidity);
+    ChkD('visibility', wpVisibility, C.Visibility);
+    ChkD('dew_point', wpDewPoint, C.DewPoint);
+    ChkD('wind_dir', wpWindDir, C.WindDir);
+    ChkD('wind_speed', wpWindSpeed, C.WindSpeed);
+    ChkD('wind_gusts', wpWindGust, C.WindGusts);
+    ChkD('wind_chill', wpWindChill, C.WindChill);
+    ChkD('heat_index', wpHeatIndex, C.HeatIndex);
+    ChkD('pressure', wpPressure, C.Pressure);
+    ChkD('pressure_ground', wpPressureGround, C.PressureGround);
+    ChkD('pressure_sea', wpPressureSea, C.PressureSea);
+    ChkD('solar_radiation', wpSolarRad, C.SolarRad);
+    ChkD('uv_index', wpUVIndex, C.UVIndex);
+    ChkD('cloud_cover', wpCloudCover, C.CloudCover);
+    ChkD('precip_amt', wpPrecipAmt, C.PrecipAmt);
+    ChkD('rain_amt', wpRainAmt, C.RainAmt);
+    ChkD('snow_amt', wpSnowAmt, C.SnowAmt);
+    ChkD('ice_amt', wpIceAmt, C.IceAmt);
+    ChkD('sleet_amt', wpSleetAmt, C.SleetAmt);
+    ChkD('fog_amt', wpFogAmt, C.FogAmt);
+    ChkD('storm_amt', wpStormAmt, C.StormAmt);
+    ChkD('precip_pred', wpPrecipPred, C.PrecipPred);
+    ChkD('rain_pred', wpRainPred, C.RainPred);
+    ChkD('snow_pred', wpSnowPred, C.SnowPred);
+    ChkD('ice_pred', wpIcePred, C.IcePred);
+    ChkD('sleet_pred', wpSleetPred, C.SleetPred);
+    ChkD('fog_pred', wpFogPred, C.FogPred);
+    ChkD('storm_pred', wpStormPred, C.StormPred);
+    ChkD('wet_bulb', wpWetBulb, C.WetBulb);
+    ChkD('ceiling', wpCeiling, C.Ceiling);
+    //ChkD('sunrise', wpSunrise, C);
+    //ChkD('sunset', wpSunset, C);
+    ChkD('daylight', wpDaylight, C.Daylight);
+
+  end else begin
+    Result.S['error']:= 'Conditions object was not assigned!';
+  end;
+
+end;
+
 procedure TWeatherContext.HandleConditions(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
   O: ISuperObject;
   C: IWeatherProps;
-  procedure ChkD(const N: String; Prop: TWeatherPropType; const V: Double);
-  begin
-    if Prop in C.Support then
-      O.D[N]:= V;
-  end;
 begin
   O:= SO;
   try
-    C:= FServices.GetCombinedConditions;
+    O.O['conditions']:= GetConditions;
 
-    if Assigned(C) then begin
-      {
-        wpIcon: ;
-        wpCaption: ;
-        wpDescription: ;
-        wpDetails: ;
-        wpURL: ;
-        wpStation: ;
-        wpPropsMin: ;
-        wpPropsMax: ;
-      }
-      O.S['timestamp']:= FormatDateTime('mm-dd-yyyy hh:nn AMPM', C.DateTime);
-      O.S['caption']:= C.Caption;
-      O.S['description']:= C.Description;
-      O.S['details']:= C.Details;
-      O.S['url']:= C.URL;
-      O.S['station']:= C.Station;
-      O.S['icon_url']:= ''; //TODO
-      ChkD('temp', wpTemp, C.Temp);
-      ChkD('temp_min', wpTempMin, C.TempMin);
-      ChkD('temp_max', wpTempMax, C.TempMax);
-      ChkD('feels_like', wpFeelsLike, C.FeelsLike);
-      ChkD('feels_like_sun', wpFeelsLikeSun, C.FeelsLikeSun);
-      ChkD('feels_like_shade', wpFeelsLikeShade, C.FeelsLikeShade);
-      ChkD('rel_humidity', wpHumidity, C.Humidity);
-      ChkD('visibility', wpVisibility, C.Visibility);
-      ChkD('dew_point', wpDewPoint, C.DewPoint);
-      ChkD('wind_dir', wpWindDir, C.WindDir);
-      ChkD('wind_speed', wpWindSpeed, C.WindSpeed);
-      ChkD('wind_gusts', wpWindGust, C.WindGusts);
-      ChkD('wind_chill', wpWindChill, C.WindChill);
-      ChkD('heat_index', wpHeatIndex, C.HeatIndex);
-      ChkD('pressure', wpPressure, C.Pressure);
-      ChkD('pressure_ground', wpPressureGround, C.PressureGround);
-      ChkD('pressure_sea', wpPressureSea, C.PressureSea);
-      ChkD('solar_radiation', wpSolarRad, C.SolarRad);
-      ChkD('uv_index', wpUVIndex, C.UVIndex);
-      ChkD('cloud_cover', wpCloudCover, C.CloudCover);
-      ChkD('precip_amt', wpPrecipAmt, C.PrecipAmt);
-      ChkD('rain_amt', wpRainAmt, C.RainAmt);
-      ChkD('snow_amt', wpSnowAmt, C.SnowAmt);
-      ChkD('ice_amt', wpIceAmt, C.IceAmt);
-      ChkD('sleet_amt', wpSleetAmt, C.SleetAmt);
-      ChkD('fog_amt', wpFogAmt, C.FogAmt);
-      ChkD('storm_amt', wpStormAmt, C.StormAmt);
-      ChkD('precip_pred', wpPrecipPred, C.PrecipPred);
-      ChkD('rain_pred', wpRainPred, C.RainPred);
-      ChkD('snow_pred', wpSnowPred, C.SnowPred);
-      ChkD('ice_pred', wpIcePred, C.IcePred);
-      ChkD('sleet_pred', wpSleetPred, C.SleetPred);
-      ChkD('fog_pred', wpFogPred, C.FogPred);
-      ChkD('storm_pred', wpStormPred, C.StormPred);
-      ChkD('wet_bulb', wpWetBulb, C.WetBulb);
-      ChkD('ceiling', wpCeiling, C.Ceiling);
-      //ChkD('sunrise', wpSunrise, C);
-      //ChkD('sunset', wpSunset, C);
-      ChkD('daylight', wpDaylight, C.Daylight);
-
-    end else begin
-      O.S['error']:= 'Conditions object was not assigned!';
-    end;
   finally
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
@@ -703,6 +726,17 @@ var
       FreeAndNil(R);
     end;
   end;
+  procedure DoFavicon;
+  begin
+    R:= TResourceStream.Create(HInstance, 'FAVICON_ICO', 'ICO');
+    try
+      R.Position:= 0;
+      AResponseInfo.ContentStream:= R;
+      AResponseInfo.ContentType:= 'image/x-icon';
+    finally
+      //FreeAndNil(R);
+    end;
+  end;
   procedure DoHome;
   begin
     R:= TResourceStream.Create(HInstance, 'HOME_HTML', 'HTML');
@@ -735,6 +769,7 @@ var
   end;
 begin
   L:= TStringList.Create;
+  AResponseInfo.ContentType:= 'text/plain';
   try
     try
       if (FDoc.Count = 1) then begin
@@ -750,6 +785,9 @@ begin
         if SameText(FDoc[1], 'JDWeatherStyles.css') then begin
           DoStyles;
         end else
+        if SameText(FDoc[1], 'favicon.ico') then begin
+          DoFavicon;
+        end else
         if SameText(FDoc[1], 'login') then begin
           DoLogin;
         end else
@@ -763,8 +801,10 @@ begin
         end;
       end;
     finally
-      AResponseInfo.ContentText:= L.Text;
-      AResponseInfo.ContentType:= 'text/html';
+      if AResponseInfo.ContentType = 'text/plain' then begin
+        AResponseInfo.ContentText:= L.Text;
+        AResponseInfo.ContentType:= 'text/html';
+      end;
     end;
   finally
     FreeAndNil(L);

@@ -1,8 +1,56 @@
 <html>
 <head>
-  <title>Service Details</title>
+    <title>JD Weather API - Service Details</title>
+    <link rel="stylesheet" type="text/css" href="/ui/JDWeatherStyles.css">
+    <script type="text/javascript" src="/ui/JDWeatherScript.js"></script>
+    <script type="text/javascript">
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+        function getServiceDetails(svcName) {
+            var d = getJSON('http://api.weather.jdsoftwareinc.com:8664/7846897/Support?s=' + svcName,
+              function (err, data) {
+                  if (err != null) {
+                      alert("Something went wrong: " + err);
+                  } else {
+                      document.getElementById("serviceName").innerHTML = data.caption;
+
+
+                  }
+              });
+        }
+
+        getServiceDetails(getParameterByName("s"));
+
+    </script>
+    <style>
+        #serviceName {
+            font-size: 24px;
+            font-weight: bolder;
+        }
+    </style>
 </head>
 <body>
-  <h2>Service Details</h2>
+    <div id="divTitle">
+        JD Weather API - Service Details
+        <a class="headBtn" href="/ui/login">Login</a>
+        <a class="headBtn" href="/ui/register">Register</a>
+    </div>
+    <div id="divContent">
+        <span id="serviceName"></span>
+        <br /><br />
+        <span id="serviceInfo"></span>
+        <br /><br />
+        <span id="serviceSupport"></span>
+
+    </div>
 </body>
 </html>

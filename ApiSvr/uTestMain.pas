@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   JD.Weather.ApiSvr, Data.DB, Data.Win.ADODB,
   JD.Weather.SuperObject, IdBaseComponent, IdComponent, IdCustomTCPServer,
-  IdCustomHTTPServer, IdHTTPServer;
+  IdCustomHTTPServer, IdHTTPServer,
+  JD.Weather.Logger;
 
 type
   TForm1 = class(TForm)
@@ -15,8 +16,6 @@ type
     btnStop: TBitBtn;
     btnStart: TBitBtn;
     Log: TMemo;
-    DB: TADOConnection;
-    IdHTTPServer1: TIdHTTPServer;
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -44,6 +43,7 @@ begin
   btnStop.Enabled:= True;
   FSvr:= TJDWeatherApiSvrThread.Create;
   FSvr.ConnStr:= FObj.S['connstr'];
+  FSvr.Port:= FObj.I['port'];
   FSvr.OnLog:= ThreadLog;
   FSvr.Start;
 end;
@@ -93,7 +93,8 @@ end;
 procedure TForm1.ThreadLog(Sender: TObject; const Timestamp: TDateTime;
   const Msg: String);
 begin
-  Log.Lines.Append(FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Timestamp)+' - '+Msg);
+  //PostLog(0, Msg);
+  //Log.Lines.Append(FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Timestamp)+' - '+Msg);
 end;
 
 end.

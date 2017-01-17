@@ -3,24 +3,6 @@
   <title>JD Weather API</title>
   <link rel="stylesheet" type="text/css" href="/ui/JDWeatherStyles.css">
   <script type="text/javascript" src="/ui/JDWeatherScript.js"></script>
-  <style>
-    #serviceList {
-      
-    }
-    .tableHead {
-      font-weight: bold;
-      background-color: SkyBlue;
-    }
-    .tableColName {
-      width: 200px;
-    }
-    .tableColType {
-      width: 120px;
-    }
-    .tableColDesc {
-      width: 600px;
-    }
-  </style>
   <script type="text/javascript">
     function ListServices() {
       var d = getJSON('http://api.weather.jdsoftwareinc.com:8664/7846897/Services', 
@@ -28,23 +10,24 @@
           if (err != null) {
             alert("Something went wrong: " + err);
           } else {
-            var d = "<ul>";
+            var d = '<ul class="serviceList">';
             var s = null;
             for (i = 0; i < data.services.length; i++) { 
               s = data.services[i];
-              d += '<li><a href="/ui/service?s='+s.name+'">' + s.caption + '</a></li>';
+              d += '<li class="serviceListItem"><a href="/ui/service?s='+s.name+'">' + s.caption + '</a></li>';
             }
-            d += "</ul>";
+            d += '</ul>';
             document.getElementById("serviceList").innerHTML = d;
           }
         });  
     }
-
-    ListServices();
+    function LoadPage() {
+        ListServices();
+    }
 
   </script>
 </head>
-<body>
+<body onload="LoadPage();">
   <div id="divTitle">
     JD Weather API
     <a class="headBtn" href="/ui/login">Login</a>
@@ -130,6 +113,16 @@
         <td class="tableColName">url_register</td>
         <td class="tableColType">string</td>
         <td class="tableColDesc">Register URL of Weather Service</td>
+      </tr>
+      <tr>
+        <td class="tableColName">url_legal</td>
+        <td class="tableColType">string</td>
+        <td class="tableColDesc">Legal Information URL of Weather Service</td>
+      </tr>
+      <tr>
+        <td class="tableColName">url_logo</td>
+        <td class="tableColType">string</td>
+        <td class="tableColDesc">URL to Service Company Logo</td>
       </tr>
     </table>
     <br>
