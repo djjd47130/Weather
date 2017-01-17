@@ -1,10 +1,10 @@
-﻿# JD Weather Library
+# JD Weather Library
 
 ### About
 
 1. Provides the ability for developers to integrate with a choice of many weather services to fetch weather data, including conditions, alerts, forecasts, and maps.
 2. Standardizes weather data into a single common structure regardless of which service it came from.
-3. Support functions to describe which features are available and which are not in a given service.
+3. Support  functions to describe which features are available and which are not in a given service.
 4. Lookup weather data by any given number of location information.
 5. Each weather service encapsulated in a DLL (Source Included).
 6. Add support for new services by writing a new DLL.
@@ -26,6 +26,8 @@ The code and resources in this repository are in no way guaranteed. The author(s
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
 6. [National Weather Service](Readme/NWS.md)
+
+# DLL Library
 
 ### How to Create Instance
 
@@ -82,15 +84,19 @@ The test application is not actually utilizing the service APIs themselves, but 
 3. Logo to represent the selected service.
 4. All the properties which are supported for different info types.
 
-### Current State
+# REST API
+
+You can acquire weather data through a global API which combines data from multiple weather services into one single output. The weather properties from each weather service are averaged together. You acquire a key which authenticates you, and you supply all your weather service keys into this central account. This way, if you start working with one weather service, and decide to use a different service instead, you can easily switch without having to re-write a majority of your code.
+
+### REST API Documentation
+
+You can vew the documentation here to get a general idea of how it works. 
+
+# Current State
 
 This project is currently in massive development, and is not yet ready for production use. The whole concept of the project is still up in the air, but slowly becoming established.
 
 The most complete service implemented so far is Weather Underground. Originall, OpenWeatherMap was the first. But the project was started over again in favor for the differences of Weather Underground, and that's when support was added for multiple services. Since then, more services have been added.
-
-There was a nearly complete version of the entire library before this project. However, it was not scalable. Everything was hard-coded in a single unit. This project aims to separate the services, and add support for new services in the future. It also aims to create a new web API which can dynamically integrate with any of the given services - but be converted into the same standard as this library accomplishes with its interfaces.
-
-This library is also being encapsulated inside its own [REST API](Readme/JDWeatherRestApi.md) which allows remote developers access to the same standardized weather data. This will in turn end up to be the final actual goal of the entire project - introduce a new weather service which combines weather data from multiple services. This also already includes its own database for users to register their own keys.
 
 ### Future Plans
 
@@ -100,4 +106,5 @@ Another major concept (already in the works) is to merge multiple weather data s
 
 1. More realistic weather data based on averages.
 2. Fill in pieces of weather data which are only supported by certain services.
+3. Access weather data through a REST API.
 
