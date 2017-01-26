@@ -1,0 +1,28 @@
+﻿<%@ Master Language="VB" CodeFile="MasterPage.master.vb" Inherits="MasterPage" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="JDWeatherStyles.css" />
+    <script type="text/javascript" src="JDWeatherScript.js"></script>
+    <asp:ContentPlaceHolder ID="HeadContentPlaceHolder" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="divTitle">
+            <span style="float: left;">JD Weather API</span>
+            <a class="headBtn" href="/ui/login">Login</a>
+            <a class="headBtn" href="/ui/register">Register</a>
+            <asp:ContentPlaceHolder ID="TitleContentPlaceHolder" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+        <div>
+            <asp:ContentPlaceHolder ID="MainContentPlaceHolder" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+</body>
+</html>

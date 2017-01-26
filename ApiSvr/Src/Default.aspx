@@ -1,0 +1,140 @@
+﻿<%@ Page Title="" Language="VB" MasterPageFile="~/MasterPage.master" AutoEventWireup="false" CodeFile="Default.aspx.vb" Inherits="_Default" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContentPlaceHolder" runat="Server">
+
+    <script type="text/javascript">
+        function ListServices() {
+            var d = getJSON('http://api.weather.jdsoftwareinc.com:8664/7846897/Services',
+              function (err, data) {
+                  if (err != null) {
+                      alert("Something went wrong: " + err);
+                  } else {
+                      var d = '<ul class="serviceList">';
+                      var s = null;
+                      for (i = 0; i < data.services.length; i++) {
+                          s = data.services[i];
+                          d += '<li class="serviceListItem"><a href="/ui/service?s=' + s.name + '">' + s.caption + '</a></li>';
+                      }
+                      d += '</ul>';
+                      document.getElementById("serviceList").innerHTML = d;
+                  }
+              });
+        }
+
+        function LoadPage() {
+            ListServices();
+        }
+
+        LoadPage();
+
+    </script>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="TitleContentPlaceHolder" runat="Server">
+    <!-- TODO: This is where login / register buttons would presumably go... -->
+</asp:Content>
+
+<asp:Content ID="Content3" ContentPlaceHolderID="MainContentPlaceHolder" runat="Server">
+
+    <div id="divContent">
+        <h2>Welcome to the JD Weather API</h2>
+        <p>
+            The JD Weather API is a REST Server which allows you to fetch weather data from multiple divverent available weather data services.
+        </p>
+        <h3>Registration</h3>
+        <p>
+            You must be a registered user of the JD Weather API, and be a registered user of each weather service you wish to use. 
+        Please click the "Register" button on the top-right corner of this page to register for a new account.
+            <br />
+            <br />
+            <b>NOTE: </b>The registration option is currently not available. Please contact support to acquire access.
+        </p>
+        <h3>Supported Services</h3>
+        <span id="serviceList"></span>
+        <h3>Sending Requests</h3>
+        <p>
+            All requests are sent to the API using the following base URL:
+            <br />
+            <br />
+            <code>http://api.weather.jdsoftwareinc.com/[YOUR_KEY]/</code>
+            <br />
+            <br />
+            Multiple endpoints can be combined in a single request:
+            <br />
+            <br />
+            <code>http://api.weather.jdsoftwareinc.com/[YOUR_KEY]/[ENDPOINT_ONE]/[ENDPOINT_TWO]/</code>
+        </p>
+        <h3>Endpoints</h3>
+        <ul>
+            <li>Services</li>
+            <li>Support</li>
+            <li>Conditions</li>
+            <li>Alerts</li>
+            <li>ForecastSummary</li>
+            <li>ForecastHourly</li>
+            <li>ForecastDaily</li>
+            <li>Maps</li>
+        </ul>
+        <h3>Endpoint: Services</h3>
+        <p>
+            Returns an array of all available services and their basic info.
+            <br />
+            <br />
+            <code>http://api.weather.jdsoftwareinc.com/[YOUR_KEY]/Services/</code>
+        </p>
+        <table>
+            <tr class="tableHead">
+                <td class="tableColName"><b>Attribute</b></td>
+                <td class="tableColType"><b>Type</b></td>
+                <td class="tableColDesc"><b>Description</b></td>
+            </tr>
+            <tr>
+                <td class="tableColName">caption</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">User-friendly name of service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">name</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Unique internal name of service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">uid</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Unique internal identifier of service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_main</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Main URL of Weather Service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_api</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">API Documentation URL of Weather Service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_login</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Login URL of Weather Service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_register</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Register URL of Weather Service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_legal</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">Legal Information URL of Weather Service</td>
+            </tr>
+            <tr>
+                <td class="tableColName">url_logo</td>
+                <td class="tableColType">string</td>
+                <td class="tableColDesc">URL to Service Company Logo</td>
+            </tr>
+        </table>
+        <br />
+    </div>
+</asp:Content>
+

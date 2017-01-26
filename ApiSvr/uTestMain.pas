@@ -8,14 +8,15 @@ uses
   JD.Weather.ApiSvr, Data.DB, Data.Win.ADODB,
   JD.Weather.SuperObject, IdBaseComponent, IdComponent, IdCustomTCPServer,
   IdCustomHTTPServer, IdHTTPServer,
-  JD.Weather.Logger;
+  JD.Weather.Logger, IdServerIOHandler, IdSSL, IdSSLOpenSSL;
 
 type
-  TForm1 = class(TForm)
+  TfrmApiSvrTest = class(TForm)
     pTop: TPanel;
     btnStop: TBitBtn;
     btnStart: TBitBtn;
     Log: TMemo;
+    IdServerIOHandlerSSLOpenSSL1: TIdServerIOHandlerSSLOpenSSL;
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -31,13 +32,13 @@ type
   end;
 
 var
-  Form1: TForm1;
+  frmApiSvrTest: TfrmApiSvrTest;
 
 implementation
 
 {$R *.dfm}
 
-procedure TForm1.btnStartClick(Sender: TObject);
+procedure TfrmApiSvrTest.btnStartClick(Sender: TObject);
 begin
   btnStart.Enabled:= False;
   btnStop.Enabled:= True;
@@ -48,7 +49,7 @@ begin
   FSvr.Start;
 end;
 
-procedure TForm1.btnStopClick(Sender: TObject);
+procedure TfrmApiSvrTest.btnStopClick(Sender: TObject);
 begin
   btnStart.Enabled:= True;
   btnStop.Enabled:= False;
@@ -59,7 +60,7 @@ begin
   end;
 end;
 
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TfrmApiSvrTest.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if Assigned(FSvr) then begin
     FSvr.Terminate;
@@ -68,7 +69,7 @@ begin
   end;
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfrmApiSvrTest.FormCreate(Sender: TObject);
 var
   FN: String;
   L: TStringList;
@@ -85,12 +86,12 @@ begin
   end;
 end;
 
-procedure TForm1.FormShow(Sender: TObject);
+procedure TfrmApiSvrTest.FormShow(Sender: TObject);
 begin
   btnStart.Click;
 end;
 
-procedure TForm1.ThreadLog(Sender: TObject; const Timestamp: TDateTime;
+procedure TfrmApiSvrTest.ThreadLog(Sender: TObject; const Timestamp: TDateTime;
   const Msg: String);
 begin
   //PostLog(0, Msg);

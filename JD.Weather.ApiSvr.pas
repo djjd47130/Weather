@@ -8,6 +8,7 @@ uses
   JD.Weather.Intf, JD.Weather.SuperObject,
   IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
   IdHTTPServer, IdContext, IdTCPConnection, IdYarn, IdSocketHandle,
+  IdServerIOHandler, IdSSL, IdSSLOpenSSL,
   Data.DB, Data.Win.ADODB,
   JD.Weather.Logger;
 
@@ -22,6 +23,7 @@ type
     FThread: TJDWeatherApiSvrThread;
     FDB: TADOConnection;
     FKey: WideString;
+    FKeyID: Integer;
     FUserID: Integer;
     FLocType: WideString;
     FLoc1: WideString;
@@ -37,6 +39,8 @@ type
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleServiceSupport(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleServiceLogo(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleNoRequest(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleConditions(
@@ -47,9 +51,10 @@ type
       AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleRequest(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
-    procedure HandleUI(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
     function GetConditions: ISuperObject;
+    procedure SaveReq(ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo);
+    function GetSupport(const S: IWeatherService): ISuperObject;
   public
     constructor Create(AConnection: TIdTCPConnection; AYarn: TIdYarn;
       AList: TIdContextThreadList = nil); override;
@@ -62,6 +67,7 @@ type
   private
     FLib: HMODULE;
     FCreateLib: TCreateJDWeather;
+    FSSL: TIdServerIOHandlerSSLOpenSSL;
     FServer: TIdHTTPServer;
     FLogTime: TDateTime;
     FLogMsg: String;
@@ -76,6 +82,7 @@ type
     procedure SvrContextCreated(AContext: TIdContext);
     procedure SetConnStr(const Value: String);
     procedure SetPort(const Value: Integer);
+    procedure SvrGetPassword(var Password: String);
   protected
     procedure Execute; override;
     procedure SYNC_OnLog;
@@ -133,9 +140,20 @@ var
   B: TIdSocketHandle;
 begin
   CoInitialize(nil);
+
+  FSSL:= TIdServerIOHandlerSSLOpenSSL.Create(nil);
+  FSSL.SSLOptions.CertFile := 'C:\demo\my-pubcert.pem';
+  FSSL.SSLOptions.KeyFile := 'C:\demo\my-pubcert.pem';
+  FSSL.SSLOptions.RootCertFile := 'C:\demo\my-pubcert.pem';
+  FSSL.SSLOptions.Method := sslvSSLv23;
+  FSSL.SSLOptions.Mode := sslmServer;
+  FSSL.OnGetPassword:= SvrGetPassword;
+
   FServer:= TIdHTTPServer.Create(nil);
   FServer.ContextClass:= TWeatherContext;
   FServer.DefaultPort:= FPort;
+  FServer.KeepAlive:= True;
+  //FServer.IOHandler:= FSSL; //TODO: Properly support HTTPS
   FServer.OnCommandGet:= Self.SvrCommandGet;
   FServer.OnContextCreated:= Self.SvrContextCreated;
 
@@ -164,7 +182,10 @@ end;
 
 procedure TJDWeatherApiSvrThread.Log(const Msg: String);
 begin
+  //TODO: Implement new logger
+
   //PostLog(0, Msg);
+
   {
   FLogTime:= Now;
   FLogMsg:= Msg;
@@ -217,6 +238,11 @@ begin
   C.FThread:= Self;
   C.FDB.ConnectionString:= FConnStr;
   C.FDB.Connected:= True;
+end;
+
+procedure TJDWeatherApiSvrThread.SvrGetPassword(var Password: String);
+begin
+  Password:= '';
 end;
 
 procedure TJDWeatherApiSvrThread.SYNC_OnLog;
@@ -274,53 +300,83 @@ begin
   inherited;
 end;
 
+procedure TWeatherContext.SaveReq(
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  Q: TADOQuery;
+  S: TStringStream;
+begin
+  Q:= NewQuery;
+  try
+    Q.SQL.Text:= 'select * from Requests where 1<>1';
+    Q.Open;
+    try
+      Q.Append;
+      try
+        Q['Timestamp']:= Now;
+        Q['RemoteIP']:= Connection.Socket.Binding.PeerIP;
+        Q['RemotePort']:= Connection.Socket.Binding.PeerPort;
+        Q['Command']:= ARequestInfo.Command;
+        Q['Doc']:= ARequestInfo.Document;
+        Q['Qry']:= ARequestInfo.Params.Text;
+        if Assigned(ARequestInfo.PostStream) then begin
+          S:= TStringStream.Create;
+          try
+            ARequestInfo.PostStream.Position:= 0;
+            S.LoadFromStream(ARequestInfo.PostStream);
+            S.Position:= 0;
+            Q['ReqContent']:= S.DataString;
+          finally
+            FreeAndNil(S);
+          end;
+        end;
+        Q['ReqContentType']:= ARequestInfo.ContentType;
+        Q['KeyID']:= FKeyID;
+        Q['UserID']:= FUserID;
+        Q['ResponseCode']:= AResponseInfo.ResponseNo;
+        Q['Response']:= AResponseInfo.ContentText;
+        Q['ResponseType']:= AResponseInfo.ContentType;
+
+      finally
+        Q.Post;
+      end;
+    finally
+      Q.Close;
+    end;
+  finally
+    FreeAndNil(Q);
+  end;
+end;
+
 procedure TWeatherContext.HandleRequest(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
-  X: Integer;
   D, T: String;
   P: Integer;
   Q: TADOQuery;
 begin
   Q:= NewQuery;
   try
-    //Parse service list
-    FWeather.Services.LoadServices(ExtractFilePath(ParamStr(0)));
-    D:= ARequestInfo.Params.Values['s']+',';
-    while Length(D) > 0 do begin
-      P:= Pos(',', D);
-      T:= Copy(D, 1, P-1);
-      Delete(D, 1, P);
-      for X := 0 to FWeather.Services.Count-1 do begin
-        if SameText(FWeather.Services[X].Info.Name, T) then begin
-          Q.Parameters.Clear;
-          Q.SQL.Text:= 'select * from ServiceKeys where UserID = :u and ServiceID = (select ID from Services where Name = :s)';
-          Q.Parameters.ParamValues['u']:= FUserID;
-          Q.Parameters.ParamValues['s']:= T;
-          Q.Open;
-          try
-            FWeather.Services[X].Key:= Q.FieldByName('ApiKey').AsString;
-            FWeather.Services[X].Units:= StrToUnits(FUnits);
-            FWeather.LocationType:= StrToLocationType(FLocType);
-            FWeather.LocationDetail1:= FLoc1;
-            FWeather.LocationDetail2:= FLoc2;
-            FServices.Add(FWeather.Services[X]);
-          finally
-            Q.Close;
-          end;
-          Break;
-        end;
-      end;
-    end;
-
-    if SameText(FDoc[1], 'services') then begin
-      HandleServiceList(ARequestInfo, AResponseInfo);
-    end else
-    if SameText(FDoc[1], 'support') then begin
-      HandleServiceSupport(ARequestInfo, AResponseInfo);
-    end else
     if SameText(FDoc[1], 'conditions') then begin
       HandleConditions(ARequestInfo, AResponseInfo);
+    end else
+    if SameText(FDoc[1], 'alerts') then begin
+      //HandleAlerts();
+    end else
+    if SameText(FDoc[1], 'forecastsummary') then begin
+      //HandleForecastSummary();
+    end else
+    if SameText(FDoc[1], 'forecasthourly') then begin
+
+    end else
+    if SameText(FDoc[1], 'forecastdaily') then begin
+
+    end else
+    if SameText(FDoc[1], 'maps') then begin
+
+    end else
+    if SameText(FDoc[1], 'geolookup') then begin
+
     end else begin
       HandleNoRequest(ARequestInfo, AResponseInfo);
     end;
@@ -333,10 +389,11 @@ end;
 procedure TWeatherContext.HandleGet(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
-  X: Integer;
+  //X: Integer;
   D, T: String;
   P: Integer;
   Q: TADOQuery;
+  X: Integer;
 begin
   ARequestInfo.Params.Delimiter:= '&';
   Log('GET '+ARequestInfo.RemoteIP+' - '+ARequestInfo.URI+'?'+ARequestInfo.Params.DelimitedText);
@@ -364,20 +421,76 @@ begin
 
   FServices.Clear;
 
+  //Parse service list
+  FWeather.Services.LoadServices(ExtractFilePath(ParamStr(0)));
+  D:= ARequestInfo.Params.Values['s']+',';
+  Q:= NewQuery;
+  try
+    while Length(D) > 0 do begin
+      P:= Pos(',', D);
+      T:= Copy(D, 1, P-1);
+      Delete(D, 1, P);
+      for X := 0 to FWeather.Services.Count-1 do begin
+        if SameText(FWeather.Services[X].Info.Name, T) then begin
+          //Q.Parameters.Clear;
+          Q.SQL.Text:= 'select * from ServiceKeys where UserID = :u '+
+            'and ServiceID = (select ID from Services where Name = :s)';
+          Q.Parameters.ParamValues['u']:= FUserID;
+          Q.Parameters.ParamValues['s']:= T;
+          Q.Open;
+          try
+            FWeather.Services[X].Key:= Q.FieldByName('ApiKey').AsString;
+            FWeather.Services[X].Units:= StrToUnits(FUnits);
+
+            //These 3 lines were missing...
+            FWeather.Services[X].LocationType:= StrToLocationType(FLocType);
+            FWeather.Services[X].LocationDetail1:= FLoc1;
+            FWeather.Services[X].LocationDetail2:= FLoc2;
+
+            //But these 3 lines should have worked...
+            FWeather.LocationType:= StrToLocationType(FLocType);
+            FWeather.LocationDetail1:= FLoc1;
+            FWeather.LocationDetail2:= FLoc2;
+
+            FServices.Add(FWeather.Services[X]);
+          finally
+            Q.Close;
+          end;
+          Break;
+        end;
+      end;
+    end;
+  finally
+    FreeAndNil(Q);
+  end;
+
+
   Q:= NewQuery;
   try
     if FDoc.Count > 0 then begin
-      if SameText(FDoc[0], 'ui') then begin
-        HandleUI(ARequestInfo, AResponseInfo);
+
+      if SameText(FDoc[0], 'services') then begin
+        HandleServiceList(ARequestInfo, AResponseInfo);
+      end else
+      if Sametext(FDoc[0], 'support') then begin
+        HandleServiceSupport(ARequestInfo, AResponseInfo);
+      end else
+      if SameText(FDoc[0], 'logo') then begin
+        //TODO
+        HandleServiceLogo(ARequestInfo, AResponseInfo);
+      end else
+      if SameText(FDoc[0], 'usage') then begin
+        //TODO
       end else begin
+        FKey:= FDoc[0];
         if FDoc.Count > 1 then begin
-          FKey:= FDoc[0];
           Q.SQL.Text:= 'select * from ApiKeys where ApiKey = :key and Status = 1';
           Q.Parameters.ParamValues['key']:= FKey;
           Q.Open;
           try
             if not Q.IsEmpty then begin
               FUserID:= Q.FieldByName('UserID').AsInteger;
+              FKeyID:= Q.FieldByName('ID').AsInteger;
               HandleRequest(ARequestInfo, AResponseInfo);
             end else begin
               HandleInvalidKey(ARequestInfo, AResponseInfo);
@@ -386,34 +499,163 @@ begin
             Q.Close;
           end;
         end else begin
-          if SameText(FDoc[0], 'favicon.ico') then begin
-            //TODO: Return favicon
-          end else begin
-            HandleNoKey(ARequestInfo, AResponseInfo);
-          end;
+          HandleNoRequest(ARequestInfo, AResponseInfo);
         end;
       end;
-    end else begin
-      HandleNoRequest(ARequestInfo, AResponseInfo);
-    end;
 
+    end else begin
+      HandleNoKey(ARequestInfo, AResponseInfo);
+    end;
   finally
     FreeAndNil(Q);
   end;
+
+  SaveReq(ARequestInfo, AResponseInfo);
+
 end;
 
-procedure TWeatherContext.HandleServiceSupport(
-  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+function TWeatherContext.GetSupport(const S: IWeatherService): ISuperObject;
 var
-  Svc: IWeatherService;
-  O, O2: ISuperObject;
+  O2: ISuperObject;
   Loc: TWeatherLocationType;
   Inf: TWeatherInfoType;
   Uni: TWeatherUnits;
   Alt: TWeatherAlertType;
   Alp: TWeatherAlertProp;
+  Foc: TWeatherForecastType;
   Fop: TWeatherPropType;
   Map: TWeatherMapType;
+  Maf: TWeatherMapFormat;
+begin
+  Result:= SO;
+
+  O2:= SA([]);
+  try
+    for Loc := Low(TWeatherLocationType) to High(TWeatherLocationType) do begin
+      if Loc in S.Info.Support.SupportedLocations then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherLocationType), Ord(Loc))));
+    end;
+  finally
+    Result.O['supported_locations']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+      if Fop in S.Info.Support.SupportedConditionProps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
+    end;
+  finally
+    Result.O['supported_condition_props']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Inf := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
+      if Inf in S.Info.Support.SupportedInfo then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherInfoType), Ord(Inf))));
+    end;
+  finally
+    Result.O['supported_info']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Uni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
+      if Uni in S.Info.Support.SupportedUnits then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherUnits), Ord(Uni))));
+    end;
+  finally
+    Result.O['supported_units']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Alt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
+      if Alt in S.Info.Support.SupportedAlerts then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertType), Ord(Alt))));
+    end;
+  finally
+    Result.O['supported_alerts']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Alp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
+      if Alp in S.Info.Support.SupportedAlertProps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertProp), Ord(Alp))));
+    end;
+  finally
+    Result.O['supported_alert_props']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Foc := Low(TWeatherForecastType) to High(TWeatherForecastType) do begin
+      if Foc in S.Info.Support.SupportedForecasts then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherForecastType), Ord(Foc))));
+    end;
+  finally
+    Result.O['supported_forecasts']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+      if Fop in S.Info.Support.SupportedForecastSummaryProps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
+    end;
+  finally
+    Result.O['supported_forecast_summary_props']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+      if Fop in S.Info.Support.SupportedForecastHourlyProps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
+    end;
+  finally
+    Result.O['supported_forecast_hourly_props']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
+      if Fop in S.Info.Support.SupportedForecastDailyProps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
+    end;
+  finally
+    Result.O['supported_forecast_daily_props']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Map := Low(TWeatherMapType) to High(TWeatherMapType) do begin
+      if Map in S.Info.Support.SupportedMaps then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherMapType), Ord(Map))));
+    end;
+  finally
+    Result.O['supported_maps']:= O2;
+  end;
+
+  O2:= SA([]);
+  try
+    for Maf := Low(TWeatherMapFormat) to High(TWeatherMapFormat) do begin
+      if Maf in S.Info.Support.SupportedMapFormats then
+        O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherMapFormat), Ord(Maf))));
+    end;
+  finally
+    Result.O['supported_map_formats']:= O2;
+  end;
+
+end;
+
+procedure TWeatherContext.HandleServiceSupport(
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  O: ISuperObject;
+  Svc: IWeatherService;
 begin
   O:= SO;
   try
@@ -424,95 +666,7 @@ begin
       O.S['name']:= Svc.Info.Name;
       O.S['serviceuid']:= Svc.Info.UID;
 
-      O2:= SA([]);
-      try
-        for Loc := Low(TWeatherLocationType) to High(TWeatherLocationType) do begin
-          if Loc in Svc.Info.Support.SupportedLocations then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherLocationType), Ord(Loc))));
-        end;
-      finally
-        O.O['supported_locations']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Inf := Low(TWeatherInfoType) to High(TWeatherInfoType) do begin
-          if Inf in Svc.Info.Support.SupportedInfo then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherInfoType), Ord(Inf))));
-        end;
-      finally
-        O.O['supported_info']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Uni := Low(TWeatherUnits) to High(TWeatherUnits) do begin
-          if Uni in Svc.Info.Support.SupportedUnits then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherUnits), Ord(Uni))));
-        end;
-      finally
-        O.O['supported_units']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Alt := Low(TWeatherAlertType) to High(TWeatherAlertType) do begin
-          if Alt in Svc.Info.Support.SupportedAlerts then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertType), Ord(Alt))));
-        end;
-      finally
-        O.O['supported_alerts']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Alp := Low(TWeatherAlertProp) to High(TWeatherAlertProp) do begin
-          if Alp in Svc.Info.Support.SupportedAlertProps then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherAlertProp), Ord(Alp))));
-        end;
-      finally
-        O.O['supported_alert_props']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
-          if Fop in Svc.Info.Support.SupportedForecastSummaryProps then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
-        end;
-      finally
-        O.O['supported_forecast_summary_props']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
-          if Fop in Svc.Info.Support.SupportedForecastHourlyProps then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
-        end;
-      finally
-        O.O['supported_forecast_hourly_props']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Fop := Low(TWeatherPropType) to High(TWeatherPropType) do begin
-          if Fop in Svc.Info.Support.SupportedForecastDailyProps then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherPropType), Ord(Fop))));
-        end;
-      finally
-        O.O['supported_forecast_daily_props']:= O2;
-      end;
-
-      O2:= SA([]);
-      try
-        for Map := Low(TWeatherMapType) to High(TWeatherMapType) do begin
-          if Map in Svc.Info.Support.SupportedMaps then
-            O2.AsArray.Add(SO(GetEnumName(TypeInfo(TWeatherMapType), Ord(Map))));
-        end;
-      finally
-        O.O['supported_maps']:= O2;
-      end;
+      O.O['support']:= GetSupport(Svc);
 
     end else begin
       O.S['error']:= 'No services were specified.';
@@ -522,18 +676,6 @@ begin
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
   end;
-end;
-
-procedure TWeatherContext.Log(const Msg: String);
-begin
-  if Assigned(FThread) then
-    FThread.Log(Msg);
-end;
-
-function TWeatherContext.NewQuery: TADOQuery;
-begin
-  Result:= TADOQuery.Create(nil);
-  Result.Connection:= FDB;
 end;
 
 procedure TWeatherContext.HandleServiceList(
@@ -558,6 +700,11 @@ begin
         O2.S['url_login']:= S.Info.URLs.LoginURL;
         O2.S['url_register']:= S.Info.URLs.RegisterURL;
         O2.S['url_legal']:= S.Info.URLs.LegalURL;
+        O2.S['url_power']:= S.Info.URLs.PowerURL;
+        O2.S['url_usage']:= S.Info.URLs.UsageURL;
+        if ARequestInfo.Params.Values['support'] = '1' then begin
+          O2.O['support']:= GetSupport(S);
+        end;
       finally
         O.O['services'].AsArray.Add(O2);
       end;
@@ -566,6 +713,51 @@ begin
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
   end;
+end;
+
+procedure TWeatherContext.HandleServiceLogo(ARequestInfo: TIdHTTPRequestInfo;
+  AResponseInfo: TIdHTTPResponseInfo);
+var
+  S: TStringStream;
+  X: Integer;
+  G: IWeatherGraphic;
+  Svc: IWeatherService;
+begin
+  S:= TStringStream.Create;
+  try
+    try
+      if FServices.Count > 0 then begin
+        Svc:= FServices[0];
+        G:= Svc.Info.GetLogo(TWeatherLogoType.ltColor);
+        if Assigned(G) then begin
+          S.WriteString(G.Base64);
+        end;
+      end else begin
+        //No service requested
+
+      end;
+    except
+      on E: Exception do begin
+
+      end;
+    end;
+  finally
+    AResponseInfo.ContentType:= 'image/png';
+    S.Position:= 0;
+    AResponseInfo.ContentStream:= S;
+  end;
+end;
+
+procedure TWeatherContext.Log(const Msg: String);
+begin
+  if Assigned(FThread) then
+    FThread.Log(Msg);
+end;
+
+function TWeatherContext.NewQuery: TADOQuery;
+begin
+  Result:= TADOQuery.Create(nil);
+  Result.Connection:= FDB;
 end;
 
 function TWeatherContext.GetConditions: ISuperObject;
@@ -578,6 +770,7 @@ var
   end;
 begin
   Result:= SO;
+
   C:= FServices.GetCombinedConditions;
   if Assigned(C) then begin
     {
@@ -647,7 +840,7 @@ procedure TWeatherContext.HandleConditions(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
   O: ISuperObject;
-  C: IWeatherProps;
+  //C: IWeatherProps;
 begin
   O:= SO;
   try
@@ -698,116 +891,6 @@ begin
   finally
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
-  end;
-end;
-
-procedure TWeatherContext.HandleUI(
-  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
-var
-  L: TStringList;
-  R: TResourceStream;
-  procedure DoScript;
-  begin
-    R:= TResourceStream.Create(HInstance, 'SCRIPT_JS', 'JS');
-    try
-      R.Position:= 0;
-      L.LoadFromStream(R);
-    finally
-      FreeAndNil(R);
-    end;
-  end;
-  procedure DoStyles;
-  begin
-    R:= TResourceStream.Create(HInstance, 'STYLES_CSS', 'CSS');
-    try
-      R.Position:= 0;
-      L.LoadFromStream(R);
-    finally
-      FreeAndNil(R);
-    end;
-  end;
-  procedure DoFavicon;
-  begin
-    R:= TResourceStream.Create(HInstance, 'FAVICON_ICO', 'ICO');
-    try
-      R.Position:= 0;
-      AResponseInfo.ContentStream:= R;
-      AResponseInfo.ContentType:= 'image/x-icon';
-    finally
-      //FreeAndNil(R);
-    end;
-  end;
-  procedure DoHome;
-  begin
-    R:= TResourceStream.Create(HInstance, 'HOME_HTML', 'HTML');
-    try
-      R.Position:= 0;
-      L.LoadFromStream(R);
-    finally
-      FreeAndNil(R);
-    end;
-  end;
-  procedure DoLogin;
-  begin
-    //TODO: Return Login Page
-
-  end;
-  procedure DoRegister;
-  begin
-    //TODO: Return Register Page
-
-  end;
-  procedure DoService;
-  begin
-    R:= TResourceStream.Create(HInstance, 'SERVICE_HTML', 'HTML');
-    try
-      R.Position:= 0;
-      L.LoadFromStream(R);
-    finally
-      FreeAndNil(R);
-    end;
-  end;
-begin
-  L:= TStringList.Create;
-  AResponseInfo.ContentType:= 'text/plain';
-  try
-    try
-      if (FDoc.Count = 1) then begin
-        DoHome;
-      end else begin
-        //Respond with requested page
-        if FDoc[1] = '' then begin
-          DoHome;
-        end else
-        if SameText(FDoc[1], 'JDWeatherScript.js') then begin
-          DoScript;
-        end else
-        if SameText(FDoc[1], 'JDWeatherStyles.css') then begin
-          DoStyles;
-        end else
-        if SameText(FDoc[1], 'favicon.ico') then begin
-          DoFavicon;
-        end else
-        if SameText(FDoc[1], 'login') then begin
-          DoLogin;
-        end else
-        if SameText(FDoc[1], 'register') then begin
-          DoRegister;
-        end else
-        if SameText(FDoc[1], 'service') then begin
-          DoService;
-        end else begin
-          DoHome;
-        end;
-      end;
-    finally
-      if AResponseInfo.ContentType = 'text/plain' then begin
-        AResponseInfo.ContentText:= L.Text;
-        AResponseInfo.ContentType:= 'text/html';
-      end;
-    end;
-  finally
-    FreeAndNil(L);
   end;
 end;
 

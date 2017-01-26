@@ -46,7 +46,8 @@ type
 
   TWeatherInfoType = (wiConditions, wiAlerts, wiForecastSummary,
     wiForecastHourly, wiForecastDaily, wiMaps, wiAlmanac, wiAstronomy,
-    wiHurricane, wiHistory, wiPlanner, wiStation, wiLocation);
+    wiHurricane, wiHistory, wiPlanner, wiStation, wiLocation, wiGeoLookup,
+    wiTide, wiRawTide, wiWebcams);
   TWeatherInfoTypes = set of TWeatherInfoType;
 
   TWeatherLogoType = (ltColor, ltColorInvert, ltColorWide, ltColorInvertWide,
@@ -433,12 +434,16 @@ type
     function GetLoginURL: WideString;
     function GetRegisterURL: WideString;
     function GetLegalURL: WideString;
+    function GetPowerURL: WideString;
+    function GetUsageURL: WideString;
 
     property MainURL: WideString read GetMainURL;
     property ApiURL: WideString read GetApiURL;
     property LoginURL: WideString read GetLoginURL;
     property RegisterURL: WideString read GetRegisterURL;
     property LegalURL: WideString read GetLegalURL;
+    property PowerURL: WideString read GetPowerURL;
+    property UsageURL: WideString read GetUsageURL;
   end;
 
   IWeatherMultiInfo = interface
@@ -1122,6 +1127,10 @@ begin
     wiHistory:          Result:= 'History';
     wiPlanner:          Result:= 'Planner';
     wiStation:          Result:= 'Station';
+    wiGeoLookup:        Result:= 'Geo Lookup';
+    wiTide:             Result:= 'Tide';
+    wiRawTide:          Result:= 'Raw Tide';
+    wiWebcams:          Result:= 'Webcams';
   end;
 end;
 
@@ -1570,7 +1579,11 @@ end;
 
 function TWeatherGraphic.GetBase64: WideString;
 begin
-  Result:= FStream.DataString;
+  if Assigned(FStream) then begin
+    Result:= FStream.DataString;
+  end else begin
+    Result:= '';
+  end;
 end;
 
 function TWeatherGraphic.GetExt: WideString;

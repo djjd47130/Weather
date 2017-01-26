@@ -22,9 +22,13 @@ const
   URL_REGISTER = 'https://www.wunderground.com/member/registration';
   URL_LOGIN = 'https://www.wunderground.com/login.asp';
   URL_LEGAL = 'https://www.wunderground.com/weather/api/d/terms.html';
+  URL_POWER = 'http://www.wunderground.com';
+  URL_USAGE = 'https://www.wunderground.com/weather/api/';
 
   SUP_INFO = [wiLocation, wiConditions, wiAlerts, wiForecastSummary,
-    wiForecastHourly, wiForecastDaily, wiMaps];
+    wiForecastHourly, wiForecastDaily, wiMaps, wiGeoLookup, wiAstronomy,
+    wiAlmanac, wiHistory, wiPlanner, wiHurricane,
+    wiTide, wiRawTide, wiWebcams];
   SUP_UNITS = [wuImperial, wuMetric];
   SUP_LOC = [wlZip, wlCityState, wlCoords, wlAutoIP,
     wlCountryCity, wlAirportCode, wlPWS];
@@ -122,12 +126,16 @@ type
     function GetLoginURL: WideString;
     function GetRegisterURL: WideString;
     function GetLegalURL: WideString;
+    function GetPowerURL: WideString;
+    function GetUsageURL: WideString;
 
     property MainURL: WideString read GetMainURL;
     property ApiURL: WideString read GetApiURL;
     property LoginURL: WideString read GetLoginURL;
     property RegisterURL: WideString read GetRegisterURL;
     property LegalURL: WideString read GetLegalURL;
+    property PowerURL: WideString read GetPowerURL;
+    property UsageURL: WideString read GetUsageURL;
   end;
 
   TWeatherServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
@@ -288,9 +296,19 @@ begin
   Result:= URL_MAIN;
 end;
 
+function TWeatherURLs.GetPowerURL: WideString;
+begin
+  Result:= URL_POWER;
+end;
+
 function TWeatherURLs.GetRegisterURL: WideString;
 begin
   Result:= URL_REGISTER;
+end;
+
+function TWeatherURLs.GetUsageURL: WideString;
+begin
+  Result:= URL_USAGE;
 end;
 
 { TWeatherServiceInfo }
@@ -367,8 +385,7 @@ procedure TWeatherServiceInfo.LoadLogos;
     R: TStringStream;
   begin
     Result:= TWeatherGraphic.Create;
-    if ResourceExists(N, T) then begin
-      raise Exception.Create('TEST!');
+    try
       S:= TResourceStream.Create(HInstance, N, PChar(T));
       try
         R:= TStringStream.Create;
@@ -382,6 +399,10 @@ procedure TWeatherServiceInfo.LoadLogos;
         end;
       finally
         FreeAndNil(S);
+      end;
+    except
+      on E: Exception do begin
+
       end;
     end;
   end;
@@ -459,6 +480,8 @@ begin
     end;
     else begin
       Result:= Result + '.json';
+      if (LocationType = wlAutoIP) and (LocationDetail1 <> '') then
+        Result:= Result + '?geo_ip='+LocationDetail1;
     end;
   end;
 end;
@@ -508,6 +531,10 @@ begin
     wlPWS:          Result:= Result + 'pws:'+LocationDetail1;
   end;
   Result:= Result + Ext;
+
+  if (LocationType = wlAutoIP) and (LocationDetail1 <> '') then
+    Result:= Result + '?geo_ip='+LocationDetail1;
+
 end;
 
 function TWeatherService.GetEndpoint(const Endpoint: TWUEndpoint): ISuperObject;

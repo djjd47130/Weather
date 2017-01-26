@@ -1,71 +1,74 @@
-unit JD.Weather.Services.AccuWeather;
+unit JD.Weather.Services.DarkSky;
 
 interface
-
-{$R 'AccuWeatherRes.res' 'AccuWeatherRes.rc'}
 
 uses
   System.SysUtils,
   System.Classes,
+  System.Generics.Collections,
+  IdHTTP,
+  IdIOHandler,
+  IdIOHandlerSocket,
+  IdIOHandlerStack,
+  IdSSL,
+  IdSSLOpenSSL,
   JD.Weather.Intf,
-  JD.Weather.SuperObject,
-  System.Generics.Collections;
+  JD.Weather.SuperObject;
 
 const
-  SVC_CAPTION = 'AccuWeather';
-  SVC_NAME = 'AccuWeather';
-  SVC_UID = '{58042045-AA27-444A-AA26-C5C5CD4740B5}';
+  SVC_CAPTION = 'DarkSky';
+  SVC_NAME = 'DarkSky';
+  SVC_UID = '{C16FD284-7A1B-401F-92D5-28FEA3F83D98}';
 
-  URL_MAIN = 'http://developer.accuweather.com/';
-  URL_API = 'http://developer.accuweather.com/apis';
-  URL_REGISTER = 'http://developer.accuweather.com/user/register';
-  URL_LOGIN = 'http://developer.accuweather.com/user/login';
-  URL_LEGAL = 'https://developer.accuweather.com/legal';
-  URL_POWER = '';
-  URL_USAGE = 'http://developer.accuweather.com/user/me/apps';
+  URL_MAIN = 'https://darksky.net';
+  URL_API = 'https://darksky.net/dev/docs';
+  URL_REGISTER = 'https://darksky.net/dev/register';
+  URL_LOGIN = 'https://darksky.net/dev/login';
+  URL_LEGAL = 'https://darksky.net/dev/docs/terms';
+  URL_POWER = 'https://darksky.net/poweredby/';
+  URL_USAGE = 'https://darksky.net/dev/account';
 
-  //Supported Pieces of Information
-  SUP_INFO = [wiConditions, wiForecastHourly, wiForecastDaily, wiAlerts];
-  SUP_LOC = [wlCoords, wlCityState, wlCountryCity, wlCityCode,
-    wlZip, wlAutoIP];
-  SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
-  SUP_COND_PROP = [wpIcon, wpCaption,
-    wpStation, wpTemp,
-    wpFeelsLike,
-    wpWindDir, wpWindSpeed,
-    wpWindGust, wpWindChill,
-    wpHeatIndex, wpPressure,
-    wpHumidity, wpDewPoint, wpVisibility,
-    wpUVIndex,
-    wpCloudCover, wpPrecipAmt
-    ];
-  SUP_ALERT_TYPE = [waNone, waHurricaneStat, waTornadoWarn, waTornadoWatch, waSevThundWarn,
-    waSevThundWatch, waWinterAdv, waFloodWarn, waFloodWatch, waHighWind, waSevStat,
-    waHeatAdv, waFogAdv, waSpecialStat, waFireAdv, waVolcanicStat, waHurricaneWarn,
-    waRecordSet, waPublicRec, waPublicStat];
-  SUP_ALERT_PROP = [apZones, apVerticies, apStorm, apType, apDescription,
-    apExpires, apMessage, apSignificance];
-  SUP_FOR = [ftHourly, ftDaily];
-  SUP_FOR_SUM = [{fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
-    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
-    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
-    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
-    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb}];
-  SUP_FOR_HOUR = [{fpWindDir, fpWindSpeed,
-    fpHumidity, fpVisibility, fpDewPoint, fpWindGust,
-    fpFeelsLike, fpUV, fpTemp, fpCaption,
-    fpIcon, fpPrecip, fpURL,
-    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb}];
-  SUP_FOR_DAY = [{fpPressureMB, fpPressureIn, fpWindDir, fpWindSpeed,
-    fpHumidity, fpVisibility, fpDewPoint, fpHeatIndex, fpWindGust, fpWindChill,
-    fpFeelsLike, fpSolarRad, fpUV, fpTemp, fpTempMin, fpTempMax, fpCaption,
-    fpDescription, fpIcon, fpGroundPressure, fpSeaPressure, fpPrecip, fpURL,
-    fpDaylight, fpSnow, fpSleet, fpPrecipChance, fpClouds, fpRain, fpWetBulb}];
+  {                                          //621FDB1332E425797C7603F6F6CEE3B
+	   	"nearestStormDistance": 41,            //0B9D684BEB1842E4B5E365467D5DD2E5
+	   	"nearestStormBearing": 278,
+  		"ozone": 267.36
+  }
+  SUP_INFO = [wiConditions, wiForecastHourly, wiForecastDaily, wiAlerts, wiHistory];
+  SUP_LOC = [wlCoords];
   SUP_UNITS = [wuImperial, wuMetric];
+  SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
+  SUP_COND_PROP = [wpIcon, wpCaption, wpTemp, wpFeelsLike,
+    wpPrecipAmt, wpPrecipPred, wpWindSpeed, wpWindDir, wpHumidity, wpDewPoint,
+    wpVisibility, wpCloudCover, wpPressure, wpStation];
+  SUP_ALERT_TYPE = [];
+  SUP_ALERT_PROP = [apDescription, apExpires, apMessage];
+  SUP_FOR = [ftSummary, ftHourly, ftDaily];
+  SUP_FOR_SUM = [wpPrecipAmt, wpPrecipPred];
+  {
+	   	"nearestStormDistance": 41,
+	   	"nearestStormBearing": 278,
+  		"ozone": 267.36
+  }
+  SUP_FOR_HOUR = [wpIcon, wpCaption, wpTemp, wpFeelsLike,
+    wpPrecipAmt, wpPrecipPred, wpWindSpeed, wpWindDir, wpHumidity, wpDewPoint,
+    wpVisibility, wpCloudCover, wpPressure, wpStation];
+  {
+			"moonPhase": 0.89,
+			"precipIntensityMax": 0,
+			"apparentTemperatureMin": 34.14,
+			"apparentTemperatureMax": 48.23,
+			"ozone": 266.73
+  }
+  SUP_FOR_DAY = [wpIcon, wpCaption, wpTemp, wpFeelsLike,
+    wpPrecipAmt, wpPrecipPred, wpWindSpeed, wpWindDir, wpHumidity, wpDewPoint,
+    wpVisibility, wpCloudCover, wpPressure, wpStation,
+    wpTempMin, wpTempMax, wpSunrise, wpSunset];
   SUP_MAP = [];
   SUP_MAP_FOR = [];
 
 type
+  TDSEndpoint = (deNormal, deHistory);
+
   TWeatherSupport = class(TInterfacedObject, IWeatherSupport)
   public
     function GetSupportedLogos: TWeatherLogoTypes;
@@ -146,6 +149,10 @@ type
   TWeatherService = class(TWeatherServiceBase, IWeatherService)
   private
     FInfo: TWeatherServiceInfo;
+    FSSL: TIdSSLIOHandlerSocketOpenSSL;
+    function GetEndpointUrl(const Endpoint: TDSEndpoint): String;
+    function GetEndpoint(const Endpoint: TDSEndpoint): ISuperObject;
+    function ParseDateTime(const S: String): TDateTime;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -379,6 +386,9 @@ end;
 constructor TWeatherService.Create;
 begin
   inherited;
+  FSSL:= TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+  Web.IOHandler:= FSSL;
+  Web.HandleRedirects:= True;
   FInfo:= TWeatherServiceInfo.Create;
   FInfo._AddRef;
 end;
@@ -387,43 +397,108 @@ destructor TWeatherService.Destroy;
 begin
   FInfo._Release;
   FInfo:= nil;
+  FSSL.Free;
   inherited;
+end;
+
+function TWeatherService.GetEndpointUrl(const Endpoint: TDSEndpoint): String;
+begin
+  //TODO
+  Result:= 'https://api.weathersource.com/v1/' + Key + '/' + Result;
+end;
+
+function TWeatherService.GetEndpoint(const Endpoint: TDSEndpoint): ISuperObject;
+var
+  U: String;
+  S: String;
+begin
+  U:= GetEndpointUrl(Endpoint);
+  S:= Web.Get(U);
+  Result:= SO(S);
+end;
+
+function TWeatherService.GetMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
+begin
+  //TODO: Fetch multiple pieces of weather data at once
+
+end;
+
+function TWeatherService.GetConditions: IWeatherProps;
+var
+  //O: ISuperObject;
+  R: TWeatherProps;
+begin
+  R:= TWeatherProps.Create;
+  try
+
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherService.GetAlerts: IWeatherAlerts;
+begin
+  //NOT SUPPORTED
+end;
+
+function TWeatherService.ParseDateTime(const S: String): TDateTime;
+begin
+  Result:= 0;
+  //TODO
+
+end;
+
+function TWeatherService.GetForecastDaily: IWeatherForecast;
+var
+  O: ISuperObject;
+  A: TSuperArray;
+  F: TWeatherForecast;
+  I: TWeatherProps;
+  X: Integer;
+begin
+  F:= TWeatherForecast.Create;
+  try
+    O:= GetEndpoint(TDSEndpoint.deNormal);
+    if Assigned(O) then begin
+      A:= O.AsArray;
+      for X := 0 to A.Length-1 do begin
+        O:= A.O[X];
+        I:= TWeatherProps.Create;
+        try
+
+        finally
+          F.FItems.Add(I);
+        end;
+      end;
+    end;
+  finally
+    Result:= F;
+  end;
+end;
+
+function TWeatherService.GetForecastHourly: IWeatherForecast;
+var
+  O: ISuperObject;
+  F: TWeatherForecast;
+begin
+  F:= TWeatherForecast.Create;
+  try
+    O:= GetEndpoint(TDSEndpoint.deNormal);
+
+  finally
+    Result:= F;
+  end;
+end;
+
+function TWeatherService.GetForecastSummary: IWeatherForecast;
+begin
+  //NOT SUPPORTED
 end;
 
 function TWeatherService.GetInfo: IWeatherServiceInfo;
 begin
   Result:= FInfo;
-end;
-
-function TWeatherService.GetMultiple(
-  const Info: TWeatherInfoTypes): IWeatherMultiInfo;
-begin
-  //TODO
-end;
-
-function TWeatherService.GetConditions: IWeatherProps;
-begin
-  //TODO
-end;
-
-function TWeatherService.GetAlerts: IWeatherAlerts;
-begin
-  //TODO
-end;
-
-function TWeatherService.GetForecastDaily: IWeatherForecast;
-begin
-  //TODO
-end;
-
-function TWeatherService.GetForecastHourly: IWeatherForecast;
-begin
-  //TODO
-end;
-
-function TWeatherService.GetForecastSummary: IWeatherForecast;
-begin
-  //TODO
 end;
 
 function TWeatherService.GetLocation: IWeatherLocation;
@@ -433,7 +508,7 @@ end;
 
 function TWeatherService.GetMaps: IWeatherMaps;
 begin
-  //TODO
+  //NOT SUPPORTED
 end;
 
 end.

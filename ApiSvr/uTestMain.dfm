@@ -1,4 +1,4 @@
-object Form1: TForm1
+object frmApiSvrTest: TfrmApiSvrTest
   Left = 0
   Top = 0
   Caption = 'Weather API Test'
@@ -59,5 +59,12 @@ object Form1: TForm1
     ScrollBars = ssBoth
     TabOrder = 1
     WordWrap = False
+  end
+  object IdServerIOHandlerSSLOpenSSL1: TIdServerIOHandlerSSLOpenSSL
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 248
+    Top = 312
   end
 end

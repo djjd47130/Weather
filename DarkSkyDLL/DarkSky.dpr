@@ -1,16 +1,11 @@
-library NWS;
+library DarkSky;
 
-{$R 'NWSRes.res' 'NWSRes.rc'}
+{$R 'DarkSkyRes.res' 'DarkSkyRes.rc'}
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.Generics.Collections,
-  Vcl.Imaging.PngImage,
-  IdHTTP,
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
-  JD.Weather.NDFD in '..\JD.Weather.NDFD.pas',
-  JD.Weather.Services.NWS in '..\Services\JD.Weather.Services.NWS.pas';
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas',
+  JD.Weather.Services.DarkSky in '..\Services\JD.Weather.Services.DarkSky.pas';
 
 {$R *.res}
 

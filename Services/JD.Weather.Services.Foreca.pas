@@ -21,9 +21,11 @@ const
   URL_REGISTER = 'http://corporate.foreca.com/en/en/products-services/weather-api/try-it';
   URL_LOGIN = '';
   URL_LEGAL = '';
+  URL_POWER = '';
+  URL_USAGE = '';
 
   //Supported Pieces of Information
-  SUP_INFO = [wiConditions, wiForecastHourly, wiForecastDaily];
+  SUP_INFO = [wiConditions, wiForecastHourly, wiForecastDaily, wiAlerts, wiMaps, wiHistory];
   SUP_LOC = [wlCoords];
   SUP_LOGO = [ltColor, ltColorInvert, ltColorWide, ltColorInvertWide];
   SUP_COND_PROP = [{cpPressureMB, cpWindDir, cpWindSpeed, cpHumidity, cpVisibility,
@@ -77,12 +79,16 @@ type
     function GetLoginURL: WideString;
     function GetRegisterURL: WideString;
     function GetLegalURL: WideString;
+    function GetPowerURL: WideString;
+    function GetUsageURL: WideString;
 
     property MainURL: WideString read GetMainURL;
     property ApiURL: WideString read GetApiURL;
     property LoginURL: WideString read GetLoginURL;
     property RegisterURL: WideString read GetRegisterURL;
     property LegalURL: WideString read GetLegalURL;
+    property PowerURL: WideString read GetPowerURL;
+    property UsageURL: WideString read GetUsageURL;
   end;
 
   TWeatherServiceInfo = class(TInterfacedObject, IWeatherServiceInfo)
@@ -224,9 +230,19 @@ begin
   Result:= URL_MAIN;
 end;
 
+function TWeatherURLs.GetPowerURL: WideString;
+begin
+  Result:= URL_POWER;
+end;
+
 function TWeatherURLs.GetRegisterURL: WideString;
 begin
   Result:= URL_REGISTER;
+end;
+
+function TWeatherURLs.GetUsageURL: WideString;
+begin
+  Result:= URL_USAGE;
 end;
 
 { TWeatherServiceInfo }
@@ -303,7 +319,7 @@ procedure TWeatherServiceInfo.LoadLogos;
     R: TStringStream;
   begin
     Result:= TWeatherGraphic.Create;
-    if ResourceExists(N, T) then begin
+    try
       S:= TResourceStream.Create(HInstance, N, PChar(T));
       try
         R:= TStringStream.Create;
@@ -318,6 +334,10 @@ procedure TWeatherServiceInfo.LoadLogos;
       finally
         FreeAndNil(S);
       end;
+    except
+      on E: Exception do begin
+
+      end;
     end;
   end;
 begin
@@ -325,8 +345,8 @@ begin
   SetLogo(ltColorInvert, Get('LOGO_COLOR_INVERT', 'PNG'));
   SetLogo(ltColorWide, Get('LOGO_COLOR_WIDE', 'PNG'));
   SetLogo(ltColorInvertWide, Get('LOGO_COLOR_INVERT_WIDE', 'PNG'));
-  SetLogo(ltColorLeft, Get('LOGO_COLOR_LEFT', 'PNG'));
-  SetLogo(ltColorRight, Get('LOGO_COLOR_RIGHT', 'PNG'));
+  //SetLogo(ltColorLeft, Get('LOGO_COLOR_LEFT', 'PNG'));
+  //SetLogo(ltColorRight, Get('LOGO_COLOR_RIGHT', 'PNG'));
 end;
 
 { TWeatherService }

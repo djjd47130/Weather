@@ -1,0 +1,144 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{284E36A2-612F-4F7E-954D-25EF55F9F750}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="WeatherDLL\JDWeather.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="WUndergroundDLL\WUnderground.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="OpenWeatherMapsDLL\OpenWeatherMap.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="AccuWeatherDLL\AccuWeather.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ForecaDLL\Foreca.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="OnPointDLL\OnPoint.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="NWSDLL\NWS.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="DarkSkyDLL\DarkSky.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TestApp\WeatherDLLTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ApiSvr\JDWeatherApiSvrSvc.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="JDWeather">
+        <MSBuild Projects="WeatherDLL\JDWeather.dproj"/>
+    </Target>
+    <Target Name="JDWeather:Clean">
+        <MSBuild Projects="WeatherDLL\JDWeather.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="JDWeather:Make">
+        <MSBuild Projects="WeatherDLL\JDWeather.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WUnderground">
+        <MSBuild Projects="WUndergroundDLL\WUnderground.dproj"/>
+    </Target>
+    <Target Name="WUnderground:Clean">
+        <MSBuild Projects="WUndergroundDLL\WUnderground.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WUnderground:Make">
+        <MSBuild Projects="WUndergroundDLL\WUnderground.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="OpenWeatherMap">
+        <MSBuild Projects="OpenWeatherMapsDLL\OpenWeatherMap.dproj"/>
+    </Target>
+    <Target Name="OpenWeatherMap:Clean">
+        <MSBuild Projects="OpenWeatherMapsDLL\OpenWeatherMap.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="OpenWeatherMap:Make">
+        <MSBuild Projects="OpenWeatherMapsDLL\OpenWeatherMap.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="AccuWeather">
+        <MSBuild Projects="AccuWeatherDLL\AccuWeather.dproj"/>
+    </Target>
+    <Target Name="AccuWeather:Clean">
+        <MSBuild Projects="AccuWeatherDLL\AccuWeather.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AccuWeather:Make">
+        <MSBuild Projects="AccuWeatherDLL\AccuWeather.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Foreca">
+        <MSBuild Projects="ForecaDLL\Foreca.dproj"/>
+    </Target>
+    <Target Name="Foreca:Clean">
+        <MSBuild Projects="ForecaDLL\Foreca.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Foreca:Make">
+        <MSBuild Projects="ForecaDLL\Foreca.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="OnPoint">
+        <MSBuild Projects="OnPointDLL\OnPoint.dproj"/>
+    </Target>
+    <Target Name="OnPoint:Clean">
+        <MSBuild Projects="OnPointDLL\OnPoint.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="OnPoint:Make">
+        <MSBuild Projects="OnPointDLL\OnPoint.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="NWS">
+        <MSBuild Projects="NWSDLL\NWS.dproj"/>
+    </Target>
+    <Target Name="NWS:Clean">
+        <MSBuild Projects="NWSDLL\NWS.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="NWS:Make">
+        <MSBuild Projects="NWSDLL\NWS.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DarkSky">
+        <MSBuild Projects="DarkSkyDLL\DarkSky.dproj"/>
+    </Target>
+    <Target Name="DarkSky:Clean">
+        <MSBuild Projects="DarkSkyDLL\DarkSky.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DarkSky:Make">
+        <MSBuild Projects="DarkSkyDLL\DarkSky.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WeatherDLLTest">
+        <MSBuild Projects="TestApp\WeatherDLLTest.dproj"/>
+    </Target>
+    <Target Name="WeatherDLLTest:Clean">
+        <MSBuild Projects="TestApp\WeatherDLLTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WeatherDLLTest:Make">
+        <MSBuild Projects="TestApp\WeatherDLLTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="JDWeatherApiSvrSvc">
+        <MSBuild Projects="ApiSvr\JDWeatherApiSvrSvc.dproj"/>
+    </Target>
+    <Target Name="JDWeatherApiSvrSvc:Clean">
+        <MSBuild Projects="ApiSvr\JDWeatherApiSvrSvc.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="JDWeatherApiSvrSvc:Make">
+        <MSBuild Projects="ApiSvr\JDWeatherApiSvrSvc.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="JDWeather;WUnderground;OpenWeatherMap;AccuWeather;Foreca;OnPoint;NWS;DarkSky;WeatherDLLTest;JDWeatherApiSvrSvc"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="JDWeather:Clean;WUnderground:Clean;OpenWeatherMap:Clean;AccuWeather:Clean;Foreca:Clean;OnPoint:Clean;NWS:Clean;DarkSky:Clean;WeatherDLLTest:Clean;JDWeatherApiSvrSvc:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="JDWeather:Make;WUnderground:Make;OpenWeatherMap:Make;AccuWeather:Make;Foreca:Make;OnPoint:Make;NWS:Make;DarkSky:Make;WeatherDLLTest:Make;JDWeatherApiSvrSvc:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
