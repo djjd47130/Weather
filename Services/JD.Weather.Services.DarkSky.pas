@@ -152,10 +152,10 @@ type
     FSSL: TIdSSLIOHandlerSocketOpenSSL;
     function GetEndpointUrl(const Endpoint: TDSEndpoint): String;
     function GetEndpoint(const Endpoint: TDSEndpoint): ISuperObject;
-    function ParseDateTime(const S: String): TDateTime;
   public
     constructor Create; override;
     destructor Destroy; override;
+    function ParseDateTime(const S: String): TDateTime;
   public
     function GetInfo: IWeatherServiceInfo;
 

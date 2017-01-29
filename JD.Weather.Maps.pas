@@ -17,10 +17,10 @@ type
     FOwner: TWeatherMap;
     FLayers: TList<IWeatherGraphic>;
     FTimestamp: TDateTime;
-    procedure PopulateLayers;
   public
     constructor Create(AOwner: TWeatherMap);
     destructor Destroy; override;
+    procedure PopulateLayers;
     property Timestamp: TDateTime read FTimestamp;
   end;
 

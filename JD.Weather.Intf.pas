@@ -2,6 +2,9 @@ unit JD.Weather.Intf;
 
 interface
 
+//TODO: Add support for IP location lookup via http://ipinfo.io/developers
+
+
 {$MINENUMSIZE 4}
 
 uses
@@ -10,7 +13,8 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  IdHTTP;
+  IdHTTP,
+  JD.Weather.SuperObject;
 
 const
   clOrange = $00003AB3;
@@ -41,6 +45,7 @@ type
   IJDWeather = interface;
 
   TWeatherGraphic = class;
+
 
 
 
@@ -135,6 +140,86 @@ type
     function Name: String;
     function DayNightStr: String;
   end;
+
+
+
+
+
+
+
+
+  TIPVersion = (ipv4 = 0, ipv6 = 1);
+
+  IIPInfo = interface
+    function GetIP: WideString;
+    function GetIPVersion: TIPVersion;
+    function GetHostname: WideString;
+    function GetCity: WideString;
+    function GetRegion: WideString;
+    function GetCountry: WideString;
+    function GetPostal: WideString;
+    function GetIsp: WideString;
+    function GetLongitude: Double;
+    function GetLatitude: Double;
+
+    function AsJson: ISuperObject;
+    procedure LoadIP(const IP: WideString; const IPVersion: TIPVersion = ipv4);
+
+    property IP: WideString read GetIP;
+    property IPVersion: TIPVersion read GetIPVersion;
+    property Hostname: WideString read GetHostname;
+    property City: WideString read GetCity;
+    property Region: WideString read GetRegion;
+    property Country: WideString read GetCountry;
+    property Postal: WideString read GetPostal;
+    property Isp: WideString read GetIsp;
+    property Longitude: Double read GetLongitude;
+    property Latitude: Double read GetLatitude;
+  end;
+
+  TIPInfo = class(TInterfacedObject, IIPInfo)
+  private
+    FIP: WideString;
+    FIPVersion: TIPVersion;
+    FHostname: WideString;
+    FCity: WideString;
+    FRegion: WideString;
+    FCountry: WideString;
+    FPostal: WideString;
+    FIsp: WideString;
+    FLongitude: Double;
+    FLatitude: Double;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  public
+    function GetIP: WideString;
+    function GetIPVersion: TIPVersion;
+    function GetHostname: WideString;
+    function GetCity: WideString;
+    function GetRegion: WideString;
+    function GetCountry: WideString;
+    function GetPostal: WideString;
+    function GetIsp: WideString;
+    function GetLongitude: Double;
+    function GetLatitude: Double;
+
+    function AsJson: ISuperObject;
+    procedure LoadIP(const IP: WideString; const IPVersion: TIPVersion = ipv4);
+
+    property IP: WideString read GetIP;
+    property IPVersion: TIPVersion read GetIPVersion;
+    property Hostname: WideString read GetHostname;
+    property City: WideString read GetCity;
+    property Region: WideString read GetRegion;
+    property Country: WideString read GetCountry;
+    property Postal: WideString read GetPostal;
+    property Isp: WideString read GetIsp;
+    property Longitude: Double read GetLongitude;
+    property Latitude: Double read GetLatitude;
+  end;
+
+
 
 
 
@@ -520,6 +605,7 @@ type
   IWeatherMultiService = interface
     function GetItem(const Index: Integer): IWeatherService;
 
+    function GetCombinedMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
     function GetCombinedConditions: IWeatherProps;
     function GetCombinedAlerts: IWeatherAlerts;
     function GetCombinedForecastSummary: IWeatherForecast;
@@ -542,6 +628,7 @@ type
   public
     function GetItem(const Index: Integer): IWeatherService;
 
+    function GetCombinedMultiple(const Info: TWeatherInfoTypes): IWeatherMultiInfo;
     function GetCombinedConditions: IWeatherProps;
     function GetCombinedAlerts: IWeatherAlerts;
     function GetCombinedForecastSummary: IWeatherForecast;
@@ -2013,7 +2100,7 @@ end;
 
 constructor TWeatherMultiInfo.Create;
 begin
-
+  TObjectList<String>.Create(True);
 end;
 
 destructor TWeatherMultiInfo.Destroy;
@@ -2243,6 +2330,30 @@ begin
   R:= TWeatherForecast.Create;
   try
     //TODO: How to merge forecasts???
+
+  finally
+    Result:= R;
+  end;
+end;
+
+function TWeatherMultiService.GetCombinedMultiple(
+  const Info: TWeatherInfoTypes): IWeatherMultiInfo;
+var
+  X: Integer;
+  R: TWeatherMultiInfo;
+  S: IWeatherService;
+  SR: IWeatherMultiInfo;
+begin
+  R:= TWeatherMultiInfo.Create;
+  try
+
+    for X := 0 to Self.Count-1 do begin
+      S:= Self.FItems[X];
+      SR:= S.GetMultiple(Info);
+
+      //TODO: Merge together...
+
+    end;
 
   finally
     Result:= R;
@@ -2640,6 +2751,119 @@ begin
     FCounts[wpSunset]:= 1;
   end;
   Chk(wpDaylight, FDaylight);
+end;
+
+{ TIPInfo }
+
+constructor TIPInfo.Create;
+begin
+
+end;
+
+destructor TIPInfo.Destroy;
+begin
+
+  inherited;
+end;
+
+function TIPInfo.GetCity: WideString;
+begin
+  Result:= FCity;
+end;
+
+function TIPInfo.GetCountry: WideString;
+begin
+  Result:= FCountry;
+end;
+
+function TIPInfo.GetHostname: WideString;
+begin
+  Result:= FHostname;
+end;
+
+function TIPInfo.GetIP: WideString;
+begin
+  Result:= FIP;
+end;
+
+function TIPInfo.GetIPVersion: TIPVersion;
+begin
+  Result:= FIPVersion;
+end;
+
+function TIPInfo.GetIsp: WideString;
+begin
+  Result:= FIsp;
+end;
+
+function TIPInfo.GetLatitude: Double;
+begin
+  Result:= FLatitude;
+end;
+
+function TIPInfo.GetLongitude: Double;
+begin
+  Result:= FLongitude;
+end;
+
+function TIPInfo.GetPostal: WideString;
+begin
+  Result:= FPostal;
+end;
+
+function TIPInfo.GetRegion: WideString;
+begin
+  Result:= FRegion;
+end;
+
+procedure TIPInfo.LoadIP(const IP: WideString; const IPVersion: TIPVersion = ipv4);
+var
+  W: TIdHTTP;
+  U, R: String;
+  O: ISuperObject;
+begin
+  W:= TIdHTTP.Create(nil);
+  try
+    U:= 'http://ipinfo.io';
+    if IP <> '' then
+      U:= U + '/'+IP;
+    U:= U + '/json';
+    R:= W.Get(U);
+    O:= SO(R);
+    FIPVersion:= IPVersion;
+    FIP:= O.S['ip'];
+    FHostname:= O.S['hostname'];
+    FCity:= O.S['city'];
+    FRegion:= O.S['region'];
+    FCountry:= O.S['country'];
+    FIsp:= O.S['org'];
+    FPostal:= O.S['postal'];
+    R:= O.S['loc'];
+    U:= Copy(R, 1, Pos(',', R)-1);
+    Delete(R, 1, Pos(',', R));
+    FLongitude:= StrToFloatDef(U, 0);
+    FLatitude:= StrToFloatDef(R, 0);
+  finally
+    FreeAndNil(W);
+  end;
+end;
+
+function TIPInfo.AsJson: ISuperObject;
+begin
+  Result:= SO;
+  Result.S['ip']:= FIP;
+  case FIPVersion of
+    ipv4:   Result.S['ip_version']:= 'IPv4';
+    ipv6:   Result.S['ip_version']:= 'IPv6';
+  end;
+  Result.S['hostname']:= FHostname;
+  Result.S['city']:= FCity;
+  Result.S['region']:= FRegion;
+  Result.S['country']:= FCountry;
+  Result.S['isp']:= FIsp;
+  Result.S['postal']:= FPostal;
+  Result.D['longitude']:= FLongitude;
+  Result.D['latitude']:= FLatitude;
 end;
 
 end.

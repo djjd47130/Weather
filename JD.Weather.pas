@@ -90,7 +90,7 @@ type
     FWeather: IJDWeather;
     FService: IWeatherService;
     FWantedMaps: TWeatherMapTypes;
-    FThread: TJDWeatherThread;
+    //FThread: TJDWeatherThread;
     FOnConditions: TWeatherConditionsEvent;
     FOnMaps: TWeatherMapEvent;
     FOnAlerts: TWeatherAlertEvent;

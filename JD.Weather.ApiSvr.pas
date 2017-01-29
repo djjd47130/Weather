@@ -25,6 +25,7 @@ type
     FKey: WideString;
     FKeyID: Integer;
     FUserID: Integer;
+    FUserName: WideString;
     FLocType: WideString;
     FLoc1: WideString;
     FLoc2: WideString;
@@ -35,23 +36,32 @@ type
     FServices: IWeatherMultiService;
     procedure HandleGet(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleRequest(ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo);
+
     procedure HandleServiceList(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleServiceSupport(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleServiceLogo(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleUsage(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleAccount(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+
     procedure HandleNoRequest(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleConditions(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleAlerts(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleNoKey(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleInvalidKey(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
-    procedure HandleRequest(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
     function GetConditions: ISuperObject;
+    function GetAlerts: ISuperObject;
     procedure SaveReq(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
     function GetSupport(const S: IWeatherService): ISuperObject;
@@ -137,7 +147,7 @@ end;
 procedure TJDWeatherApiSvrThread.Init;
 var
   E: Integer;
-  B: TIdSocketHandle;
+  //B: TIdSocketHandle;
 begin
   CoInitialize(nil);
 
@@ -351,36 +361,82 @@ end;
 procedure TWeatherContext.HandleRequest(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
-  D, T: String;
-  P: Integer;
+  //D, T: String;
+  //P: Integer;
   Q: TADOQuery;
+  X: Integer;
+  O: ISuperObject;
 begin
   Q:= NewQuery;
   try
-    if SameText(FDoc[1], 'conditions') then begin
-      HandleConditions(ARequestInfo, AResponseInfo);
-    end else
-    if SameText(FDoc[1], 'alerts') then begin
-      //HandleAlerts();
-    end else
-    if SameText(FDoc[1], 'forecastsummary') then begin
-      //HandleForecastSummary();
-    end else
-    if SameText(FDoc[1], 'forecasthourly') then begin
 
-    end else
-    if SameText(FDoc[1], 'forecastdaily') then begin
+    if (FDoc.Count > 2) then begin
 
-    end else
-    if SameText(FDoc[1], 'maps') then begin
+      O:= SO;
+      try
+        //Handle multi-info request
 
-    end else
-    if SameText(FDoc[1], 'geolookup') then begin
+        //TODO - Each service will need its "GetMulti" function implemented.
+
+
+
+
+        Self.FServices[0].GetMultiple([TWeatherInfoType.wiConditions]);
+        //Self.FServices.GetCombinedMulti(); //TODO
+
+        for X := 1 to FDoc.Count - 1 do begin
+          if SameText(FDoc[X], 'conditions') then begin
+            O.O['conditions']:= Self.GetConditions;
+          end else
+          if SameText(FDoc[X], 'alerts') then begin
+            O.O['alerts']:= Self.GetAlerts;
+          end else
+          if SameText(FDoc[X], 'forecastsummary') then begin
+            //O.O['forecastsummary']:= Self.GetForecastSummary;
+          end else begin
+            //Unrecognized
+          end;
+        end;
+
+      finally
+        AResponseInfo.ContentText:= O.AsJSon(True);
+        AResponseInfo.ContentType:= 'text/json';
+      end;
 
     end else begin
-      HandleNoRequest(ARequestInfo, AResponseInfo);
-    end;
+      if SameText(FDoc[1], 'conditions') then begin
+        HandleConditions(ARequestInfo, AResponseInfo);
+      end else
+      if SameText(FDoc[1], 'alerts') then begin
+        HandleAlerts(ARequestInfo, AResponseInfo);
+      end else
+      if SameText(FDoc[1], 'forecastsummary') then begin
+        //HandleForecastSummary();
+      end else
+      if SameText(FDoc[1], 'forecasthourly') then begin
 
+      end else
+      if SameText(FDoc[1], 'forecastdaily') then begin
+
+      end else
+      if SameText(FDoc[1], 'maps') then begin
+
+      end else
+      if SameText(FDoc[1], 'geolookup') then begin
+
+      end else
+      if SameText(FDoc[1], 'history') then begin
+
+      end else
+      if SameText(FDoc[1], 'usage') then begin
+        HandleUsage(ARequestInfo, AResponseInfo);
+      end else
+      if SameText(FDoc[1], 'account') then begin
+        HandleAccount(ARequestInfo, AResponseInfo);
+      end else begin
+        HandleNoRequest(ARequestInfo, AResponseInfo);
+      end;
+    end;
   finally
     FreeAndNil(Q);
   end;
@@ -476,22 +532,24 @@ begin
         HandleServiceSupport(ARequestInfo, AResponseInfo);
       end else
       if SameText(FDoc[0], 'logo') then begin
-        //TODO
         HandleServiceLogo(ARequestInfo, AResponseInfo);
-      end else
-      if SameText(FDoc[0], 'usage') then begin
-        //TODO
       end else begin
         FKey:= FDoc[0];
         if FDoc.Count > 1 then begin
-          Q.SQL.Text:= 'select * from ApiKeys where ApiKey = :key and Status = 1';
+          Q.SQL.Text:= 'select K.*, U.Username from ApiKeys K join Users U on U.ID = K.UserID'+
+            ' where K.ApiKey = :key and K.Status = 1';
           Q.Parameters.ParamValues['key']:= FKey;
           Q.Open;
           try
             if not Q.IsEmpty then begin
               FUserID:= Q.FieldByName('UserID').AsInteger;
+              FUserName:= Q.FieldByName('Username').AsString;
               FKeyID:= Q.FieldByName('ID').AsInteger;
+
+
+              //Actual handling of JSON requests which require key
               HandleRequest(ARequestInfo, AResponseInfo);
+
             end else begin
               HandleInvalidKey(ARequestInfo, AResponseInfo);
             end;
@@ -678,6 +736,12 @@ begin
   end;
 end;
 
+procedure TWeatherContext.HandleUsage(ARequestInfo: TIdHTTPRequestInfo;
+  AResponseInfo: TIdHTTPResponseInfo);
+begin
+
+end;
+
 procedure TWeatherContext.HandleServiceList(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
@@ -719,7 +783,7 @@ procedure TWeatherContext.HandleServiceLogo(ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo);
 var
   S: TStringStream;
-  X: Integer;
+  //X: Integer;
   G: IWeatherGraphic;
   Svc: IWeatherService;
 begin
@@ -758,6 +822,37 @@ function TWeatherContext.NewQuery: TADOQuery;
 begin
   Result:= TADOQuery.Create(nil);
   Result.Connection:= FDB;
+end;
+
+function TWeatherContext.GetAlerts: ISuperObject;
+var
+  A: IWeatherAlerts;
+  Al: IWeatherAlert;
+  O: ISuperObject;
+  X: Integer;
+begin
+  Result:= SO;
+
+  A:= FServices.GetCombinedAlerts;
+  if Assigned(A) then begin
+    for X := 0 to A.Count-1 do begin
+      Al:= A[X];
+      O:= SO;
+      try
+        O.S['type']:= WeatherAlertTypeToStr(Al.AlertType);
+        O.S['caption']:= Al.Description;
+        O.S['message']:= Al.Msg;
+        O.D['expires']:= Al.Expires;
+      finally
+        Result.AsArray.Add(O);
+      end;
+    end;
+  end else begin
+    //A is not assigned!
+    //TODO
+    Result.S['error']:= 'FServices.GetCombinedAlerts did not return any data!';
+  end;
+
 end;
 
 function TWeatherContext.GetConditions: ISuperObject;
@@ -836,16 +931,65 @@ begin
 
 end;
 
+procedure TWeatherContext.HandleAccount(ARequestInfo: TIdHTTPRequestInfo;
+  AResponseInfo: TIdHTTPResponseInfo);
+var
+  O, A, K, S: ISuperObject;
+  X: Integer;
+begin
+  O:= SO;
+  try
+    A:= SO;
+    try
+      A.S['key']:= Self.FKey;
+      A.S['user_name']:= Self.FUserName;
+      K:= SA([]);
+      try
+        for X := 0 to FServices.Count-1 do begin
+          S:= SO;
+          try
+            S.S['service_name']:= FServices[X].Info.Name;
+            S.S['service_caption']:= FServices[X].Info.Caption;
+            S.S['service_uid']:= FServices[X].Info.UID;
+            S.S['key']:= FServices[X].Key;
+          finally
+            K.AsArray.Add(S);
+          end;
+        end;
+      finally
+        A.O['keys']:= K;
+      end;
+    finally
+      O.O['account']:= A;
+    end;
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TWeatherContext.HandleAlerts(ARequestInfo: TIdHTTPRequestInfo;
+  AResponseInfo: TIdHTTPResponseInfo);
+var
+  O: ISuperObject;
+begin
+  O:= SO;
+  try
+    O.O['alerts']:= GetAlerts;
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
 procedure TWeatherContext.HandleConditions(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
   O: ISuperObject;
-  //C: IWeatherProps;
 begin
   O:= SO;
   try
     O.O['conditions']:= GetConditions;
-
   finally
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';
