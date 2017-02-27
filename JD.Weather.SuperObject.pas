@@ -1942,7 +1942,7 @@ var
   iter: TSuperObjectIter;
   st: AnsiString;
   val: ISuperObject;
-  fbuffer: array[0..31] of AnsiChar;
+  //fbuffer: array[0..31] of AnsiChar;
 const
   ENDSTR_A: PSOChar = '": ';
   ENDSTR_B: PSOChar = '":';
@@ -2008,7 +2008,8 @@ begin
           Result := Append(PSOChar(SOString(st)));
         end;
       stDouble:
-        Result := Append(PSOChar(SOString(gcvt(FO.c_double, 15, fbuffer))));
+        //Result := Append(PSOChar(SOString(gcvt(FO.c_double, 15, fbuffer))));
+        Result := Append(PSOChar(FormatFloat('0.0', FO.c_double)));
       stCurrency:
         begin
           Result := Append(PSOChar(CurrToStr(FO.c_currency)));

@@ -14,7 +14,8 @@ uses
   System.Generics.Collections,
   System.IOUtils,
   Winapi.Windows,
-  JD.Weather.Intf in '..\JD.Weather.Intf.pas';
+  JD.Weather.Intf in '..\JD.Weather.Intf.pas',
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 

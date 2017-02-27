@@ -1,4 +1,4 @@
-# JD Weather Library
+﻿# JD Weather Library
 
 ### About
 
@@ -26,6 +26,7 @@ The code and resources in this repository are in no way guaranteed. The author(s
 4. [Foreca](Readme/Foreca.md)
 5. [Weather Source OnPOINT®](Readme/OnPOINT.md)
 6. [National Weather Service](Readme/NWS.md)
+7. [DarkSky](Readme/DarkSky.md)
 
 # DLL Library
 

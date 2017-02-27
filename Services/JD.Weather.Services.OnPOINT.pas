@@ -5,6 +5,7 @@ interface
 {$R 'OnPointRes.res' 'OnPointRes.rc'}
 
 uses
+  Winapi.Windows,
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
@@ -20,7 +21,14 @@ uses
 const
   SVC_CAPTION = 'Weather Source OnPOINT®';
   SVC_NAME = 'OnPOINT';
+  SVC_AUTHOR = 'JD Software Inc.';
   SVC_UID = '{23A3E12A-FB68-4F94-B7AE-53E72915A08F}';
+
+  SVC_MIN_PRICE = 600.0;
+  SVC_MAX_PRICE = 5250.0;
+  SVC_HAS_TRIAL = True;
+  SVC_HAS_PAID = True;
+  SVC_IS_UNLIMITED = False;
 
   URL_MAIN = 'http://weathersource.com/';
   URL_API = 'https://developer.weathersource.com/documentation/rest/';
@@ -123,18 +131,28 @@ type
   public
     function GetCaption: WideString;
     function GetName: WideString;
+    function GetAuthor: WideString;
     function GetUID: WideString;
     function GetURLs: IWeatherURLs;
     function GetSupport: IWeatherSupport;
-    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+    function GetMinPrice: Double;
+    function GetMaxPrice: Double;
+    function GetHasTrial: Bool;
+    function GetHasPaid: Bool;
+    function GetIsUnlimited: Bool;
 
-    property Logos[const LT: TWeatherLogoType]: IWeatherGraphic read GetLogo write SetLogo;
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
 
     property Caption: WideString read GetCaption;
     property Name: WideString read GetName;
     property UID: WideString read GetUID;
     property Support: IWeatherSupport read GetSupport;
     property URLs: IWeatherURLs read GetURLs;
+    property MinPrice: Double read GetMinPrice;
+    property MaxPrice: Double read GetMaxPrice;
+    property HasTrial: Bool read GetHasTrial;
+    property HasPaid: Bool read GetHasPaid;
+    property IsUnlimited: bool read GetIsUnlimited;
   end;
 
   TWeatherService = class(TWeatherServiceBase, IWeatherService)
@@ -299,6 +317,11 @@ begin
   inherited;
 end;
 
+function TWeatherServiceInfo.GetAuthor: WideString;
+begin
+  Result:= SVC_AUTHOR;
+end;
+
 function TWeatherServiceInfo.GetCaption: WideString;
 begin
   Result:= SVC_CAPTION;
@@ -322,6 +345,31 @@ end;
 function TWeatherServiceInfo.GetURLs: IWeatherURLs;
 begin
   Result:= FURLs;
+end;
+
+function TWeatherServiceInfo.GetMaxPrice: Double;
+begin
+  Result:= SVC_MAX_PRICE;
+end;
+
+function TWeatherServiceInfo.GetMinPrice: Double;
+begin
+  Result:= SVC_MIN_PRICE;
+end;
+
+function TWeatherServiceInfo.GetHasPaid: Bool;
+begin
+  Result:= SVC_HAS_PAID;
+end;
+
+function TWeatherServiceInfo.GetHasTrial: Bool;
+begin
+  Result:= SVC_HAS_TRIAL;
+end;
+
+function TWeatherServiceInfo.GetIsUnlimited: Bool;
+begin
+  Result:= SVC_IS_UNLIMITED;
 end;
 
 function TWeatherServiceInfo.GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;

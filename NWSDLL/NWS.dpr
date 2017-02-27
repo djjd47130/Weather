@@ -10,7 +10,8 @@ uses
   IdHTTP,
   JD.Weather.Intf in '..\JD.Weather.Intf.pas',
   JD.Weather.NDFD in '..\JD.Weather.NDFD.pas',
-  JD.Weather.Services.NWS in '..\Services\JD.Weather.Services.NWS.pas';
+  JD.Weather.Services.NWS in '..\Services\JD.Weather.Services.NWS.pas',
+  JD.Weather.SuperObject in '..\JD.Weather.SuperObject.pas';
 
 {$R *.res}
 

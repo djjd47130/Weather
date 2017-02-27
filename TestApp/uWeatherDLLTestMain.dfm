@@ -22,7 +22,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 895
-    Height = 145
+    Height = 161
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
@@ -30,8 +30,8 @@ object frmMain: TfrmMain
       AlignWithMargins = True
       Left = 3
       Top = 3
-      Width = 211
-      Height = 139
+      Width = 374
+      Height = 155
       Align = alLeft
       BevelOuter = bvNone
       BorderStyle = bsNone
@@ -40,6 +40,10 @@ object frmMain: TfrmMain
         item
           AutoSize = True
           Caption = 'Service Name'
+        end
+        item
+          Caption = 'Author'
+          Width = 150
         end>
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -53,13 +57,14 @@ object frmMain: TfrmMain
       TabOrder = 0
       ViewStyle = vsReport
       OnSelectItem = lstServicesSelectItem
+      ExplicitHeight = 139
     end
     object lstURLs: TListView
       AlignWithMargins = True
-      Left = 220
+      Left = 383
       Top = 3
-      Width = 239
-      Height = 139
+      Width = 162
+      Height = 155
       Align = alLeft
       BevelOuter = bvNone
       BorderStyle = bsNone
@@ -80,22 +85,25 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnClick = lstURLsClick
+      ExplicitLeft = 311
+      ExplicitHeight = 139
     end
     object Panel10: TPanel
       AlignWithMargins = True
-      Left = 671
+      Left = 688
       Top = 3
-      Width = 221
-      Height = 139
+      Width = 204
+      Height = 155
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 2
+      ExplicitHeight = 147
       object imgLogo: TImage
         AlignWithMargins = True
-        Left = 131
+        Left = 114
         Top = 10
         Width = 80
-        Height = 119
+        Height = 135
         Margins.Left = 10
         Margins.Top = 10
         Margins.Right = 10
@@ -107,6 +115,7 @@ object frmMain: TfrmMain
         Transparent = True
         ExplicitLeft = 128
         ExplicitTop = 1
+        ExplicitHeight = 119
       end
     end
   end
@@ -473,10 +482,10 @@ object frmMain: TfrmMain
     end
   end
   object imgList: TImageList
-    Left = 240
-    Top = 160
+    Left = 112
+    Top = 168
     Bitmap = {
-      494C010102000800380010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000800440010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000CCCCD6336266A3A0D1D1D72EFFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00B4B5
@@ -616,8 +625,8 @@ object frmMain: TfrmMain
       000000000000}
   end
   object MM: TMainMenu
-    Left = 296
-    Top = 160
+    Left = 168
+    Top = 168
     object File1: TMenuItem
       Caption = 'File'
       object Refresh1: TMenuItem
@@ -629,6 +638,7 @@ object frmMain: TfrmMain
       end
       object Exit1: TMenuItem
         Caption = 'Exit'
+        OnClick = Exit1Click
       end
     end
     object Service1: TMenuItem
@@ -641,6 +651,7 @@ object frmMain: TfrmMain
       end
       object estData1: TMenuItem
         Caption = 'Test Data'
+        OnClick = estData1Click
       end
     end
     object View1: TMenuItem

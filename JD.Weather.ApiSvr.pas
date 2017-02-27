@@ -22,6 +22,7 @@ type
   private
     FThread: TJDWeatherApiSvrThread;
     FDB: TADOConnection;
+    FIP: TIPInfo;
     FKey: WideString;
     FKeyID: Integer;
     FUserID: Integer;
@@ -34,37 +35,50 @@ type
     FDoc: TStringList;
     FWeather: IJDWeather;
     FServices: IWeatherMultiService;
+
+    //Internal Handling
     procedure HandleGet(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
-    procedure HandleRequest(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleException(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+      const AException: Exception);
+    procedure HandleRequest(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleNoRequest(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleNoKey(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure HandleInvalidKey(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+    procedure SaveReq(
+      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 
+    //Requests which do not require a key
     procedure HandleServiceList(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleServiceSupport(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleServiceLogo(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+
+    //Requests which require a key
     procedure HandleUsage(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleAccount(
-      ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
-
-    procedure HandleNoRequest(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleConditions(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     procedure HandleAlerts(
       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
-    procedure HandleNoKey(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
-    procedure HandleInvalidKey(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
+
+    //Common shared functions
+    function GetLocation: ISuperObject;
     function GetConditions: ISuperObject;
     function GetAlerts: ISuperObject;
-    procedure SaveReq(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
     function GetSupport(const S: IWeatherService): ISuperObject;
+    procedure LookupIP(ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo);
+
   public
     constructor Create(AConnection: TIdTCPConnection; AYarn: TIdYarn;
       AList: TIdContextThreadList = nil); override;
@@ -107,6 +121,14 @@ type
   end;
 
 implementation
+
+uses
+  System.IOUtils;
+
+procedure Test;
+begin
+  TPath.GetHomePath
+end;
 
 function StrToLocationType(const S: String): TWeatherLocationType;
 begin
@@ -442,6 +464,72 @@ begin
   end;
 end;
 
+procedure TWeatherContext.LookupIP(
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  Q: TADOQuery;
+begin
+  FIP:= TIPInfo.Create;
+  //FIP.LoadIP(ARequestInfo.RemoteIP);
+
+  Q:= NewQuery;
+  try
+    Q.SQL.Text:= 'select * from IPInfo where IP = :ip';
+    Q.Parameters.ParamValues['ip']:= ARequestInfo.RemoteIP;
+    Q.Open;
+    try
+      if Q.IsEmpty then begin
+        //Record does not exist, save to DB
+        try
+          FIP.LoadIP(ARequestInfo.RemoteIP);
+          Q.Append;
+          try
+            Q['Timestamp']:= Now;
+            Q['IP']:= FIP.IP;
+            case FIP.IPVersion of
+              ipv4: Q['IPVer']:= 4;
+              ipv6: Q['IPVer']:= 6;
+            end;
+            Q['Hostname']:= FIP.Hostname;
+            Q['City']:= FIP.City;
+            Q['Region']:= FIP.Region;
+            Q['Country']:= FIP.Country;
+            Q['Postal']:= FIP.Postal;
+            Q['Isp']:= FIP.Isp;
+            Q['Longitude']:= FIP.Longitude;
+            Q['Latitude']:= FIP.Latitude;
+          finally
+            Q.Post;
+          end;
+        except
+          on E: Exception do begin
+
+          end;
+        end;
+      end else begin
+        //Record already exists, load from DB
+        FIP.SetAll(
+          Q.FieldByName('IP').AsString,
+          TIPVersion.ipv4,
+          Q.FieldByName('Hostname').AsString,
+          Q.FieldByName('City').AsString,
+          Q.FieldByName('Region').AsString,
+          Q.FieldByName('Country').AsString,
+          Q.FieldByName('Postal').AsString,
+          Q.FieldByName('Isp').AsString,
+          Q.FieldByName('Longitude').AsFloat,
+          Q.FieldByName('Latitude').AsFloat
+          );
+      end;
+    finally
+      Q.Close;
+    end;
+  finally
+    FreeAndNil(Q);
+  end;
+
+end;
+
 procedure TWeatherContext.HandleGet(
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 var
@@ -451,125 +539,134 @@ var
   Q: TADOQuery;
   X: Integer;
 begin
-  ARequestInfo.Params.Delimiter:= '&';
-  Log('GET '+ARequestInfo.RemoteIP+' - '+ARequestInfo.URI+'?'+ARequestInfo.Params.DelimitedText);
-
-  //Read Params
-  FLocType:= ARequestInfo.Params.Values['l'];
-  FLoc1:= ARequestInfo.Params.Values['l1'];
-  FLoc2:= ARequestInfo.Params.Values['l2'];
-  FUnits:= ARequestInfo.Params.Values['u'];
-  FDet:= ARequestInfo.Params.Values['d'];
-
-  //Read Requested Document(s)
-  FDoc.Clear;
-  D:= ARequestInfo.Document;
-  Delete(D, 1, 1);
-  D:= D + '/';
-  while Length(D) > 0 do begin
-    P:= Pos('/', D);
-    T:= Copy(D, 1, P-1);
-    Delete(D, 1, P);
-    FDoc.Append(T);
-  end;
-
-  AResponseInfo.CustomHeaders.Values['Access-Control-Allow-Origin']:= '*';
-
-  FServices.Clear;
-
-  //Parse service list
-  FWeather.Services.LoadServices(ExtractFilePath(ParamStr(0)));
-  D:= ARequestInfo.Params.Values['s']+',';
-  Q:= NewQuery;
   try
+
+    LookupIP(ARequestInfo, AResponseInfo);
+
+    ARequestInfo.Params.Delimiter:= '&';
+    Log('GET '+ARequestInfo.RemoteIP+' - '+ARequestInfo.URI+'?'+ARequestInfo.Params.DelimitedText);
+
+    //Read Params
+    FLocType:= ARequestInfo.Params.Values['l'];
+    FLoc1:= ARequestInfo.Params.Values['l1'];
+    FLoc2:= ARequestInfo.Params.Values['l2'];
+    FUnits:= ARequestInfo.Params.Values['u'];
+    FDet:= ARequestInfo.Params.Values['d'];
+
+    //Read Requested Document(s)
+    FDoc.Clear;
+    D:= ARequestInfo.Document;
+    Delete(D, 1, 1);
+    D:= D + '/';
     while Length(D) > 0 do begin
-      P:= Pos(',', D);
+      P:= Pos('/', D);
       T:= Copy(D, 1, P-1);
       Delete(D, 1, P);
-      for X := 0 to FWeather.Services.Count-1 do begin
-        if SameText(FWeather.Services[X].Info.Name, T) then begin
-          //Q.Parameters.Clear;
-          Q.SQL.Text:= 'select * from ServiceKeys where UserID = :u '+
-            'and ServiceID = (select ID from Services where Name = :s)';
-          Q.Parameters.ParamValues['u']:= FUserID;
-          Q.Parameters.ParamValues['s']:= T;
-          Q.Open;
-          try
-            FWeather.Services[X].Key:= Q.FieldByName('ApiKey').AsString;
-            FWeather.Services[X].Units:= StrToUnits(FUnits);
-
-            //These 3 lines were missing...
-            FWeather.Services[X].LocationType:= StrToLocationType(FLocType);
-            FWeather.Services[X].LocationDetail1:= FLoc1;
-            FWeather.Services[X].LocationDetail2:= FLoc2;
-
-            //But these 3 lines should have worked...
-            FWeather.LocationType:= StrToLocationType(FLocType);
-            FWeather.LocationDetail1:= FLoc1;
-            FWeather.LocationDetail2:= FLoc2;
-
-            FServices.Add(FWeather.Services[X]);
-          finally
-            Q.Close;
-          end;
-          Break;
-        end;
-      end;
+      FDoc.Append(T);
     end;
-  finally
-    FreeAndNil(Q);
-  end;
 
+    AResponseInfo.CustomHeaders.Values['Access-Control-Allow-Origin']:= '*';
 
-  Q:= NewQuery;
-  try
-    if FDoc.Count > 0 then begin
+    FServices.Clear;
 
-      if SameText(FDoc[0], 'services') then begin
-        HandleServiceList(ARequestInfo, AResponseInfo);
-      end else
-      if Sametext(FDoc[0], 'support') then begin
-        HandleServiceSupport(ARequestInfo, AResponseInfo);
-      end else
-      if SameText(FDoc[0], 'logo') then begin
-        HandleServiceLogo(ARequestInfo, AResponseInfo);
-      end else begin
-        FKey:= FDoc[0];
-        if FDoc.Count > 1 then begin
-          Q.SQL.Text:= 'select K.*, U.Username from ApiKeys K join Users U on U.ID = K.UserID'+
-            ' where K.ApiKey = :key and K.Status = 1';
-          Q.Parameters.ParamValues['key']:= FKey;
-          Q.Open;
-          try
-            if not Q.IsEmpty then begin
-              FUserID:= Q.FieldByName('UserID').AsInteger;
-              FUserName:= Q.FieldByName('Username').AsString;
-              FKeyID:= Q.FieldByName('ID').AsInteger;
+    //Parse service list
+    FWeather.Services.LoadServices(ExtractFilePath(ParamStr(0)));
+    D:= ARequestInfo.Params.Values['s']+',';
+    Q:= NewQuery;
+    try
+      while Length(D) > 0 do begin
+        P:= Pos(',', D);
+        T:= Copy(D, 1, P-1);
+        Delete(D, 1, P);
+        for X := 0 to FWeather.Services.Count-1 do begin
+          if SameText(FWeather.Services[X].Info.Name, T) then begin
+            //Q.Parameters.Clear;
+            Q.SQL.Text:= 'select * from ServiceKeys where UserID = :u '+
+              'and ServiceID = (select ID from Services where Name = :s)';
+            Q.Parameters.ParamValues['u']:= FUserID;
+            Q.Parameters.ParamValues['s']:= T;
+            Q.Open;
+            try
+              FWeather.Services[X].Key:= Q.FieldByName('ApiKey').AsString;
+              FWeather.Services[X].Units:= StrToUnits(FUnits);
 
+              //These 3 lines were missing...
+              FWeather.Services[X].LocationType:= StrToLocationType(FLocType);
+              FWeather.Services[X].LocationDetail1:= FLoc1;
+              FWeather.Services[X].LocationDetail2:= FLoc2;
 
-              //Actual handling of JSON requests which require key
-              HandleRequest(ARequestInfo, AResponseInfo);
+              //But these 3 lines should have worked...
+              FWeather.LocationType:= StrToLocationType(FLocType);
+              FWeather.LocationDetail1:= FLoc1;
+              FWeather.LocationDetail2:= FLoc2;
 
-            end else begin
-              HandleInvalidKey(ARequestInfo, AResponseInfo);
+              FServices.Add(FWeather.Services[X]);
+            finally
+              Q.Close;
             end;
-          finally
-            Q.Close;
+            Break;
           end;
-        end else begin
-          HandleNoRequest(ARequestInfo, AResponseInfo);
         end;
       end;
-
-    end else begin
-      HandleNoKey(ARequestInfo, AResponseInfo);
+    finally
+      FreeAndNil(Q);
     end;
-  finally
-    FreeAndNil(Q);
+
+
+    Q:= NewQuery;
+    try
+      if FDoc.Count > 0 then begin
+
+        if SameText(FDoc[0], 'services') then begin
+          HandleServiceList(ARequestInfo, AResponseInfo);
+        end else
+        if Sametext(FDoc[0], 'support') then begin
+          HandleServiceSupport(ARequestInfo, AResponseInfo);
+        end else
+        if SameText(FDoc[0], 'logo') then begin
+          HandleServiceLogo(ARequestInfo, AResponseInfo);
+        end else begin
+          FKey:= FDoc[0];
+          if FDoc.Count > 1 then begin
+            Q.SQL.Text:= 'select K.*, U.Username from ApiKeys K join Users U on U.ID = K.UserID'+
+              ' where K.ApiKey = :key and K.Status = 1';
+            Q.Parameters.ParamValues['key']:= FKey;
+            Q.Open;
+            try
+              if not Q.IsEmpty then begin
+                FUserID:= Q.FieldByName('UserID').AsInteger;
+                FUserName:= Q.FieldByName('Username').AsString;
+                FKeyID:= Q.FieldByName('ID').AsInteger;
+
+
+                //Actual handling of JSON requests which require key
+                HandleRequest(ARequestInfo, AResponseInfo);
+
+              end else begin
+                HandleInvalidKey(ARequestInfo, AResponseInfo);
+              end;
+            finally
+              Q.Close;
+            end;
+          end else begin
+            HandleNoRequest(ARequestInfo, AResponseInfo);
+          end;
+        end;
+
+      end else begin
+        HandleNoKey(ARequestInfo, AResponseInfo);
+      end;
+    finally
+      FreeAndNil(Q);
+    end;
+
+    SaveReq(ARequestInfo, AResponseInfo);
+
+  except
+    on E: Exception do begin
+      HandleException(ARequestInfo, AResponseInfo, E);
+    end;
   end;
-
-  SaveReq(ARequestInfo, AResponseInfo);
-
 end;
 
 function TWeatherContext.GetSupport(const S: IWeatherService): ISuperObject;
@@ -766,6 +863,11 @@ begin
         O2.S['url_legal']:= S.Info.URLs.LegalURL;
         O2.S['url_power']:= S.Info.URLs.PowerURL;
         O2.S['url_usage']:= S.Info.URLs.UsageURL;
+        O2.D['min_price']:= S.Info.MinPrice;
+        O2.D['max_price']:= S.Info.MaxPrice;
+        O2.B['has_trial']:= S.Info.HasTrial;
+        O2.B['has_paid']:= S.Info.HasPaid;
+        O2.B['is_unlimited']:= S.Info.IsUnlimited;
         if ARequestInfo.Params.Values['support'] = '1' then begin
           O2.O['support']:= GetSupport(S);
         end;
@@ -774,7 +876,7 @@ begin
       end;
     end;
   finally
-    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentText:= O.AsJSon(True, False);
     AResponseInfo.ContentType:= 'text/json';
   end;
 end;
@@ -878,7 +980,8 @@ begin
       wpPropsMin: ;
       wpPropsMax: ;
     }
-    Result.S['timestamp']:= FormatDateTime('mm-dd-yyyy hh:nn AMPM', C.DateTime);
+    Result.O['timestamp']:= DateTimeJson(Now); // C.DateTime);
+    //Result.S['timestamp']:= FormatDateTime('mm-dd-yyyy hh:nn AMPM', C.DateTime);
     Result.S['caption']:= C.Caption;
     Result.S['description']:= C.Description;
     Result.S['details']:= C.Details;
@@ -928,6 +1031,17 @@ begin
   end else begin
     Result.S['error']:= 'Conditions object was not assigned!';
   end;
+
+end;
+
+function TWeatherContext.GetLocation: ISuperObject;
+begin
+  Result:= Self.FIP.AsJson;
+  //TODO: THIS IS NOT PERMAMENT!!!
+  //This is only temporary just so something is there. Otherwise, this
+  //is only valid for when Auto IP is used to identify a location.
+  //Otherwise, this shall return information about the location which is
+  //actually being used to fetch weather data.
 
 end;
 
@@ -990,6 +1104,21 @@ begin
   O:= SO;
   try
     O.O['conditions']:= GetConditions;
+  finally
+    AResponseInfo.ContentText:= O.AsJSon(True);
+    AResponseInfo.ContentType:= 'text/json';
+  end;
+end;
+
+procedure TWeatherContext.HandleException(ARequestInfo: TIdHTTPRequestInfo;
+  AResponseInfo: TIdHTTPResponseInfo; const AException: Exception);
+var
+  O: ISuperObject;
+begin
+  O:= SO;
+  try
+    O.S['error']:= 'EXCEPTION: '+AException.Message;
+    O.S['class']:= AException.ClassName;
   finally
     AResponseInfo.ContentText:= O.AsJSon(True);
     AResponseInfo.ContentType:= 'text/json';

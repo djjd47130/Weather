@@ -64,6 +64,8 @@ type
     procedure lstURLsClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Refresh1Click(Sender: TObject);
+    procedure estData1Click(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
   private
     FCreateLib: TCreateJDWeather;
     FLib: HMODULE;
@@ -82,6 +84,8 @@ var
 implementation
 
 {$R *.dfm}
+
+uses uWebApiTest;
 
 { TfrmMain }
 
@@ -110,10 +114,6 @@ begin
   lstSupportedForecastDailyProps.Align:= alClient;
   lstSupportedMaps.Align:= alClient;
   lstSupportedUnits.Align:= alClient;
-
-  Show;
-  BringToFront;
-  Application.ProcessMessages;
 
   //Load weather library
   FLib:= LoadLibrary('JDWeather.dll');
@@ -156,6 +156,7 @@ begin
     I:= lstServices.Items.Add;
     I.Caption:= S.Info.Caption;
     I.Data:= Pointer(S);
+    I.SubItems.Add(S.Info.Author);
   end;
 end;
 
@@ -497,6 +498,16 @@ begin
   finally
     Screen.Cursor:= crDefault;
   end;
+end;
+
+procedure TfrmMain.estData1Click(Sender: TObject);
+begin
+  frmWebTest.ShowModal;
+end;
+
+procedure TfrmMain.Exit1Click(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TfrmMain.lstServicesSelectItem(Sender: TObject; Item: TListItem;

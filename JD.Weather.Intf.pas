@@ -17,6 +17,9 @@ uses
   JD.Weather.SuperObject;
 
 const
+  JD_WEATHER_LIB = 'JDWeather.dll';
+
+const
   clOrange = $00003AB3;
   clLightOrange = $002F73FF;
   clIceBlue = $00FFFFD2;
@@ -126,6 +129,32 @@ type
     class operator Implicit(const Value: Double): TTemperature;
   end;
 
+  TSpeed = record
+    Value: Double;
+    function GetAsMph: Double;
+    function GetAsKph: Double;
+    function GetAsStr: String;
+    function GetAsMhpStr: String;
+    function GetAsKphStr: String;
+    procedure SetAsMph(const Value: Double);
+    procedure SetAsKph(const Value: Double);
+    property AsMph: Double read GetAsMph write SetAsMph;
+    property AsKph: Double read GetAsKph write SetAsKph;
+    class operator Implicit(const Value: TSpeed): Double;
+    class operator Implicit(const Value: Double): TSpeed;
+  end;
+
+  TDirection = record
+    Value: Double; //Percentage
+    function AsDegree: Double;
+    function AsString: String;
+  end;
+
+  TWind = record
+    Speed: TSpeed;
+    Direction: TDirection;
+  end;
+
   TWeatherCode = record
   public
     DayNight: TDayNight;
@@ -192,6 +221,9 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure SetAll(const AIP: WideString; AIPVersion: TIPVersion;
+      const AHostname, ACity, ARegion, ACountry, APostal, AIsp: WideString;
+      const ALongitude, ALatitude: Double);
   public
     function GetIP: WideString;
     function GetIPVersion: TIPVersion;
@@ -550,17 +582,29 @@ type
   IWeatherServiceInfo = interface
     function GetCaption: WideString;
     function GetName: WideString;
+    function GetAuthor: WideString;
     function GetUID: WideString;
     function GetURLs: IWeatherURLs;
     function GetSupport: IWeatherSupport;
+    function GetMinPrice: Double;
+    function GetMaxPrice: Double;
+    function GetHasTrial: Bool;
+    function GetHasPaid: Bool;
+    function GetIsUnlimited: Bool;
 
     function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
 
     property Caption: WideString read GetCaption;
     property Name: WideString read GetName;
+    property Author: WideString read GetAuthor;
     property UID: WideString read GetUID;
     property Support: IWeatherSupport read GetSupport;
     property URLs: IWeatherURLs read GetURLs;
+    property MinPrice: Double read GetMinPrice;
+    property MaxPrice: Double read GetMaxPrice;
+    property HasTrial: Bool read GetHasTrial;
+    property HasPaid: Bool read GetHasPaid;
+    property IsUnlimited: bool read GetIsUnlimited;
   end;
 
   IWeatherService = interface
@@ -1141,43 +1185,115 @@ type
 
 
 
-
-function ResourceExists(const Name, ResType: String): Boolean;
-
 {$IFDEF USE_VCL}
 function TempColor(const Temp: Single): TColor;
 {$ENDIF}
 
-///<summary>
-///  Converts a degree angle to a cardinal direction string
-///</summary>
+function TempJson(const Temp: TTemperature): ISuperObject;
+
+function DateTimeJson(const DT: TDateTime;
+  const IncludeEpoch: Boolean = True; const IncludeReadable: Boolean = True;
+  const IncludeParsable: Boolean = True; const IncludeDouble: Boolean = True;
+  const IncludeDetail: Boolean = True;
+  const DateOnly: Boolean = False; const TimeOnly: Boolean = False): ISuperObject;
 function DegreeToDir(const D: Single): String;
 
-///<summary>
-///  Converts an epoch integer to local TDateTime
-///</summary>
+function TzSpecificLocalTimeToSystemTime(
+  lpTimeZoneInformation: PTimeZoneInformation;
+  var lpLocalTime, lpUniversalTime: TSystemTime): BOOL; stdcall;
+function SystemTimeToTzSpecificLocalTime(
+  lpTimeZoneInformation: PTimeZoneInformation;
+  var lpUniversalTime,lpLocalTime: TSystemTime): BOOL; stdcall;
+
+function ResourceExists(const Name, ResType: String): Boolean;
 function EpochLocal(const Value: Integer): TDateTime; overload;
-
-///<summary>
-///  Converts an epoch string to local TDateTime
-///</summary>
 function EpochLocal(const Value: String): TDateTime; overload;
-
 function LocalDateTimeFromUTCDateTime(const UTCDateTime: TDateTime): TDateTime;
 
 function WeatherUnitsToStr(const Value: TWeatherUnits): String;
 function WeatherMapFormatToStr(const Value: TWeatherMapFormat): String;
 function WeatherMapTypeToStr(const Value: TWeatherMapType): String;
-//function WeatherForecastPropToStr(const Value: TWeatherForecastProp): String;
 function WeatherForecastTypeToStr(const Value: TWeatherForecastType): String;
 function WeatherPropToStr(const Value: TWeatherPropType): String;
 function WeatherAlertPropToStr(const Value: TWeatherAlertProp): String;
 function WeatherAlertTypeToStr(const Value: TWeatherAlertType): String;
-//function WeatherConditionPropToStr(const Value: TWeatherConditionsProp): String;
 function WeatherInfoTypeToStr(const Value: TWeatherInfoType): String;
 function WeatherLocationTypeToStr(const Value: TWeatherLocationType): String;
 
 implementation
+
+function DateTimeJson(const DT: TDateTime;
+  const IncludeEpoch: Boolean = True; const IncludeReadable: Boolean = True;
+  const IncludeParsable: Boolean = True; const IncludeDouble: Boolean = True;
+  const IncludeDetail: Boolean = True;
+  const DateOnly: Boolean = False; const TimeOnly: Boolean = False): ISuperObject;
+var
+  V: TDateTime;
+  M, D, Y, H, N, S, Z: Word;
+  procedure DoDateDetail;
+  begin
+    Result.I['year']:= Y;
+    Result.I['month']:= M;
+    Result.I['day']:= D;
+  end;
+  procedure DoTimeDetail;
+  begin
+    Result.I['hour']:= H;
+    Result.I['minute']:= N;
+    Result.I['second']:= S;
+    Result.I['millisecond']:= Z;
+  end;
+begin
+  Result:= SO;
+  if DateOnly then begin
+    V:= DateUtils.DateOf(DT);
+  end else
+  if TimeOnly then begin
+    V:= DateUtils.TimeOf(DT);
+  end else begin
+    V:= DT;
+  end;
+  if IncludeParsable then
+    Result.S['string']:= FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', V);
+  if IncludeDouble then
+    Result.D['double']:= V;
+  if IncludeReadable then begin
+    if DateOnly then begin
+      Result.S['readable']:= FormatDateTime('dddd mmmm dd', V);
+    end else
+    if TimeOnly then begin
+      Result.S['readable']:= FormatDateTime('h:nn AM/PM', V);
+    end else begin
+      Result.S['readable']:= FormatDateTime('dddd mmmm dd h:nn AM/PM', V);
+    end;
+  end;
+  if IncludeEpoch then begin
+    Result.I['epoch']:= DateTimeToUnix(V, True);
+  end;
+  if IncludeDetail then begin
+    DateUtils.DecodeDateTime(V, Y, M, D, H, N, S, Z);
+    if DateOnly then begin
+      DoDateDetail;
+    end else
+    if TimeOnly then begin
+      DoTimeDetail;
+    end else begin
+      DoDateDetail;
+      DoTimeDetail;
+    end;
+  end;
+end;
+
+function TempJson(const Temp: TTemperature): ISuperObject;
+begin
+  Result.D['farenheit']:= Temp.AsFarenheit;
+  Result.D['celcius']:= Temp.AsCelsius;
+end;
+
+function SpeedJson(const Mph: Double): ISuperObject;
+begin
+
+end;
 
 function ResourceExists(const Name, ResType: String): Boolean;
 begin
@@ -1443,6 +1559,31 @@ begin
   end;
 end;
 
+function TzSpecificLocalTimeToSystemTime; external kernel32 name 'TzSpecificLocalTimeToSystemTime';
+function SystemTimeToTzSpecificLocalTime; external kernel32 name 'SystemTimeToTzSpecificLocalTime';
+
+function DateTime2UnivDateTime(D: TDateTime): TDateTime;
+var
+  TZI: TTimeZoneInformation;
+  LocalTime, UniversalTime: TSystemTime;
+begin
+  GetTimeZoneInformation(tzi);
+  DateTimeToSystemTime(d, LocalTime);
+  TzSpecificLocalTimeToSystemTime(@tzi, LocalTime, UniversalTime);
+  Result:= SystemTimeToDateTime(UniversalTime);
+end;
+
+function UnivDateTime2LocalDateTime(D: TDateTime): TDateTime;
+var
+ TZI:TTimeZoneInformation;
+ LocalTime, UniversalTime:TSystemTime;
+begin
+  GetTimeZoneInformation(tzi);
+  DateTimeToSystemTime(d,UniversalTime);
+  SystemTimeToTzSpecificLocalTime(@tzi,UniversalTime,LocalTime);
+  Result := SystemTimeToDateTime(LocalTime);
+end;
+
 { TWeatherCode }
 
 class operator TWeatherCode.Implicit(const Value: TWeatherCode): String;
@@ -1635,6 +1776,67 @@ end;
 class operator TTemperature.Implicit(const Value: Double): TTemperature;
 begin
   Result.Value:= Value;
+end;
+
+{ TSpeed }
+
+function TSpeed.GetAsKph: Double;
+begin
+  Result:= Value;
+end;
+
+function TSpeed.GetAsMph: Double;
+begin
+  //TODO: Convert KPH to MPH
+  Result:= Value / 1.6093440006146922;
+end;
+
+function TSpeed.GetAsKphStr: String;
+begin
+  Result:= FormatFloat('0.0 Kph', GetAsKph);
+end;
+
+function TSpeed.GetAsMhpStr: String;
+begin
+  Result:= FormatFloat('0.0 Mph', GetAsMph);
+end;
+
+function TSpeed.GetAsStr: String;
+begin
+  Result:= FormatFloat('0.0', Value);
+end;
+
+procedure TSpeed.SetAsKph(const Value: Double);
+begin
+  Self.Value:= Value;
+end;
+
+procedure TSpeed.SetAsMph(const Value: Double);
+begin
+  //TODO: Convert MPH to KPH
+  Self.Value:= Value * 1.6093440006146922;
+end;
+
+class operator TSpeed.Implicit(const Value: Double): TSpeed;
+begin
+  Result.Value:= Value;
+end;
+
+class operator TSpeed.Implicit(const Value: TSpeed): Double;
+begin
+  Result:= Value.Value;
+end;
+
+{ TDirection }
+
+function TDirection.AsDegree: Double;
+begin
+  Result:= Value;
+end;
+
+function TDirection.AsString: String;
+begin
+  //TODO: Case statement which returns cardinal direction short string
 end;
 
 { TWeatherGraphic }
@@ -2100,7 +2302,7 @@ end;
 
 constructor TWeatherMultiInfo.Create;
 begin
-  TObjectList<String>.Create(True);
+
 end;
 
 destructor TWeatherMultiInfo.Destroy;
@@ -2846,6 +3048,22 @@ begin
   finally
     FreeAndNil(W);
   end;
+end;
+
+procedure TIPInfo.SetAll(const AIP: WideString; AIPVersion: TIPVersion;
+  const AHostname, ACity, ARegion, ACountry, APostal, AIsp: WideString;
+  const ALongitude, ALatitude: Double);
+begin
+  FIP:= AIP;
+  FIPVersion:= AIPVersion;
+  FHostname:= AHostname;
+  FCity:= ACity;
+  FRegion:= ARegion;
+  FCountry:= ACountry;
+  FPostal:= APostal;
+  FIsp:= AIsp;
+  FLongitude:= ALongitude;
+  FLatitude:= ALatitude;
 end;
 
 function TIPInfo.AsJson: ISuperObject;

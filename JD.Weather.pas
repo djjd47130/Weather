@@ -1,8 +1,13 @@
 unit JD.Weather;
 
 (*
-  JD Weather Component
-  Encapsulates entire JD weather system in a single component
+  JD Weather Component - TJDWeather
+  - Encapsulates entire JD weather system in a single component
+  - Interacts directly with the JD Weather REST API
+  - Multi-threaded to fetch weather data in the background
+    - TJDWeatherThread - auto-created within TJDWeather
+
+
 
 *)
 
@@ -11,7 +16,9 @@ interface
 uses
   Winapi.Windows,
   System.Classes, System.SysUtils,
-  JD.Weather.Intf;
+  System.SyncObjs,
+  JD.Weather.Intf,
+  JD.Weather.SuperObject;
 
 type
   TJDWeatherInfoSettings = class;
@@ -19,6 +26,7 @@ type
   TJDWeather = class;
   TJDWeatherThread = class;
 
+  TJsonEvent = procedure(Sender: TObject; AObj: ISuperObject) of object;
 
   TJDWeatherInfoSettings = class(TPersistent)
   private
@@ -41,6 +49,7 @@ type
   TJDWeatherInfoSettingsGroup = class(TPersistent)
   private
     FOwner: TJDWeather;
+    FCombined: TJDWeatherInfoSettings;
     FConditions: TJDWeatherInfoSettings;
     FAlerts: TJDWeatherInfoSettings;
     FForecastSummary: TJDWeatherInfoSettings;
@@ -53,6 +62,7 @@ type
     FHistory: TJDWeatherInfoSettings;
     FPlanner: TJDWeatherInfoSettings;
     FStation: TJDWeatherInfoSettings;
+    procedure SetCombined(const Value: TJDWeatherInfoSettings);
     procedure SetAlerts(const Value: TJDWeatherInfoSettings);
     procedure SetAlmanac(const Value: TJDWeatherInfoSettings);
     procedure SetAstronomy(const Value: TJDWeatherInfoSettings);
@@ -69,6 +79,7 @@ type
     constructor Create(AOwner: TJDWeather);
     destructor Destroy; override;
   published
+    property Combined: TJDWeatherInfoSettings read FCombined write SetCombined;
     property Conditions: TJDWeatherInfoSettings read FConditions write SetConditions;
     property Alerts: TJDWeatherInfoSettings read FAlerts write SetAlerts;
     property ForecastSummary: TJDWeatherInfoSettings read FForecastSummary write SetForecastSummary;
@@ -85,31 +96,30 @@ type
 
   TJDWeather = class(TComponent)
   private
-    FLib: HMODULE;
-    FCreateLib: TCreateJDWeather;
-    FWeather: IJDWeather;
-    FService: IWeatherService;
-    FWantedMaps: TWeatherMapTypes;
-    //FThread: TJDWeatherThread;
+    FThread: TJDWeatherThread;
     FOnConditions: TWeatherConditionsEvent;
     FOnMaps: TWeatherMapEvent;
     FOnAlerts: TWeatherAlertEvent;
     FOnForecastDaily: TWeatherForecastEvent;
     FOnForecastHourly: TWeatherForecastEvent;
     FOnForecastSummary: TWeatherForecastEvent;
-    FWantedInfo: TWeatherInfoTypes;
-    FWantedForecasts: TWeatherForecastTypes;
-    procedure SetWantedMaps(const Value: TWeatherMapTypes);
+    function GetWantedInfo: TWeatherInfoTypes;
+    function GetWantedMaps: TWeatherMapTypes;
     procedure SetWantedInfo(const Value: TWeatherInfoTypes);
-    procedure SetWantedForecasts(const Value: TWeatherForecastTypes);
+    procedure SetWantedMaps(const Value: TWeatherMapTypes);
+    procedure ThreadOnAlerts(Sender: TObject; AObj: ISuperObject);
+    procedure ThreadOnConditions(Sender: TObject; AObj: ISuperObject);
+    procedure ThreadOnForecastDaily(Sender: TObject; AObj: ISuperObject);
+    procedure ThreadOnForecastHourly(Sender: TObject; AObj: ISuperObject);
+    procedure ThreadOnForecastSummary(Sender: TObject; AObj: ISuperObject);
+    procedure ThreadOnMaps(Sender: TObject; const Image: IWeatherMaps);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function Active: Boolean;
   published
-    property WantedInfo: TWeatherInfoTypes read FWantedInfo write SetWantedInfo;
-    property WantedForecasts: TWeatherForecastTypes read FWantedForecasts write SetWantedForecasts;
-    property WantedMaps: TWeatherMapTypes read FWantedMaps write SetWantedMaps;
+    property WantedInfo: TWeatherInfoTypes read GetWantedInfo write SetWantedInfo;
+    property WantedMaps: TWeatherMapTypes read GetWantedMaps write SetWantedMaps;
 
     property OnConditions: TWeatherConditionsEvent read FOnConditions write FOnConditions;
     property OnAlerts: TWeatherAlertEvent read FOnAlerts write FOnAlerts;
@@ -117,16 +127,89 @@ type
     property OnForecastHourly: TWeatherForecastEvent read FOnForecastHourly write FOnForecastHourly;
     property OnForecastDaily: TWeatherForecastEvent read FOnForecastDaily write FOnForecastDaily;
     property OnMaps: TWeatherMapEvent read FOnMaps write FOnMaps;
+    {
+    property OnAlmanac: TWeatherAlmanacEvent read FOnAlmanac write FOnAlmanac;
+    property OnAstronomy: TWeatherAstronomyEvent read FOnAstronomy write FOnAstronomy;
+    property OnHurricane: TWeatherHurricaneEvent read FOnHurricane write FOnHurricane;
+    property OnHistory: TWeatherHistoryEvent read FOnHistory write FOnHistory;
+    property OnPlanner: TWeatherPlannerEvent read FOnPlanner write FOnPlanner;
+    property OnStation: TWeatherStationEvent read FOnStation write FOnStation;
+    property OnLocation: TWeatherLocationEvent read FOnLocation write FOnLocation;
+    property OnGeoLookup: TWeatherGeoLookupEvent read FOnGeoLookup write FOnGeoLookup;
+    property OnTide: TWeatherTideEvent read FOnTide write FOnTide;
+    property OnRawTide: TWeatherRawTideEvent read FOnRawTide write FOnRawTide;
+    property OnWebcams: TWeatherWebcamsEvent read FOnWebcams write FOnWebcams;
+    }
   end;
 
   TJDWeatherThread = class(TThread)
   private
     FOwner: TJDWeather;
+    FSettings: TJDWeatherInfoSettingsGroup;
+    FSettingsLock: TCriticalSection;
+    FLib: HMODULE;
+    FCreateLib: TCreateJDWeather;
+    FWeather: IJDWeather;
+    FService: IWeatherService;
+    FWantedInfo: TWeatherInfoTypes;
+    FWantedMaps: TWeatherMapTypes;
+
+    FOnConditions: TJsonEvent;
+    FOnMaps: TJsonEvent;
+    FOnAlerts: TJsonEvent;
+    FOnForecastDaily: TJsonEvent;
+    FOnForecastHourly: TJsonEvent;
+    FOnForecastSummary: TJsonEvent;
+
+    FResponse: ISuperObject;
+    FOnAstronomy: TJsonEvent;
+    FOnTide: TJsonEvent;
+    FOnWebcams: TJsonEvent;
+    FOnLocation: TJsonEvent;
+    FOnGeoLookup: TJsonEvent;
+    FOnStation: TJsonEvent;
+    FOnHistory: TJsonEvent;
+    FOnHurricane: TJsonEvent;
+    FOnPlanner: TJsonEvent;
+    FOnAlmanac: TJsonEvent;
+    FOnRawTide: TJsonEvent;
+
+    procedure SetWantedMaps(const Value: TWeatherMapTypes);
+    procedure SetWantedInfo(const Value: TWeatherInfoTypes);
+    procedure Init;
+    procedure Uninit;
+    function Active: Boolean;
+    procedure Process;
   protected
     procedure Execute; override;
   public
     constructor Create(AOwner: TJDWeather); reintroduce;
     destructor Destroy; override;
+    procedure LoadFromCache;
+    procedure SaveToCache;
+    function LockSettings: TJDWeatherInfoSettingsGroup;
+    procedure UnlockSettings;
+  public
+    property WantedInfo: TWeatherInfoTypes read FWantedInfo write SetWantedInfo;
+    property WantedMaps: TWeatherMapTypes read FWantedMaps write SetWantedMaps;
+
+    property OnConditions: TJsonEvent read FOnConditions write FOnConditions;
+    property OnAlerts: TJsonEvent read FOnAlerts write FOnAlerts;
+    property OnForecastSummary: TJsonEvent read FOnForecastSummary write FOnForecastSummary;
+    property OnForecastHourly: TJsonEvent read FOnForecastHourly write FOnForecastHourly;
+    property OnForecastDaily: TJsonEvent read FOnForecastDaily write FOnForecastDaily;
+    //property OnMaps: TJsonEvent read FOnMaps write FOnMaps;
+    property OnAlmanac: TJsonEvent read FOnAlmanac write FOnAlmanac;
+    property OnAstronomy: TJsonEvent read FOnAstronomy write FOnAstronomy;
+    property OnHurricane: TJsonEvent read FOnHurricane write FOnHurricane;
+    property OnHistory: TJsonEvent read FOnHistory write FOnHistory;
+    property OnPlanner: TJsonEvent read FOnPlanner write FOnPlanner;
+    property OnStation: TJsonEvent read FOnStation write FOnStation;
+    property OnLocation: TJsonEvent read FOnLocation write FOnLocation;
+    property OnGeoLookup: TJsonEvent read FOnGeoLookup write FOnGeoLookup;
+    property OnTide: TJsonEvent read FOnTide write FOnTide;
+    property OnRawTide: TJsonEvent read FOnRawTide write FOnRawTide;
+    property OnWebcams: TJsonEvent read FOnWebcams write FOnWebcams;
   end;
 
 implementation
@@ -136,7 +219,9 @@ implementation
 constructor TJDWeatherInfoSettings.Create(AOwner: TJDWeatherInfoSettingsGroup);
 begin
   FOwner:= AOwner;
-  Frequency:= 300; //5 Minutes
+  Self.FFrequency:= 300; //5 Minutes
+  Self.FEnabled:= False;
+  Self.FCached:= True;
 end;
 
 destructor TJDWeatherInfoSettings.Destroy;
@@ -165,6 +250,7 @@ end;
 constructor TJDWeatherInfoSettingsGroup.Create(AOwner: TJDWeather);
 begin
   FOwner:= AOwner;
+  FCombined:= TJDWeatherInfoSettings.Create(Self);
   FConditions:= TJDWeatherInfoSettings.Create(Self);
   FAlerts:= TJDWeatherInfoSettings.Create(Self);
   FForecastSummary:= TJDWeatherInfoSettings.Create(Self);
@@ -181,18 +267,19 @@ end;
 
 destructor TJDWeatherInfoSettingsGroup.Destroy;
 begin
-  FStation.Free;
-  FPlanner.Free;
-  FHistory.Free;
-  FHurricane.Free;
-  FAstronomy.Free;
-  FAlmanac.Free;
-  FMaps.Free;
-  FForecastDaily.Free;
-  FForecastHourly.Free;
-  FForecastSummary.Free;
-  FAlerts.Free;
-  FConditions.Free;
+  FreeAndNil(FStation);
+  FreeAndNil(FPlanner);
+  FreeAndNil(FHistory);
+  FreeAndNil(FHurricane);
+  FreeAndNil(FAstronomy);
+  FreeAndNil(FAlmanac);
+  FreeAndNil(FMaps);
+  FreeAndNil(FForecastDaily);
+  FreeAndNil(FForecastHourly);
+  FreeAndNil(FForecastSummary);
+  FreeAndNil(FAlerts);
+  FreeAndNil(FConditions);
+  FreeAndNil(FCombined);
   inherited;
 end;
 
@@ -212,6 +299,12 @@ procedure TJDWeatherInfoSettingsGroup.SetAstronomy(
   const Value: TJDWeatherInfoSettings);
 begin
   FAstronomy.Assign(Value);
+end;
+
+procedure TJDWeatherInfoSettingsGroup.SetCombined(
+  const Value: TJDWeatherInfoSettings);
+begin
+  FCombined.Assign(Value);
 end;
 
 procedure TJDWeatherInfoSettingsGroup.SetConditions(
@@ -271,13 +364,111 @@ end;
 { TJDWeather }
 
 constructor TJDWeather.Create(AOwner: TComponent);
+begin
+  inherited;
+  FThread:= TJDWeatherThread.Create(Self);
+  FThread.OnConditions:= ThreadOnConditions;
+  FThread.OnAlerts:= ThreadOnAlerts;
+  FThread.OnForecastSummary:= ThreadOnForecastSummary;
+  FThread.OnForecastHourly:= ThreadOnForecastHourly;
+  FThread.OnForecastDaily:= ThreadOnForecastDaily;
+  //FThread.OnMaps:= ThreadOnMaps;
+  FThread.Start;
+end;
+
+destructor TJDWeather.Destroy;
+begin
+  FThread.Terminate;
+  FThread.WaitFor;
+  FreeAndNil(FThread);
+  inherited;
+end;
+
+procedure TJDWeather.ThreadOnConditions(Sender: TObject; AObj: ISuperObject);
+begin
+
+end;
+
+procedure TJDWeather.ThreadOnAlerts(Sender: TObject; AObj: ISuperObject);
+begin
+
+end;
+
+procedure TJDWeather.ThreadOnForecastSummary(Sender: TObject; AObj: ISuperObject);
+begin
+
+end;
+
+procedure TJDWeather.ThreadOnForecastHourly(Sender: TObject; AObj: ISuperObject);
+begin
+
+end;
+
+procedure TJDWeather.ThreadOnForecastDaily(Sender: TObject; AObj: ISuperObject);
+begin
+
+end;
+
+procedure TJDWeather.ThreadOnMaps(Sender: TObject; const Image: IWeatherMaps);
+begin
+
+end;
+
+function TJDWeather.GetWantedInfo: TWeatherInfoTypes;
+begin
+  Result:= FThread.WantedInfo;
+end;
+
+function TJDWeather.GetWantedMaps: TWeatherMapTypes;
+begin
+  Result:= FThread.WantedMaps;
+end;
+
+procedure TJDWeather.SetWantedInfo(const Value: TWeatherInfoTypes);
+begin
+  FThread.WantedInfo:= Value;
+end;
+
+procedure TJDWeather.SetWantedMaps(const Value: TWeatherMapTypes);
+begin
+  FThread.WantedMaps:= Value;
+end;
+
+function TJDWeather.Active: Boolean;
+begin
+  Result:= FThread.Active;
+end;
+
+{ TJDWeatherThread }
+
+constructor TJDWeatherThread.Create(AOwner: TJDWeather);
+begin
+  inherited Create(True);
+  FOwner:= AOwner;
+  FSettings:= TJDWeatherInfoSettingsGroup.Create(FOwner);
+  FSettingsLock:= TCriticalSection.Create;
+end;
+
+destructor TJDWeatherThread.Destroy;
+begin
+  FSettingsLock.Enter;
+  try
+    //This is just to be sure it can free only after it's unlocked
+  finally
+    FSettingsLock.Leave;
+  end;
+  FreeAndNil(FSettingsLock);
+  FreeAndNil(FSettings);
+  inherited;
+end;
+
+procedure TJDWeatherThread.Init;
 var
   EC: Integer;
 begin
-  inherited;
   FService:= nil;
   try
-    FLib:= LoadLibrary('JDWeather.dll');
+    FLib:= LoadLibrary(JD_WEATHER_LIB);
     if FLib <> 0 then begin
       FCreateLib:= GetProcAddress(FLib, 'CreateJDWeather');
       if Assigned(FCreateLib) then begin
@@ -304,24 +495,60 @@ begin
       raise Exception.Create('Failed to load JDWeather library: '+E.Message);
     end;
   end;
+  if not Assigned(FService) then
+    raise Exception.Create('Unexpected error: FService is not assigned!');
 end;
 
-destructor TJDWeather.Destroy;
+procedure TJDWeatherThread.Uninit;
 begin
   FWeather._Release;
   FWeather:= nil;
-  inherited;
 end;
 
-procedure TJDWeather.SetWantedForecasts(const Value: TWeatherForecastTypes);
+procedure TJDWeatherThread.Process;
+var
+  Url: String;
+  Req: ISuperObject;
 begin
-  FWantedForecasts := Value;
-  if Assigned(FService) then begin
-    //FService.WantedForecasts:= Value; //TODO
+  //TODO: Check if anything needs to be updated
+
+  //TODO: Prepare multi-info object, populate multi-service, multi-info options
+  Req:= SO;
+  Url:= 'http://api.weather.jdsoftwareinc.com:8664/';
+  //Lock config object
+
+  //Read config object, concatenate to Url
+
+
+
+
+
+
+end;
+
+procedure TJDWeatherThread.Execute;
+begin
+  Init;
+  try
+    while not Terminated do begin
+      try
+        try
+          Process;
+        finally
+          Sleep(1000); //1 Second(s)
+        end;
+      except
+        on E: Exception do begin
+          //TODO: Handle exception, log
+        end;
+      end;
+    end;
+  finally
+    Uninit;
   end;
 end;
 
-procedure TJDWeather.SetWantedInfo(const Value: TWeatherInfoTypes);
+procedure TJDWeatherThread.SetWantedInfo(const Value: TWeatherInfoTypes);
 begin
   FWantedInfo := Value;
   if Assigned(FService) then begin
@@ -329,7 +556,7 @@ begin
   end;
 end;
 
-procedure TJDWeather.SetWantedMaps(const Value: TWeatherMapTypes);
+procedure TJDWeatherThread.SetWantedMaps(const Value: TWeatherMapTypes);
 begin
   FWantedMaps:= Value;
   if Assigned(FService) then begin
@@ -337,31 +564,32 @@ begin
   end;
 end;
 
-function TJDWeather.Active: Boolean;
+function TJDWeatherThread.Active: Boolean;
 begin
   Result:= Assigned(FService);
 end;
 
-{ TJDWeatherThread }
-
-constructor TJDWeatherThread.Create(AOwner: TJDWeather);
+function TJDWeatherThread.LockSettings: TJDWeatherInfoSettingsGroup;
 begin
-  inherited Create(True);
-  FOwner:= AOwner;
+  FSettingsLock.Enter;
+  Result:= FSettings;
 end;
 
-destructor TJDWeatherThread.Destroy;
+procedure TJDWeatherThread.UnlockSettings;
 begin
-
-  inherited;
+  FSettingsLock.Leave;
 end;
 
-procedure TJDWeatherThread.Execute;
+procedure TJDWeatherThread.LoadFromCache;
 begin
-  while not Terminated do begin
+  //TODO: Load the most recently cached weather data
 
+end;
 
-  end;
+procedure TJDWeatherThread.SaveToCache;
+begin
+  //TODO: Save current weather data to cache
+
 end;
 
 end.

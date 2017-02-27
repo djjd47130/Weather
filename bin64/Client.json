@@ -1,0 +1,19 @@
+{
+  "api_key": "",
+  "unit_measure": 0,
+  "refresh_rate": 5,
+  "refresh_scale": 1,
+  "last_refresh": "",
+  "location_type": 1,
+  "location_detail_1": "40223",
+  "location_detail_2": ""
+  "services": [
+    "WUnderground",
+    "AccuWeather",
+    "DarkSky",
+    "OnPoint",
+    "Foreca",
+    "NWS",
+    "OpenWeatherMap"
+  ]
+}

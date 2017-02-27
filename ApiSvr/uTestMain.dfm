@@ -64,7 +64,7 @@ object frmApiSvrTest: TfrmApiSvrTest
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0
-    Left = 248
-    Top = 312
+    Left = 392
+    Top = 304
   end
 end

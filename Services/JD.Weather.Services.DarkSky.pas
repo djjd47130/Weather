@@ -3,6 +3,7 @@ unit JD.Weather.Services.DarkSky;
 interface
 
 uses
+  Winapi.Windows,
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
@@ -18,7 +19,14 @@ uses
 const
   SVC_CAPTION = 'DarkSky';
   SVC_NAME = 'DarkSky';
+  SVC_AUTHOR = 'JD Software Inc.';
   SVC_UID = '{C16FD284-7A1B-401F-92D5-28FEA3F83D98}';
+
+  SVC_MIN_PRICE = 0.0;
+  SVC_MAX_PRICE = 0.0;
+  SVC_HAS_TRIAL = False;
+  SVC_HAS_PAID = True;
+  SVC_IS_UNLIMITED = False;
 
   URL_MAIN = 'https://darksky.net';
   URL_API = 'https://darksky.net/dev/docs';
@@ -132,18 +140,28 @@ type
   public
     function GetCaption: WideString;
     function GetName: WideString;
+    function GetAuthor: WideString;
     function GetUID: WideString;
     function GetURLs: IWeatherURLs;
     function GetSupport: IWeatherSupport;
-    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
+    function GetMinPrice: Double;
+    function GetMaxPrice: Double;
+    function GetHasTrial: Bool;
+    function GetHasPaid: Bool;
+    function GetIsUnlimited: Bool;
 
-    property Logos[const LT: TWeatherLogoType]: IWeatherGraphic read GetLogo write SetLogo;
+    function GetLogo(const LT: TWeatherLogoType): IWeatherGraphic;
 
     property Caption: WideString read GetCaption;
     property Name: WideString read GetName;
     property UID: WideString read GetUID;
     property Support: IWeatherSupport read GetSupport;
     property URLs: IWeatherURLs read GetURLs;
+    property MinPrice: Double read GetMinPrice;
+    property MaxPrice: Double read GetMaxPrice;
+    property HasTrial: Bool read GetHasTrial;
+    property HasPaid: Bool read GetHasPaid;
+    property IsUnlimited: bool read GetIsUnlimited;
   end;
 
   TWeatherService = class(TWeatherServiceBase, IWeatherService)
@@ -308,6 +326,11 @@ begin
   inherited;
 end;
 
+function TWeatherServiceInfo.GetAuthor: WideString;
+begin
+  Result:= SVC_AUTHOR;
+end;
+
 function TWeatherServiceInfo.GetCaption: WideString;
 begin
   Result:= SVC_CAPTION;
@@ -321,6 +344,31 @@ end;
 function TWeatherServiceInfo.GetSupport: IWeatherSupport;
 begin
   Result:= FSupport;
+end;
+
+function TWeatherServiceInfo.GetMaxPrice: Double;
+begin
+  Result:= SVC_MAX_PRICE;
+end;
+
+function TWeatherServiceInfo.GetMinPrice: Double;
+begin
+  Result:= SVC_MIN_PRICE;
+end;
+
+function TWeatherServiceInfo.GetHasPaid: Bool;
+begin
+  Result:= SVC_HAS_PAID;
+end;
+
+function TWeatherServiceInfo.GetHasTrial: Bool;
+begin
+  Result:= SVC_HAS_TRIAL;
+end;
+
+function TWeatherServiceInfo.GetIsUnlimited: Bool;
+begin
+  Result:= SVC_IS_UNLIMITED;
 end;
 
 function TWeatherServiceInfo.GetUID: WideString;
