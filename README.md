@@ -12,7 +12,7 @@
 
 ### IMPORTANT NOTE
 
-This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. 
+**This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. **
 
 ### Disclaimer
 
@@ -95,13 +95,13 @@ You can vew the documentation here to get a general idea of how it works.
 
 # Current State
 
-This project is currently in massive development, and is not yet ready for production use. The whole concept of the project is still up in the air, but slowly becoming established.
+**This project is currently in massive development, and is not yet ready for production use**. The whole concept of the project is still up in the air, but slowly becoming established.
 
-The most complete service implemented so far is Weather Underground. Originall, OpenWeatherMap was the first. But the project was started over again in favor for the differences of Weather Underground, and that's when support was added for multiple services. Since then, more services have been added.
+The most complete service implemented so far is Weather Underground. Originally, OpenWeatherMap was the first. But the project was started over again in favor for the differences of Weather Underground, and that's when support was added for multiple services. Since then, more services have been added.
 
 ### Future Plans
 
-In the end, this entire system will be encapsulated inside a single component which can be installed into the Delphi IDE. It provides a multi-threaded environment which in turn automatically fetches weather data on a schedule.
+In the end, this entire system will be **encapsulated inside a single component** which can be installed into the Delphi IDE. It provides a multi-threaded environment which in turn automatically fetches weather data on a schedule.
 
 Another major concept (already in the works) is to merge multiple weather data sources into one, averaging out each data point. This helps accomplish the following:
 
