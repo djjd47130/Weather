@@ -12,7 +12,7 @@
 
 ### IMPORTANT NOTE
 
-**This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. **
+This library is currently in active development, and is not currently functional. It is actually the third complete iteration of this project. 
 
 ### Disclaimer
 
